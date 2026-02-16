@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Synapse is a Rust agent framework with LangChain-compatible architecture. It provides composable building blocks for AI agents: tool execution, memory, callbacks, retrieval, and evaluation. Phases 1–11 (core refactor, multi-provider model adapters + streaming, LCEL composition, prompt templates + output parsers, document pipeline, embeddings + vector stores, advanced retrieval, graph agent orchestration, memory strategies, caching + rate limiting + reliability, observability + evaluation) are complete; Phase 12 (full LangChain parity + ecosystem) is next.
+Synapse is a Rust agent framework with LangChain-compatible architecture. It provides composable building blocks for AI agents: tool execution, memory, callbacks, retrieval, and evaluation. All 12 phases complete: core refactor, multi-provider model adapters + streaming, LCEL composition, prompt templates + output parsers, document pipeline, embeddings + vector stores, advanced retrieval, graph agent orchestration, memory strategies, caching + rate limiting + reliability, observability + evaluation, unified facade + structured output.
 
 ## Build & Test Commands
 
@@ -20,7 +20,7 @@ cargo fmt --all -- --check           # Check formatting
 
 ## Workspace Architecture
 
-20 library crates in `crates/`, 3 example binaries in `examples/`:
+21 library crates in `crates/` (including `synapse` facade), 3 example binaries in `examples/`:
 
 **Core layer** — `synapse-core` defines all shared traits and types:
 - `ChatModel`, `Tool`, `MemoryStore`, `CallbackHandler`, `Agent` traits
@@ -36,7 +36,7 @@ cargo fmt --all -- --check           # Check formatting
 - `synapse-tools` — `ToolRegistry` (Arc<RwLock<HashMap>>) + `SerialToolExecutor`
 - `synapse-memory` — `InMemoryStore` (session-keyed message storage), memory strategies: `ConversationBufferMemory`, `ConversationWindowMemory` (last K messages), `ConversationSummaryMemory` (LLM summarization), `ConversationTokenBufferMemory` (token budget), `RunnableWithMessageHistory` (auto load/save wrapper)
 - `synapse-callbacks` — `RecordingCallback`, `LoggingCallback`, `TracingCallback` (structured tracing spans/events), `CompositeCallback` (multi-handler dispatch)
-- `synapse-models` — provider adapters (`OpenAiChatModel`, `AnthropicChatModel`, `GeminiChatModel`, `OllamaChatModel`) + `ScriptedChatModel` (test double) + `RetryChatModel`, `RateLimitedChatModel`, `TokenBucketChatModel` wrappers + `ProviderBackend` trait (`HttpBackend`, `FakeBackend`)
+- `synapse-models` — provider adapters (`OpenAiChatModel`, `AnthropicChatModel`, `GeminiChatModel`, `OllamaChatModel`) + `ScriptedChatModel` (test double) + `RetryChatModel`, `RateLimitedChatModel`, `TokenBucketChatModel` wrappers + `StructuredOutputChatModel<T>` (JSON schema enforcement) + `ProviderBackend` trait (`HttpBackend`, `FakeBackend`)
 - `synapse-cache` — `LlmCache` trait, `InMemoryCache` (optional TTL), `SemanticCache` (embedding similarity matching), `CachedChatModel` (wraps ChatModel with cache)
 - `synapse-prompts` — `PromptTemplate` (`{{ variable }}` interpolation), `ChatPromptTemplate` (produces `Vec<Message>` with `MessageTemplate` variants: System/Human/AI/Placeholder), `FewShotChatMessagePromptTemplate` (example-based prompting); all chat templates implement `Runnable`
 - `synapse-parsers` — output parsers, all implement `Runnable`: `StrOutputParser` (Message→String), `JsonOutputParser` (String→Value), `StructuredOutputParser<T>` (String→T via serde), `ListOutputParser` (String→Vec<String>, configurable separator), `EnumOutputParser` (validates against allowed values)
@@ -51,6 +51,7 @@ cargo fmt --all -- --check           # Check formatting
 - `synapse-vectorstores` — `VectorStore` trait (`add_documents`/`similarity_search`/`delete`), `InMemoryVectorStore` (cosine similarity, `RwLock<HashMap>`), `VectorStoreRetriever` (bridges to `Retriever` trait)
 - `synapse-graph` — LangGraph-style state machine: `State` trait (merge/reduce), `MessageState`, `Node<S>` trait + `FnNode`, `StateGraph<S>` builder (add_node/add_edge/add_conditional_edges/interrupt_before/interrupt_after/compile), `CompiledGraph<S>` (invoke/invoke_with_config/update_state), `Checkpointer` trait + `MemorySaver`, `ToolNode`, `create_react_agent(model, tools)`
 - `synapse-guardrails` — `JsonObjectGuard` (validates JSON shape)
+- `synapse` — unified facade crate re-exporting all sub-crates (`use synapse::core::Message`, `use synapse::models::OpenAiChatModel`, etc.)
 - `synapse-eval` — `Evaluator` trait + `EvalResult`, evaluators: `ExactMatchEvaluator`, `JsonValidityEvaluator`, `RegexMatchEvaluator`, `EmbeddingDistanceEvaluator`, `LLMJudgeEvaluator`; `Dataset` + `evaluate()` batch pipeline; legacy `EvalCase`/`EvalReport`
 
 ## Key Patterns

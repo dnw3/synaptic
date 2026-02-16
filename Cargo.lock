@@ -1176,6 +1176,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "synapse"
+version = "0.1.0"
+dependencies = [
+ "synapse-agents",
+ "synapse-cache",
+ "synapse-callbacks",
+ "synapse-chains",
+ "synapse-core",
+ "synapse-embeddings",
+ "synapse-eval",
+ "synapse-graph",
+ "synapse-guardrails",
+ "synapse-loaders",
+ "synapse-memory",
+ "synapse-models",
+ "synapse-parsers",
+ "synapse-prompts",
+ "synapse-retrieval",
+ "synapse-runnables",
+ "synapse-splitters",
+ "synapse-tools",
+ "synapse-vectorstores",
+]
+
+[[package]]
 name = "synapse-agents"
 version = "0.1.0"
 dependencies = [

@@ -1,0 +1,28 @@
+[package]
+name = "synapse"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+synapse-core = { path = "../synapse-core" }
+synapse-models = { path = "../synapse-models" }
+synapse-runnables = { path = "../synapse-runnables" }
+synapse-chains = { path = "../synapse-chains" }
+synapse-prompts = { path = "../synapse-prompts" }
+synapse-parsers = { path = "../synapse-parsers" }
+synapse-agents = { path = "../synapse-agents" }
+synapse-tools = { path = "../synapse-tools" }
+synapse-memory = { path = "../synapse-memory" }
+synapse-callbacks = { path = "../synapse-callbacks" }
+synapse-retrieval = { path = "../synapse-retrieval" }
+synapse-loaders = { path = "../synapse-loaders" }
+synapse-splitters = { path = "../synapse-splitters" }
+synapse-embeddings = { path = "../synapse-embeddings" }
+synapse-vectorstores = { path = "../synapse-vectorstores" }
+synapse-graph = { path = "../synapse-graph" }
+synapse-cache = { path = "../synapse-cache" }
+synapse-eval = { path = "../synapse-eval" }
+synapse-guardrails = { path = "../synapse-guardrails" }

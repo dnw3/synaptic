@@ -26,3 +26,6 @@ pub use rate_limit::RateLimitedChatModel;
 
 mod token_bucket;
 pub use token_bucket::{TokenBucket, TokenBucketChatModel};
+
+mod structured_output;
+pub use structured_output::StructuredOutputChatModel;

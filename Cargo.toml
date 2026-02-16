@@ -19,6 +19,7 @@ members = [
   "crates/synapse-vectorstores",
   "crates/synapse-graph",
   "crates/synapse-cache",
+  "crates/synapse",
   "examples/react_basic",
   "examples/tool_calling_basic",
   "examples/memory_chat",

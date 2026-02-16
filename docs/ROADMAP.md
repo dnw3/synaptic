@@ -18,7 +18,8 @@
 
 - Phase 11: observability + evaluation — TracingCallback (structured tracing spans), CompositeCallback (multi-handler dispatch); Evaluator trait + EvalResult, ExactMatchEvaluator, JsonValidityEvaluator, RegexMatchEvaluator, EmbeddingDistanceEvaluator, LLMJudgeEvaluator; Dataset + evaluate() batch pipeline
 
-## Next
-- Phase 12: full LangChain parity + ecosystem (API server, CLI, unified facade crate)
+- Phase 12: full LangChain parity + ecosystem — `synapse` unified facade crate (re-exports all 20 sub-crates), StructuredOutputChatModel<T> (JSON schema enforcement with code block extraction)
+
+## Future
 
 See `docs/plans/2026-02-16-synapse-full-langchain-parity-design.md` for full design.
