@@ -1278,6 +1278,8 @@ dependencies = [
  "serde",
  "serde_json",
  "synapse-core",
+ "synapse-embeddings",
+ "synapse-models",
  "tokio",
 ]
 

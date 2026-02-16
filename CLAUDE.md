@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Synapse is a Rust agent framework with LangChain-compatible architecture. It provides composable building blocks for AI agents: tool execution, memory, callbacks, retrieval, and evaluation. Phases 1–6 (core refactor, multi-provider model adapters + streaming, LCEL composition, prompt templates + output parsers, document pipeline, embeddings + vector stores) are complete; Phase 7 (advanced retrieval) is next.
+Synapse is a Rust agent framework with LangChain-compatible architecture. It provides composable building blocks for AI agents: tool execution, memory, callbacks, retrieval, and evaluation. Phases 1–7 (core refactor, multi-provider model adapters + streaming, LCEL composition, prompt templates + output parsers, document pipeline, embeddings + vector stores, advanced retrieval) are complete; Phase 8 (graph agent orchestration) is next.
 
 ## Build & Test Commands
 
@@ -43,7 +43,7 @@ cargo fmt --all -- --check           # Check formatting
 **Composition & retrieval crates:**
 - `synapse-runnables` — `Runnable<I, O>` trait with `invoke()`/`batch()`/`boxed()`, `BoxRunnable` (type-erased, `|` pipe operator via `BitOr`), composition types: `RunnablePassthrough`, `RunnableLambda`, `RunnableSequence`, `RunnableParallel`, `RunnableBranch`, `RunnableWithFallbacks`
 - `synapse-chains` — `SequentialChain` (pipes `BoxRunnable<String, String>` steps with `RunnableConfig`)
-- `synapse-retrieval` — `Retriever` trait + `InMemoryRetriever`; `Document` has `id`, `content`, `metadata: HashMap<String, Value>`
+- `synapse-retrieval` — `Retriever` trait, `InMemoryRetriever`, `BM25Retriever` (Okapi BM25 scoring), `MultiQueryRetriever` (LLM-generated query variants), `EnsembleRetriever` (Reciprocal Rank Fusion), `ContextualCompressionRetriever` + `DocumentCompressor` trait + `EmbeddingsFilter` (similarity threshold filtering); `Document` has `id`, `content`, `metadata: HashMap<String, Value>`
 - `synapse-loaders` — `Loader` async trait, `TextLoader`, `JsonLoader` (configurable id/content keys), `CsvLoader` (column-based with metadata), `DirectoryLoader` (glob filtering, recursive)
 - `synapse-splitters` — `TextSplitter` trait with `split_text()`/`split_documents()`, `CharacterTextSplitter`, `RecursiveCharacterTextSplitter` (hierarchical separators), `MarkdownHeaderTextSplitter` (header-aware with metadata)
 - `synapse-embeddings` — `Embeddings` trait (`embed_documents`/`embed_query`), `FakeEmbeddings` (deterministic testing), `OpenAiEmbeddings`, `OllamaEmbeddings` (use `ProviderBackend`)

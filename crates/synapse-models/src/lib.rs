@@ -1,7 +1,7 @@
 mod scripted;
 pub use scripted::ScriptedChatModel;
 
-mod backend;
+pub mod backend;
 pub use backend::{
     ByteStream, FakeBackend, HttpBackend, ProviderBackend, ProviderRequest, ProviderResponse,
 };

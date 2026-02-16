@@ -1,3 +1,13 @@
+mod bm25;
+mod compression;
+mod ensemble;
+mod multi_query;
+
+pub use bm25::BM25Retriever;
+pub use compression::{ContextualCompressionRetriever, DocumentCompressor, EmbeddingsFilter};
+pub use ensemble::EnsembleRetriever;
+pub use multi_query::MultiQueryRetriever;
+
 use std::collections::{HashMap, HashSet};
 
 use async_trait::async_trait;
@@ -75,7 +85,16 @@ impl Retriever for InMemoryRetriever {
     }
 }
 
-fn tokenize(input: &str) -> HashSet<String> {
+pub(crate) fn tokenize(input: &str) -> HashSet<String> {
+    input
+        .split_whitespace()
+        .map(|term| term.to_ascii_lowercase())
+        .collect()
+}
+
+/// Tokenize text into a Vec of lowercase tokens, preserving duplicates.
+/// Used by BM25 which needs term frequency counts.
+pub(crate) fn tokenize_to_vec(input: &str) -> Vec<String> {
     input
         .split_whitespace()
         .map(|term| term.to_ascii_lowercase())

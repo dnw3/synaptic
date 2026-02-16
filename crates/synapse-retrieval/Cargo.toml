@@ -11,6 +11,8 @@ async-trait.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 synapse-core = { path = "../synapse-core" }
+synapse-embeddings = { path = "../synapse-embeddings" }
 
 [dev-dependencies]
 tokio.workspace = true
+synapse-models = { path = "../synapse-models" }

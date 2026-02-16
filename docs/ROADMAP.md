@@ -9,10 +9,10 @@
 - Phase 4: prompt templates + output parsers — ChatPromptTemplate (MessageTemplate: System/Human/AI/Placeholder), FewShotChatMessagePromptTemplate, StrOutputParser, JsonOutputParser, StructuredOutputParser<T>, ListOutputParser, EnumOutputParser; all implement Runnable
 - Phase 5: document pipeline — Loader async trait, TextLoader, JsonLoader, CsvLoader, DirectoryLoader; TextSplitter trait, CharacterTextSplitter, RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter
 - Phase 6: embeddings + vector stores — Embeddings trait, FakeEmbeddings, OpenAiEmbeddings, OllamaEmbeddings; VectorStore trait, InMemoryVectorStore (cosine similarity), VectorStoreRetriever bridge to Retriever
+- Phase 7: advanced retrieval — BM25Retriever (Okapi BM25 scoring, tunable k1/b), MultiQueryRetriever (LLM query variants + dedup), EnsembleRetriever (Reciprocal Rank Fusion with weights), ContextualCompressionRetriever + DocumentCompressor trait + EmbeddingsFilter (cosine similarity threshold)
 - Foundations: runnable, chain, retrieval, loader, guardrail, eval baseline abstractions
 
 ## Next
-- Phase 7: advanced retrieval (MultiQuery, SelfQuery, Ensemble, Compression, BM25)
 - Phase 8: graph agent orchestration (StateGraph, checkpointing, human-in-the-loop)
 - Phase 9: memory strategies (Buffer, Window, Summary, Token) + persistence backends
 - Phase 10: caching, rate limiting, reliability
