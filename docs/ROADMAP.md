@@ -6,10 +6,10 @@
 - Phase 1: core refactor — Message enum (System/Human/AI/Tool), AIMessageChunk streaming, RunnableConfig, SynapseError expansion (19 variants), Document metadata, ReAct pipeline with tool execution/memory/callbacks
 - Phase 2: multi-provider model adapters (OpenAI, Anthropic, Gemini, Ollama) + streaming — ToolDefinition, ChatRequest.tools, ChatModel.stream_chat(), ProviderBackend abstraction (HttpBackend/FakeBackend), RetryChatModel, RateLimitedChatModel
 - Phase 3: LCEL — Runnable composition protocol: Runnable<I,O> trait with invoke/batch/boxed, BoxRunnable with `|` pipe operator, RunnablePassthrough, RunnableLambda, RunnableSequence, RunnableParallel, RunnableBranch, RunnableWithFallbacks; updated SequentialChain
+- Phase 4: prompt templates + output parsers — ChatPromptTemplate (MessageTemplate: System/Human/AI/Placeholder), FewShotChatMessagePromptTemplate, StrOutputParser, JsonOutputParser, StructuredOutputParser<T>, ListOutputParser, EnumOutputParser; all implement Runnable
 - Foundations: runnable, chain, retrieval, loader, guardrail, eval baseline abstractions
 
 ## Next
-- Phase 4: prompt templates (ChatPromptTemplate, FewShot) + output parsers (JSON, Structured)
 - Phase 5: document pipeline — loaders (PDF, HTML, CSV, Web) + text splitters (Recursive, Token, Markdown, Code)
 - Phase 6: embeddings + vector stores (Qdrant, Pinecone, PGVector, Redis, Milvus, Chroma, SQLite, Weaviate)
 - Phase 7: advanced retrieval (MultiQuery, SelfQuery, Ensemble, Compression, BM25)

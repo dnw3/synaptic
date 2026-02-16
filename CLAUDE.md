@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Synapse is a Rust agent framework with LangChain-compatible architecture. It provides composable building blocks for AI agents: tool execution, memory, callbacks, retrieval, and evaluation. Phases 1–3 (core refactor, multi-provider model adapters + streaming, LCEL composition) are complete; Phase 4 (prompt templates + output parsers) is next.
+Synapse is a Rust agent framework with LangChain-compatible architecture. It provides composable building blocks for AI agents: tool execution, memory, callbacks, retrieval, and evaluation. Phases 1–4 (core refactor, multi-provider model adapters + streaming, LCEL composition, prompt templates + output parsers) are complete; Phase 5 (document pipeline) is next.
 
 ## Build & Test Commands
 
@@ -20,7 +20,7 @@ cargo fmt --all -- --check           # Check formatting
 
 ## Workspace Architecture
 
-13 library crates in `crates/`, 3 example binaries in `examples/`:
+14 library crates in `crates/`, 3 example binaries in `examples/`:
 
 **Core layer** — `synapse-core` defines all shared traits and types:
 - `ChatModel`, `Tool`, `MemoryStore`, `CallbackHandler`, `Agent` traits
@@ -37,7 +37,8 @@ cargo fmt --all -- --check           # Check formatting
 - `synapse-memory` — `InMemoryStore` (session-keyed message storage)
 - `synapse-callbacks` — `RecordingCallback`, `LoggingCallback`
 - `synapse-models` — provider adapters (`OpenAiChatModel`, `AnthropicChatModel`, `GeminiChatModel`, `OllamaChatModel`) + `ScriptedChatModel` (test double) + `RetryChatModel`, `RateLimitedChatModel` wrappers + `ProviderBackend` trait (`HttpBackend`, `FakeBackend`)
-- `synapse-prompts` — `PromptTemplate` with `{{ variable }}` interpolation
+- `synapse-prompts` — `PromptTemplate` (`{{ variable }}` interpolation), `ChatPromptTemplate` (produces `Vec<Message>` with `MessageTemplate` variants: System/Human/AI/Placeholder), `FewShotChatMessagePromptTemplate` (example-based prompting); all chat templates implement `Runnable`
+- `synapse-parsers` — output parsers, all implement `Runnable`: `StrOutputParser` (Message→String), `JsonOutputParser` (String→Value), `StructuredOutputParser<T>` (String→T via serde), `ListOutputParser` (String→Vec<String>, configurable separator), `EnumOutputParser` (validates against allowed values)
 
 **Composition & retrieval crates:**
 - `synapse-runnables` — `Runnable<I, O>` trait with `invoke()`/`batch()`/`boxed()`, `BoxRunnable` (type-erased, `|` pipe operator via `BitOr`), composition types: `RunnablePassthrough`, `RunnableLambda`, `RunnableSequence`, `RunnableParallel`, `RunnableBranch`, `RunnableWithFallbacks`

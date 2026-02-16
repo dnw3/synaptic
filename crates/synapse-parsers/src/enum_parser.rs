@@ -1,0 +1,33 @@
+use async_trait::async_trait;
+use synapse_core::{RunnableConfig, SynapseError};
+use synapse_runnables::Runnable;
+
+/// Validates that the trimmed input matches one of the allowed enum values.
+pub struct EnumOutputParser {
+    allowed: Vec<String>,
+}
+
+impl EnumOutputParser {
+    pub fn new(allowed: Vec<String>) -> Self {
+        Self { allowed }
+    }
+}
+
+#[async_trait]
+impl Runnable<String, String> for EnumOutputParser {
+    async fn invoke(
+        &self,
+        input: String,
+        _config: &RunnableConfig,
+    ) -> Result<String, SynapseError> {
+        let trimmed = input.trim().to_string();
+        if self.allowed.contains(&trimmed) {
+            Ok(trimmed)
+        } else {
+            Err(SynapseError::Parsing(format!(
+                "expected one of {:?}, got '{trimmed}'",
+                self.allowed
+            )))
+        }
+    }
+}
