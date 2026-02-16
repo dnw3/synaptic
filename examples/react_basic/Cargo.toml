@@ -1,0 +1,16 @@
+[package]
+name = "react_basic"
+edition.workspace = true
+version.workspace = true
+publish = false
+
+[dependencies]
+async-trait.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+synapse-agents = { path = "../../crates/synapse-agents" }
+synapse-core = { path = "../../crates/synapse-core" }
+synapse-models = { path = "../../crates/synapse-models" }
+synapse-tools = { path = "../../crates/synapse-tools" }
+synapse-memory = { path = "../../crates/synapse-memory" }
+synapse-callbacks = { path = "../../crates/synapse-callbacks" }

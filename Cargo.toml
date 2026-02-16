@@ -1,0 +1,36 @@
+[workspace]
+members = [
+  "crates/synapse-core",
+  "crates/synapse-prompts",
+  "crates/synapse-tools",
+  "crates/synapse-memory",
+  "crates/synapse-callbacks",
+  "crates/synapse-models",
+  "crates/synapse-agents",
+  "crates/synapse-runnables",
+  "crates/synapse-chains",
+  "crates/synapse-retrieval",
+  "crates/synapse-loaders",
+  "crates/synapse-guardrails",
+  "crates/synapse-eval",
+  "examples/react_basic",
+  "examples/tool_calling_basic",
+  "examples/memory_chat",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+version = "0.1.0"
+license = "MIT"
+authors = ["Synapse Contributors"]
+rust-version = "1.78"
+
+[workspace.dependencies]
+async-trait = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+tokio = { version = "1.41", features = ["macros", "rt-multi-thread", "sync", "time"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt"] }

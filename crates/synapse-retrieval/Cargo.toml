@@ -1,0 +1,15 @@
+[package]
+name = "synapse-retrieval"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+serde.workspace = true
+synapse-core = { path = "../synapse-core" }
+
+[dev-dependencies]
+tokio.workspace = true

@@ -1,0 +1,11 @@
+[package]
+name = "synapse-prompts"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true

@@ -1,0 +1,10 @@
+[package]
+name = "memory_chat"
+edition.workspace = true
+version.workspace = true
+publish = false
+
+[dependencies]
+tokio.workspace = true
+synapse-core = { path = "../../crates/synapse-core" }
+synapse-memory = { path = "../../crates/synapse-memory" }

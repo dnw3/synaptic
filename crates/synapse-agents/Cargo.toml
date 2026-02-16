@@ -1,0 +1,19 @@
+[package]
+name = "synapse-agents"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+serde_json.workspace = true
+synapse-core = { path = "../synapse-core" }
+synapse-prompts = { path = "../synapse-prompts" }
+synapse-tools = { path = "../synapse-tools" }
+tokio.workspace = true
+
+[dev-dependencies]
+synapse-callbacks = { path = "../synapse-callbacks" }
+synapse-memory = { path = "../synapse-memory" }

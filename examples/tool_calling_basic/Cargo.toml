@@ -1,0 +1,12 @@
+[package]
+name = "tool_calling_basic"
+edition.workspace = true
+version.workspace = true
+publish = false
+
+[dependencies]
+async-trait.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+synapse-core = { path = "../../crates/synapse-core" }
+synapse-tools = { path = "../../crates/synapse-tools" }
