@@ -5,7 +5,7 @@ use serde_json::json;
 use synapse_agents::{AgentConfig, ReActAgentExecutor};
 use synapse_callbacks::RecordingCallback;
 use synapse_core::{
-    Agent, ChatModel, ChatRequest, ChatResponse, MemoryStore, Message, Role, SynapseError, Tool,
+    Agent, ChatModel, ChatRequest, ChatResponse, MemoryStore, Message, SynapseError, Tool,
     ToolCall,
 };
 use synapse_memory::InMemoryStore;
@@ -19,22 +19,23 @@ impl ChatModel for ScriptedModel {
         let has_tool_result = request
             .messages
             .iter()
-            .any(|m| matches!(m.role, Role::Tool));
+            .any(|m| m.is_tool());
 
         if !has_tool_result {
             Ok(ChatResponse {
-                message: Message::new(Role::Assistant, "calling tool"),
-                tool_calls: vec![ToolCall {
-                    id: "call-1".to_string(),
-                    name: "add".to_string(),
-                    arguments: json!({"a": 1, "b": 2}),
-                }],
+                message: Message::ai_with_tool_calls(
+                    "calling tool",
+                    vec![ToolCall {
+                        id: "call-1".to_string(),
+                        name: "add".to_string(),
+                        arguments: json!({"a": 1, "b": 2}),
+                    }],
+                ),
                 usage: None,
             })
         } else {
             Ok(ChatResponse {
-                message: Message::new(Role::Assistant, "result is 3"),
-                tool_calls: vec![],
+                message: Message::ai("result is 3"),
                 usage: None,
             })
         }
@@ -91,7 +92,7 @@ async fn executes_react_loop_until_final_answer() {
     assert_eq!(output, "result is 3");
 
     let messages = memory.load("session-1").await.expect("load memory");
-    assert!(messages.iter().any(|m| m.role == Role::Tool));
+    assert!(messages.iter().any(|m| m.is_tool()));
 
     let events = callbacks.events().await;
     assert!(events.len() >= 2);

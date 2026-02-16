@@ -8,7 +8,7 @@ use std::{
 
 use async_trait::async_trait;
 use synapse_core::{
-    Agent, CallbackHandler, ChatModel, ChatRequest, MemoryStore, Message, Role, RunEvent,
+    Agent, CallbackHandler, ChatModel, ChatRequest, MemoryStore, Message, RunEvent,
     SynapseError,
 };
 use synapse_tools::SerialToolExecutor;
@@ -66,7 +66,7 @@ impl Agent for ReActAgentExecutor {
             .await?;
 
         self.memory
-            .append(session_id, Message::new(Role::User, input))
+            .append(session_id, Message::human(input))
             .await?;
 
         for step in 0..self.config.max_steps {
@@ -78,10 +78,7 @@ impl Agent for ReActAgentExecutor {
                 .await?;
 
             let mut messages = Vec::new();
-            messages.push(Message::new(
-                Role::System,
-                self.config.system_prompt.clone(),
-            ));
+            messages.push(Message::system(self.config.system_prompt.clone()));
             messages.extend(self.memory.load(session_id).await?);
 
             self.callbacks
@@ -96,8 +93,8 @@ impl Agent for ReActAgentExecutor {
                 .append(session_id, response.message.clone())
                 .await?;
 
-            if response.tool_calls.is_empty() {
-                let output = response.message.content;
+            if response.message.tool_calls().is_empty() {
+                let output = response.message.content().to_string();
                 self.callbacks
                     .on_event(RunEvent::RunFinished {
                         run_id: run_id.clone(),
@@ -107,7 +104,7 @@ impl Agent for ReActAgentExecutor {
                 return Ok(output);
             }
 
-            for call in response.tool_calls {
+            for call in response.message.tool_calls() {
                 self.callbacks
                     .on_event(RunEvent::ToolCalled {
                         run_id: run_id.clone(),
@@ -115,9 +112,9 @@ impl Agent for ReActAgentExecutor {
                     })
                     .await?;
 
-                let result = self.tools.execute(&call.name, call.arguments).await?;
+                let result = self.tools.execute(&call.name, call.arguments.clone()).await?;
                 self.memory
-                    .append(session_id, Message::new(Role::Tool, result.to_string()))
+                    .append(session_id, Message::tool(result.to_string(), &call.id))
                     .await?;
             }
         }

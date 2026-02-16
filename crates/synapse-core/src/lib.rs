@@ -4,29 +4,109 @@ use serde_json::Value;
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Role {
-    System,
-    User,
-    Assistant,
-    Tool,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Message {
-    pub role: Role,
-    pub content: String,
+#[serde(tag = "role")]
+pub enum Message {
+    #[serde(rename = "system")]
+    System { content: String },
+    #[serde(rename = "human")]
+    Human { content: String },
+    #[serde(rename = "assistant")]
+    AI {
+        content: String,
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        tool_calls: Vec<ToolCall>,
+    },
+    #[serde(rename = "tool")]
+    Tool {
+        content: String,
+        tool_call_id: String,
+    },
 }
 
 impl Message {
-    pub fn new(role: Role, content: impl Into<String>) -> Self {
-        Self {
-            role,
+    pub fn system(content: impl Into<String>) -> Self {
+        Message::System {
             content: content.into(),
+        }
+    }
+
+    pub fn human(content: impl Into<String>) -> Self {
+        Message::Human {
+            content: content.into(),
+        }
+    }
+
+    pub fn ai(content: impl Into<String>) -> Self {
+        Message::AI {
+            content: content.into(),
+            tool_calls: vec![],
+        }
+    }
+
+    pub fn ai_with_tool_calls(content: impl Into<String>, tool_calls: Vec<ToolCall>) -> Self {
+        Message::AI {
+            content: content.into(),
+            tool_calls,
+        }
+    }
+
+    pub fn tool(content: impl Into<String>, tool_call_id: impl Into<String>) -> Self {
+        Message::Tool {
+            content: content.into(),
+            tool_call_id: tool_call_id.into(),
+        }
+    }
+
+    pub fn content(&self) -> &str {
+        match self {
+            Message::System { content } => content,
+            Message::Human { content } => content,
+            Message::AI { content, .. } => content,
+            Message::Tool { content, .. } => content,
+        }
+    }
+
+    pub fn role(&self) -> &str {
+        match self {
+            Message::System { .. } => "system",
+            Message::Human { .. } => "human",
+            Message::AI { .. } => "assistant",
+            Message::Tool { .. } => "tool",
+        }
+    }
+
+    pub fn is_system(&self) -> bool {
+        matches!(self, Message::System { .. })
+    }
+
+    pub fn is_human(&self) -> bool {
+        matches!(self, Message::Human { .. })
+    }
+
+    pub fn is_ai(&self) -> bool {
+        matches!(self, Message::AI { .. })
+    }
+
+    pub fn is_tool(&self) -> bool {
+        matches!(self, Message::Tool { .. })
+    }
+
+    pub fn tool_calls(&self) -> &[ToolCall] {
+        match self {
+            Message::AI { tool_calls, .. } => tool_calls,
+            _ => &[],
+        }
+    }
+
+    pub fn tool_call_id(&self) -> Option<&str> {
+        match self {
+            Message::Tool { tool_call_id, .. } => Some(tool_call_id),
+            _ => None,
         }
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ToolCall {
     pub id: String,
     pub name: String,
@@ -41,7 +121,6 @@ pub struct ChatRequest {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ChatResponse {
     pub message: Message,
-    pub tool_calls: Vec<ToolCall>,
     pub usage: Option<TokenUsage>,
 }
 

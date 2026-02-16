@@ -5,7 +5,7 @@ use serde_json::json;
 use synapse_agents::{AgentConfig, ReActAgentExecutor};
 use synapse_callbacks::RecordingCallback;
 use synapse_core::{
-    Agent, ChatModel, ChatRequest, ChatResponse, Message, Role, SynapseError, Tool, ToolCall,
+    Agent, ChatModel, ChatRequest, ChatResponse, Message, SynapseError, Tool, ToolCall,
 };
 use synapse_memory::InMemoryStore;
 use synapse_tools::{SerialToolExecutor, ToolRegistry};
@@ -15,21 +15,22 @@ struct DemoModel;
 #[async_trait]
 impl ChatModel for DemoModel {
     async fn chat(&self, request: ChatRequest) -> Result<ChatResponse, SynapseError> {
-        let has_tool_output = request.messages.iter().any(|m| m.role == Role::Tool);
+        let has_tool_output = request.messages.iter().any(|m| m.is_tool());
         if !has_tool_output {
             Ok(ChatResponse {
-                message: Message::new(Role::Assistant, "I will use a tool to calculate this."),
-                tool_calls: vec![ToolCall {
-                    id: "call-1".to_string(),
-                    name: "add".to_string(),
-                    arguments: json!({ "a": 7, "b": 5 }),
-                }],
+                message: Message::ai_with_tool_calls(
+                    "I will use a tool to calculate this.",
+                    vec![ToolCall {
+                        id: "call-1".to_string(),
+                        name: "add".to_string(),
+                        arguments: json!({ "a": 7, "b": 5 }),
+                    }],
+                ),
                 usage: None,
             })
         } else {
             Ok(ChatResponse {
-                message: Message::new(Role::Assistant, "The result is 12."),
-                tool_calls: vec![],
+                message: Message::ai("The result is 12."),
                 usage: None,
             })
         }

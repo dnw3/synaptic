@@ -1,10 +1,10 @@
-use synapse_core::{MemoryStore, Message, Role};
+use synapse_core::{MemoryStore, Message};
 use synapse_memory::InMemoryStore;
 
 #[tokio::test]
 async fn stores_and_reads_messages_by_session() {
     let store = InMemoryStore::new();
-    let msg = Message::new(Role::User, "hello");
+    let msg = Message::human("hello");
 
     store
         .append("session-a", msg.clone())
@@ -20,17 +20,17 @@ async fn stores_and_reads_messages_by_session() {
 async fn isolates_sessions() {
     let store = InMemoryStore::new();
     store
-        .append("session-a", Message::new(Role::User, "A"))
+        .append("session-a", Message::human("A"))
         .await
         .expect("append A");
     store
-        .append("session-b", Message::new(Role::User, "B"))
+        .append("session-b", Message::human("B"))
         .await
         .expect("append B");
 
     let a = store.load("session-a").await.expect("load a");
     let b = store.load("session-b").await.expect("load b");
 
-    assert_eq!(a[0].content, "A");
-    assert_eq!(b[0].content, "B");
+    assert_eq!(a[0].content(), "A");
+    assert_eq!(b[0].content(), "B");
 }
