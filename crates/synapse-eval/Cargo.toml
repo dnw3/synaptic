@@ -7,3 +7,13 @@ authors.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+async-trait.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+synapse-core = { path = "../synapse-core" }
+synapse-embeddings = { path = "../synapse-embeddings" }
+regex.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
+synapse-models = { path = "../synapse-models" }

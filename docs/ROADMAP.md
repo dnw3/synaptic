@@ -16,8 +16,9 @@
 
 - Phase 10: caching, rate limiting, reliability — LlmCache trait, InMemoryCache (optional TTL), SemanticCache (embedding similarity), CachedChatModel; TokenBucket + TokenBucketChatModel rate limiter
 
+- Phase 11: observability + evaluation — TracingCallback (structured tracing spans), CompositeCallback (multi-handler dispatch); Evaluator trait + EvalResult, ExactMatchEvaluator, JsonValidityEvaluator, RegexMatchEvaluator, EmbeddingDistanceEvaluator, LLMJudgeEvaluator; Dataset + evaluate() batch pipeline
+
 ## Next
-- Phase 11: observability (tracing, OpenTelemetry) + evaluation (LLM-as-judge, datasets)
 - Phase 12: full LangChain parity + ecosystem (API server, CLI, unified facade crate)
 
 See `docs/plans/2026-02-16-synapse-full-langchain-parity-design.md` for full design.

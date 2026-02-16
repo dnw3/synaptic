@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Synapse is a Rust agent framework with LangChain-compatible architecture. It provides composable building blocks for AI agents: tool execution, memory, callbacks, retrieval, and evaluation. Phases 1–10 (core refactor, multi-provider model adapters + streaming, LCEL composition, prompt templates + output parsers, document pipeline, embeddings + vector stores, advanced retrieval, graph agent orchestration, memory strategies, caching + rate limiting + reliability) are complete; Phase 11 (observability + evaluation) is next.
+Synapse is a Rust agent framework with LangChain-compatible architecture. It provides composable building blocks for AI agents: tool execution, memory, callbacks, retrieval, and evaluation. Phases 1–11 (core refactor, multi-provider model adapters + streaming, LCEL composition, prompt templates + output parsers, document pipeline, embeddings + vector stores, advanced retrieval, graph agent orchestration, memory strategies, caching + rate limiting + reliability, observability + evaluation) are complete; Phase 12 (full LangChain parity + ecosystem) is next.
 
 ## Build & Test Commands
 
@@ -35,7 +35,7 @@ cargo fmt --all -- --check           # Check formatting
 - `synapse-agents` — `ReActAgentExecutor` (think → tool → observe loop, max_steps guard)
 - `synapse-tools` — `ToolRegistry` (Arc<RwLock<HashMap>>) + `SerialToolExecutor`
 - `synapse-memory` — `InMemoryStore` (session-keyed message storage), memory strategies: `ConversationBufferMemory`, `ConversationWindowMemory` (last K messages), `ConversationSummaryMemory` (LLM summarization), `ConversationTokenBufferMemory` (token budget), `RunnableWithMessageHistory` (auto load/save wrapper)
-- `synapse-callbacks` — `RecordingCallback`, `LoggingCallback`
+- `synapse-callbacks` — `RecordingCallback`, `LoggingCallback`, `TracingCallback` (structured tracing spans/events), `CompositeCallback` (multi-handler dispatch)
 - `synapse-models` — provider adapters (`OpenAiChatModel`, `AnthropicChatModel`, `GeminiChatModel`, `OllamaChatModel`) + `ScriptedChatModel` (test double) + `RetryChatModel`, `RateLimitedChatModel`, `TokenBucketChatModel` wrappers + `ProviderBackend` trait (`HttpBackend`, `FakeBackend`)
 - `synapse-cache` — `LlmCache` trait, `InMemoryCache` (optional TTL), `SemanticCache` (embedding similarity matching), `CachedChatModel` (wraps ChatModel with cache)
 - `synapse-prompts` — `PromptTemplate` (`{{ variable }}` interpolation), `ChatPromptTemplate` (produces `Vec<Message>` with `MessageTemplate` variants: System/Human/AI/Placeholder), `FewShotChatMessagePromptTemplate` (example-based prompting); all chat templates implement `Runnable`
@@ -51,7 +51,7 @@ cargo fmt --all -- --check           # Check formatting
 - `synapse-vectorstores` — `VectorStore` trait (`add_documents`/`similarity_search`/`delete`), `InMemoryVectorStore` (cosine similarity, `RwLock<HashMap>`), `VectorStoreRetriever` (bridges to `Retriever` trait)
 - `synapse-graph` — LangGraph-style state machine: `State` trait (merge/reduce), `MessageState`, `Node<S>` trait + `FnNode`, `StateGraph<S>` builder (add_node/add_edge/add_conditional_edges/interrupt_before/interrupt_after/compile), `CompiledGraph<S>` (invoke/invoke_with_config/update_state), `Checkpointer` trait + `MemorySaver`, `ToolNode`, `create_react_agent(model, tools)`
 - `synapse-guardrails` — `JsonObjectGuard` (validates JSON shape)
-- `synapse-eval` — `EvalCase`/`EvalReport` (accuracy metrics)
+- `synapse-eval` — `Evaluator` trait + `EvalResult`, evaluators: `ExactMatchEvaluator`, `JsonValidityEvaluator`, `RegexMatchEvaluator`, `EmbeddingDistanceEvaluator`, `LLMJudgeEvaluator`; `Dataset` + `evaluate()` batch pipeline; legacy `EvalCase`/`EvalReport`
 
 ## Key Patterns
 
@@ -68,7 +68,7 @@ cargo fmt --all -- --check           # Check formatting
 
 ## Workspace Dependencies (shared via `[workspace.dependencies]`)
 
-async-trait, serde/serde_json, thiserror 2.0, tokio (macros + rt-multi-thread + sync + time), tracing/tracing-subscriber, reqwest (json + stream), futures, async-stream, eventsource-stream, bytes, csv. Rust edition 2021, MSRV 1.78.
+async-trait, serde/serde_json, thiserror 2.0, tokio (macros + rt-multi-thread + sync + time), tracing/tracing-subscriber, reqwest (json + stream), futures, async-stream, eventsource-stream, bytes, csv, regex. Rust edition 2021, MSRV 1.78.
 
 ## Development Roadmap
 

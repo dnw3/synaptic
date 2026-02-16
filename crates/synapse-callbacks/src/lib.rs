@@ -1,3 +1,9 @@
+mod composite;
+mod tracing_cb;
+
+pub use composite::CompositeCallback;
+pub use tracing_cb::TracingCallback;
+
 use std::sync::Arc;
 
 use async_trait::async_trait;
