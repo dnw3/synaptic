@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Synapse is a Rust agent framework with LangChain-compatible architecture. It provides composable building blocks for AI agents: tool execution, memory, callbacks, retrieval, and evaluation. Phases 1–8 (core refactor, multi-provider model adapters + streaming, LCEL composition, prompt templates + output parsers, document pipeline, embeddings + vector stores, advanced retrieval, graph agent orchestration) are complete; Phase 9 (memory strategies + persistence) is next.
+Synapse is a Rust agent framework with LangChain-compatible architecture. It provides composable building blocks for AI agents: tool execution, memory, callbacks, retrieval, and evaluation. Phases 1–9 (core refactor, multi-provider model adapters + streaming, LCEL composition, prompt templates + output parsers, document pipeline, embeddings + vector stores, advanced retrieval, graph agent orchestration, memory strategies) are complete; Phase 10 (caching, rate limiting, reliability) is next.
 
 ## Build & Test Commands
 
@@ -34,7 +34,7 @@ cargo fmt --all -- --check           # Check formatting
 **Implementation crates** — each implements one core trait:
 - `synapse-agents` — `ReActAgentExecutor` (think → tool → observe loop, max_steps guard)
 - `synapse-tools` — `ToolRegistry` (Arc<RwLock<HashMap>>) + `SerialToolExecutor`
-- `synapse-memory` — `InMemoryStore` (session-keyed message storage)
+- `synapse-memory` — `InMemoryStore` (session-keyed message storage), memory strategies: `ConversationBufferMemory`, `ConversationWindowMemory` (last K messages), `ConversationSummaryMemory` (LLM summarization), `ConversationTokenBufferMemory` (token budget), `RunnableWithMessageHistory` (auto load/save wrapper)
 - `synapse-callbacks` — `RecordingCallback`, `LoggingCallback`
 - `synapse-models` — provider adapters (`OpenAiChatModel`, `AnthropicChatModel`, `GeminiChatModel`, `OllamaChatModel`) + `ScriptedChatModel` (test double) + `RetryChatModel`, `RateLimitedChatModel` wrappers + `ProviderBackend` trait (`HttpBackend`, `FakeBackend`)
 - `synapse-prompts` — `PromptTemplate` (`{{ variable }}` interpolation), `ChatPromptTemplate` (produces `Vec<Message>` with `MessageTemplate` variants: System/Human/AI/Placeholder), `FewShotChatMessagePromptTemplate` (example-based prompting); all chat templates implement `Runnable`

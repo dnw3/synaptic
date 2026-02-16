@@ -8,5 +8,12 @@ rust-version.workspace = true
 
 [dependencies]
 async-trait.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 tokio.workspace = true
 synapse-core = { path = "../synapse-core" }
+synapse-runnables = { path = "../synapse-runnables" }
+
+[dev-dependencies]
+tokio.workspace = true
+synapse-models = { path = "../synapse-models" }

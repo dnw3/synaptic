@@ -1238,7 +1238,11 @@ name = "synapse-memory"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "serde",
+ "serde_json",
  "synapse-core",
+ "synapse-models",
+ "synapse-runnables",
  "tokio",
 ]
 

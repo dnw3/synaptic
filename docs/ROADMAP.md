@@ -11,10 +11,10 @@
 - Phase 6: embeddings + vector stores — Embeddings trait, FakeEmbeddings, OpenAiEmbeddings, OllamaEmbeddings; VectorStore trait, InMemoryVectorStore (cosine similarity), VectorStoreRetriever bridge to Retriever
 - Phase 7: advanced retrieval — BM25Retriever (Okapi BM25 scoring, tunable k1/b), MultiQueryRetriever (LLM query variants + dedup), EnsembleRetriever (Reciprocal Rank Fusion with weights), ContextualCompressionRetriever + DocumentCompressor trait + EmbeddingsFilter (cosine similarity threshold)
 - Phase 8: graph agent orchestration — StateGraph<S> builder, CompiledGraph<S> execution engine, State trait (merge/reduce), MessageState, Node<S> trait + FnNode, Edge + ConditionalEdge + RouterFn, Checkpointer trait + MemorySaver, interrupt_before/interrupt_after (human-in-the-loop), update_state(), ToolNode, create_react_agent(model, tools)
+- Phase 9: memory strategies — ConversationBufferMemory, ConversationWindowMemory (last K messages), ConversationSummaryMemory (LLM summarization), ConversationTokenBufferMemory (token budget estimator), RunnableWithMessageHistory (auto load/save wrapper)
 - Foundations: runnable, chain, retrieval, loader, guardrail, eval baseline abstractions
 
 ## Next
-- Phase 9: memory strategies (Buffer, Window, Summary, Token) + persistence backends
 - Phase 10: caching, rate limiting, reliability
 - Phase 11: observability (tracing, OpenTelemetry) + evaluation (LLM-as-judge, datasets)
 - Phase 12: full LangChain parity + ecosystem (API server, CLI, unified facade crate)
