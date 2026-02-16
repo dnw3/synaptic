@@ -1,45 +1,83 @@
 # Synapse
 
-Synapse is a Rust agent framework designed with LangChain-compatible architecture principles and Rust-native interfaces.
+A Rust agent framework with LangChain-compatible architecture and Rust-native async interfaces.
 
-## Current Status
+## Features
 
-This repository currently includes:
-
-- Phase 0 foundation (workspace + quality gates)
-- Phase 1 MVP core (ReAct loop + tools + memory + callbacks)
+- **LLM Adapters** — OpenAI, Anthropic, Gemini, Ollama with streaming, retry, rate limiting
+- **LCEL Composition** — `Runnable` trait with pipe operator (`|`), streaming, bind, parallel, branch, fallbacks
+- **Graph Orchestration** — LangGraph-style `StateGraph` with conditional edges, checkpointing, human-in-the-loop, streaming
+- **ReAct Agent** — `create_react_agent(model, tools)` with automatic tool dispatch
+- **Tool System** — `Tool` trait, `ToolRegistry`, `SerialToolExecutor`, `tool_choice` control
+- **Memory** — Buffer, Window, Summary, SummaryBuffer, TokenBuffer strategies
+- **Prompt Templates** — Chat templates, few-shot prompting, placeholder interpolation
+- **Output Parsers** — String, JSON, Structured<T>, List, Enum — all composable as `Runnable`
+- **RAG Pipeline** — Document loaders, text splitters, embeddings, vector stores, 7 retriever types
+- **Caching** — In-memory, semantic (embedding similarity), `CachedChatModel` wrapper
+- **Evaluation** — ExactMatch, JsonValidity, Regex, EmbeddingDistance, LLMJudge evaluators
+- **Structured Output** — `StructuredOutputChatModel<T>` with JSON schema enforcement
+- **Observability** — `TracingCallback` (structured spans), `CompositeCallback` (multi-handler)
 
 ## Workspace Layout
 
-- `crates/synapse-core`: core traits and shared types
-- `crates/synapse-prompts`: prompt templating
-- `crates/synapse-tools`: tool registry and serial executor
-- `crates/synapse-memory`: in-memory conversation storage
-- `crates/synapse-callbacks`: callback implementations (recording/logging)
-- `crates/synapse-models`: scripted model for testing/examples
-- `crates/synapse-agents`: ReAct agent executor
-- `crates/synapse-runnables`: generic runnable abstraction
-- `crates/synapse-chains`: sequential chain composition
-- `crates/synapse-retrieval`: document + retriever abstraction
-- `crates/synapse-loaders`: document loading helpers
-- `crates/synapse-guardrails`: JSON object validation guardrail
-- `crates/synapse-eval`: basic evaluation report metrics
-- `examples/react_basic`: end-to-end ReAct example
-- `examples/tool_calling_basic`: direct tool execution example
-- `examples/memory_chat`: memory usage example
+18 library crates in `crates/`, 3 examples in `examples/`:
+
+| Crate | Description |
+|-------|-------------|
+| `synapse-core` | Shared traits and types: `ChatModel`, `Message`, `ToolChoice`, `SynapseError` |
+| `synapse-models` | LLM provider adapters + retry/rate-limit/structured-output wrappers |
+| `synapse-runnables` | LCEL: `Runnable`, `BoxRunnable`, pipe, Lambda, Parallel, Branch, Assign, Pick, Fallbacks |
+| `synapse-prompts` | `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate` |
+| `synapse-parsers` | Str, Json, Structured, List, Enum output parsers |
+| `synapse-tools` | `ToolRegistry`, `SerialToolExecutor` |
+| `synapse-memory` | Buffer, Window, Summary, SummaryBuffer, TokenBuffer, `RunnableWithMessageHistory` |
+| `synapse-callbacks` | `RecordingCallback`, `TracingCallback`, `CompositeCallback` |
+| `synapse-retrieval` | BM25, MultiQuery, Ensemble, Compression, SelfQuery, ParentDocument retrievers |
+| `synapse-loaders` | Text, JSON, CSV, Directory document loaders |
+| `synapse-splitters` | Character, Recursive, Markdown, Token text splitters |
+| `synapse-embeddings` | `Embeddings` trait, Fake, OpenAI, Ollama providers |
+| `synapse-vectorstores` | `VectorStore` trait, InMemory (cosine), `VectorStoreRetriever` |
+| `synapse-graph` | `StateGraph`, `CompiledGraph` (with stream), `ToolNode`, `create_react_agent` |
+| `synapse-cache` | InMemory, Semantic caches, `CachedChatModel` |
+| `synapse-eval` | `Evaluator` trait, 5 evaluators, `Dataset`, batch `evaluate()` |
+| `synapse` | Unified facade re-exporting all crates |
 
 ## Quick Start
 
 ```bash
+# Build & test
+cargo build --workspace
 cargo test --workspace
-cargo run -p tool_calling_basic
-cargo run -p memory_chat
-cargo run -p react_basic
+
+# Run examples
+cargo run -p tool_calling_basic   # Tool registry and execution
+cargo run -p memory_chat          # Session-based conversation memory
+cargo run -p react_basic          # ReAct agent with tool calling
 ```
 
-## Design Direction
+## Usage
 
-- Core abstraction first, feature crates expanded incrementally
-- LangChain concept compatibility, Rust idiomatic API design
-- Default deterministic serial tool execution with extension points for concurrency
-- Memory abstraction for future persistent backends
+```rust
+use synapse::core::{ChatModel, Message, ChatRequest, ToolChoice};
+use synapse::runnables::{Runnable, RunnableLambda};
+use synapse::graph::{create_react_agent, MessageState};
+
+// LCEL pipe composition
+let chain = step1.boxed() | step2.boxed() | step3.boxed();
+let result = chain.invoke(input, &config).await?;
+
+// ReAct agent
+let graph = create_react_agent(model, tools)?;
+let state = MessageState { messages: vec![Message::human("Hello")] };
+let result = graph.invoke(state).await?;
+```
+
+See [`examples/`](examples/) for complete runnable demos.
+
+## Design Principles
+
+- Core abstractions first, feature crates expanded incrementally
+- LangChain concept compatibility with Rust-idiomatic APIs
+- All traits are async via `#[async_trait]`, runtime is tokio
+- Type-erased composition via `BoxRunnable` with `|` pipe operator
+- `Arc<RwLock<_>>` for shared registries, session-keyed memory isolation

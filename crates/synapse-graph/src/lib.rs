@@ -9,7 +9,7 @@ mod tool_node;
 
 pub use builder::StateGraph;
 pub use checkpoint::{Checkpoint, CheckpointConfig, Checkpointer, MemorySaver};
-pub use compiled::CompiledGraph;
+pub use compiled::{CompiledGraph, GraphEvent, GraphStream, StreamMode};
 pub use edge::{ConditionalEdge, Edge, RouterFn};
 pub use node::{FnNode, Node};
 pub use prebuilt::create_react_agent;

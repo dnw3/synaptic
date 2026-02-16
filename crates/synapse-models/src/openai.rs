@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use serde_json::{json, Value};
 use synapse_core::{
     AIMessageChunk, ChatModel, ChatRequest, ChatResponse, ChatStream, Message, SynapseError,
-    TokenUsage, ToolCall, ToolDefinition,
+    TokenUsage, ToolCall, ToolChoice, ToolDefinition,
 };
 
 use crate::backend::{ProviderBackend, ProviderRequest, ProviderResponse};
@@ -76,6 +76,17 @@ impl OpenAiChatModel {
                 .iter()
                 .map(tool_def_to_openai)
                 .collect::<Vec<_>>());
+        }
+        if let Some(ref choice) = request.tool_choice {
+            body["tool_choice"] = match choice {
+                ToolChoice::Auto => json!("auto"),
+                ToolChoice::Required => json!("required"),
+                ToolChoice::None => json!("none"),
+                ToolChoice::Specific(name) => json!({
+                    "type": "function",
+                    "function": {"name": name}
+                }),
+            };
         }
 
         ProviderRequest {

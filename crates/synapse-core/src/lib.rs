@@ -166,11 +166,22 @@ pub struct ToolDefinition {
     pub parameters: Value,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ToolChoice {
+    Auto,
+    Required,
+    None,
+    Specific(String),
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ChatRequest {
     pub messages: Vec<Message>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub tools: Vec<ToolDefinition>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tool_choice: Option<ToolChoice>,
 }
 
 impl ChatRequest {
@@ -178,11 +189,17 @@ impl ChatRequest {
         Self {
             messages,
             tools: vec![],
+            tool_choice: None,
         }
     }
 
     pub fn with_tools(mut self, tools: Vec<ToolDefinition>) -> Self {
         self.tools = tools;
+        self
+    }
+
+    pub fn with_tool_choice(mut self, choice: ToolChoice) -> Self {
+        self.tool_choice = Some(choice);
         self
     }
 }
@@ -310,11 +327,6 @@ pub trait MemoryStore: Send + Sync {
 #[async_trait]
 pub trait CallbackHandler: Send + Sync {
     async fn on_event(&self, event: RunEvent) -> Result<(), SynapseError>;
-}
-
-#[async_trait]
-pub trait Agent: Send + Sync {
-    async fn run(&self, session_id: &str, input: &str) -> Result<String, SynapseError>;
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

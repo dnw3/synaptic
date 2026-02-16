@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use serde_json::{json, Value};
 use synapse_core::{
     AIMessageChunk, ChatModel, ChatRequest, ChatResponse, ChatStream, Message, SynapseError,
-    TokenUsage, ToolCall, ToolDefinition,
+    TokenUsage, ToolCall, ToolChoice, ToolDefinition,
 };
 
 use crate::backend::{ProviderBackend, ProviderRequest, ProviderResponse};
@@ -111,6 +111,19 @@ impl GeminiChatModel {
             body["tools"] = json!([{
                 "functionDeclarations": request.tools.iter().map(tool_def_to_gemini).collect::<Vec<_>>(),
             }]);
+        }
+        if let Some(ref choice) = request.tool_choice {
+            body["tool_config"] = match choice {
+                ToolChoice::Auto => json!({"functionCallingConfig": {"mode": "AUTO"}}),
+                ToolChoice::Required => json!({"functionCallingConfig": {"mode": "ANY"}}),
+                ToolChoice::None => json!({"functionCallingConfig": {"mode": "NONE"}}),
+                ToolChoice::Specific(name) => json!({
+                    "functionCallingConfig": {
+                        "mode": "ANY",
+                        "allowedFunctionNames": [name]
+                    }
+                }),
+            };
         }
 
         let method = if stream {

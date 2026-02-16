@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use serde_json::{json, Value};
 use synapse_core::{
     AIMessageChunk, ChatModel, ChatRequest, ChatResponse, ChatStream, Message, SynapseError,
-    TokenUsage, ToolCall, ToolDefinition,
+    TokenUsage, ToolCall, ToolChoice, ToolDefinition,
 };
 
 use crate::backend::{ProviderBackend, ProviderRequest, ProviderResponse};
@@ -120,6 +120,14 @@ impl AnthropicChatModel {
                 .iter()
                 .map(tool_def_to_anthropic)
                 .collect::<Vec<_>>());
+        }
+        if let Some(ref choice) = request.tool_choice {
+            body["tool_choice"] = match choice {
+                ToolChoice::Auto => json!({"type": "auto"}),
+                ToolChoice::Required => json!({"type": "any"}),
+                ToolChoice::None => json!({"type": "none"}),
+                ToolChoice::Specific(name) => json!({"type": "tool", "name": name}),
+            };
         }
 
         ProviderRequest {

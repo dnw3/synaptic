@@ -19,5 +19,11 @@ pub use branch::RunnableBranch;
 mod fallback;
 pub use fallback::RunnableWithFallbacks;
 
+mod assign;
+pub use assign::RunnableAssign;
+
+mod pick;
+pub use pick::RunnablePick;
+
 /// Backward-compatible alias for `RunnablePassthrough`.
 pub type IdentityRunnable = RunnablePassthrough;

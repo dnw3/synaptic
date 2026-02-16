@@ -2,13 +2,8 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde_json::json;
-use synapse_agents::{AgentConfig, ReActAgentExecutor};
-use synapse_callbacks::RecordingCallback;
-use synapse_core::{
-    Agent, ChatModel, ChatRequest, ChatResponse, Message, SynapseError, Tool, ToolCall,
-};
-use synapse_memory::InMemoryStore;
-use synapse_tools::{SerialToolExecutor, ToolRegistry};
+use synapse_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError, Tool, ToolCall};
+use synapse_graph::{create_react_agent, MessageState};
 
 struct DemoModel;
 
@@ -59,26 +54,17 @@ impl Tool for AddTool {
 #[tokio::main]
 async fn main() -> Result<(), SynapseError> {
     let model = Arc::new(DemoModel);
-    let memory = Arc::new(InMemoryStore::new());
-    let callbacks = Arc::new(RecordingCallback::new());
+    let tools: Vec<Arc<dyn Tool>> = vec![Arc::new(AddTool)];
 
-    let registry = ToolRegistry::new();
-    registry.register(Arc::new(AddTool))?;
-    let tools = Arc::new(SerialToolExecutor::new(registry));
+    let graph = create_react_agent(model, tools)?;
 
-    let agent = ReActAgentExecutor::new(
-        model,
-        tools,
-        memory,
-        callbacks.clone(),
-        AgentConfig {
-            system_prompt: "You are a helpful assistant.".to_string(),
-            max_steps: 4,
-        },
-    );
+    let initial_state = MessageState {
+        messages: vec![Message::human("What is 7 + 5?")],
+    };
 
-    let answer = agent.run("session-1", "What is 7 + 5?").await?;
-    println!("agent answer: {answer}");
-    println!("event_count: {}", callbacks.events().await.len());
+    let result = graph.invoke(initial_state).await?;
+    let last = result.last_message().unwrap();
+    println!("agent answer: {}", last.content());
+    println!("message_count: {}", result.messages.len());
     Ok(())
 }

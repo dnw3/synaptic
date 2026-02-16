@@ -2,11 +2,15 @@ mod bm25;
 mod compression;
 mod ensemble;
 mod multi_query;
+mod parent_document;
+mod self_query;
 
 pub use bm25::BM25Retriever;
 pub use compression::{ContextualCompressionRetriever, DocumentCompressor, EmbeddingsFilter};
 pub use ensemble::EnsembleRetriever;
 pub use multi_query::MultiQueryRetriever;
+pub use parent_document::ParentDocumentRetriever;
+pub use self_query::{MetadataFieldInfo, SelfQueryRetriever};
 
 use std::collections::{HashMap, HashSet};
 

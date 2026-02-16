@@ -20,6 +20,8 @@
 
 - Phase 12: full LangChain parity + ecosystem — `synapse` unified facade crate (re-exports all 20 sub-crates), StructuredOutputChatModel<T> (JSON schema enforcement with code block extraction)
 
+- Phase 13: LangChain alignment — ToolChoice on ChatRequest (all 4 providers), LCEL streaming (Runnable.stream()), BoxRunnable.bind(), RunnableAssign/RunnablePick, CompiledGraph.stream() with StreamMode (Values/Updates) and GraphEvent, TokenTextSplitter, ConversationSummaryBufferMemory, SelfQueryRetriever, ParentDocumentRetriever; removed deprecated crates (synapse-agents, synapse-chains, synapse-guardrails) and LoggingCallback
+
 ## Future
 
 See `docs/plans/2026-02-16-synapse-full-langchain-parity-design.md` for full design.

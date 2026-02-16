@@ -1,12 +1,14 @@
 mod buffer;
 mod history;
 mod summary;
+mod summary_buffer;
 mod token_buffer;
 mod window;
 
 pub use buffer::ConversationBufferMemory;
 pub use history::RunnableWithMessageHistory;
 pub use summary::ConversationSummaryMemory;
+pub use summary_buffer::ConversationSummaryBufferMemory;
 pub use token_buffer::ConversationTokenBufferMemory;
 pub use window::ConversationWindowMemory;
 

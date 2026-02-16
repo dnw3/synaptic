@@ -878,10 +878,8 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "serde_json",
- "synapse-agents",
- "synapse-callbacks",
  "synapse-core",
- "synapse-memory",
+ "synapse-graph",
  "synapse-models",
  "synapse-tools",
  "tokio",
@@ -1179,15 +1177,12 @@ dependencies = [
 name = "synapse"
 version = "0.1.0"
 dependencies = [
- "synapse-agents",
  "synapse-cache",
  "synapse-callbacks",
- "synapse-chains",
  "synapse-core",
  "synapse-embeddings",
  "synapse-eval",
  "synapse-graph",
- "synapse-guardrails",
  "synapse-loaders",
  "synapse-memory",
  "synapse-models",
@@ -1198,20 +1193,6 @@ dependencies = [
  "synapse-splitters",
  "synapse-tools",
  "synapse-vectorstores",
-]
-
-[[package]]
-name = "synapse-agents"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "serde_json",
- "synapse-callbacks",
- "synapse-core",
- "synapse-memory",
- "synapse-prompts",
- "synapse-tools",
- "tokio",
 ]
 
 [[package]]
@@ -1235,16 +1216,6 @@ dependencies = [
  "synapse-core",
  "tokio",
  "tracing",
-]
-
-[[package]]
-name = "synapse-chains"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "synapse-core",
- "synapse-runnables",
- "tokio",
 ]
 
 [[package]]
@@ -1290,21 +1261,15 @@ dependencies = [
 name = "synapse-graph"
 version = "0.1.0"
 dependencies = [
+ "async-stream",
  "async-trait",
+ "futures",
  "serde",
  "serde_json",
  "synapse-core",
  "synapse-models",
  "synapse-tools",
  "tokio",
-]
-
-[[package]]
-name = "synapse-guardrails"
-version = "0.1.0"
-dependencies = [
- "serde_json",
- "thiserror",
 ]
 
 [[package]]

@@ -1,10 +1,12 @@
 mod character;
 mod markdown;
 mod recursive;
+mod token;
 
 pub use character::CharacterTextSplitter;
 pub use markdown::{HeaderType, MarkdownHeaderTextSplitter};
 pub use recursive::RecursiveCharacterTextSplitter;
+pub use token::TokenTextSplitter;
 
 use synapse_retrieval::Document;
 
