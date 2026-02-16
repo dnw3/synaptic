@@ -13,6 +13,7 @@ members = [
   "crates/synapse-loaders",
   "crates/synapse-guardrails",
   "crates/synapse-eval",
+  "crates/synapse-parsers",
   "examples/react_basic",
   "examples/tool_calling_basic",
   "examples/memory_chat",
@@ -34,3 +35,8 @@ thiserror = "2.0"
 tokio = { version = "1.41", features = ["macros", "rt-multi-thread", "sync", "time"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt"] }
+reqwest = { version = "0.12", features = ["json", "stream"] }
+futures = "0.3"
+async-stream = "0.3"
+eventsource-stream = "0.2"
+bytes = "1"

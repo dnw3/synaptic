@@ -1,6 +1,8 @@
 use std::collections::HashMap;
+use std::pin::Pin;
 
 use async_trait::async_trait;
+use futures::Stream;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use thiserror::Error;
@@ -157,9 +159,32 @@ pub struct ToolCall {
     pub arguments: Value,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ToolDefinition {
+    pub name: String,
+    pub description: String,
+    pub parameters: Value,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ChatRequest {
     pub messages: Vec<Message>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tools: Vec<ToolDefinition>,
+}
+
+impl ChatRequest {
+    pub fn new(messages: Vec<Message>) -> Self {
+        Self {
+            messages,
+            tools: vec![],
+        }
+    }
+
+    pub fn with_tools(mut self, tools: Vec<ToolDefinition>) -> Self {
+        self.tools = tools;
+        self
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -245,9 +270,27 @@ pub enum SynapseError {
     Config(String),
 }
 
+pub type ChatStream<'a> =
+    Pin<Box<dyn Stream<Item = Result<AIMessageChunk, SynapseError>> + Send + 'a>>;
+
 #[async_trait]
 pub trait ChatModel: Send + Sync {
     async fn chat(&self, request: ChatRequest) -> Result<ChatResponse, SynapseError>;
+
+    fn stream_chat(&self, request: ChatRequest) -> ChatStream<'_> {
+        Box::pin(async_stream::stream! {
+            match self.chat(request).await {
+                Ok(response) => {
+                    yield Ok(AIMessageChunk {
+                        content: response.message.content().to_string(),
+                        tool_calls: response.message.tool_calls().to_vec(),
+                        usage: response.usage,
+                    });
+                }
+                Err(e) => yield Err(e),
+            }
+        })
+    }
 }
 
 #[async_trait]

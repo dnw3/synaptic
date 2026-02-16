@@ -1,5 +1,9 @@
+use futures::StreamExt;
 use serde_json::json;
-use synapse_core::{AIMessageChunk, Message, TokenUsage, ToolCall};
+use synapse_core::{
+    AIMessageChunk, ChatModel, ChatRequest, ChatResponse, Message, SynapseError, TokenUsage,
+    ToolCall,
+};
 
 #[test]
 fn system_message_factory() {
@@ -183,4 +187,33 @@ fn chunk_into_message() {
     assert!(msg.is_ai());
     assert_eq!(msg.content(), "final answer");
     assert_eq!(msg.tool_calls().len(), 1);
+}
+
+struct FakeModel;
+
+#[async_trait::async_trait]
+impl ChatModel for FakeModel {
+    async fn chat(&self, _request: ChatRequest) -> Result<ChatResponse, SynapseError> {
+        Ok(ChatResponse {
+            message: Message::ai("streamed response"),
+            usage: None,
+        })
+    }
+}
+
+#[tokio::test]
+async fn stream_chat_default_wraps_single_chunk() {
+    let model = FakeModel;
+    let request = ChatRequest::new(vec![Message::human("hi")]);
+    let mut stream = model.stream_chat(request);
+
+    let chunk = stream
+        .next()
+        .await
+        .expect("should yield one chunk")
+        .unwrap();
+    assert_eq!(chunk.content, "streamed response");
+    assert!(chunk.tool_calls.is_empty());
+
+    assert!(stream.next().await.is_none());
 }

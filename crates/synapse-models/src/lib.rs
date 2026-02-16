@@ -1,28 +1,25 @@
-use std::{collections::VecDeque, sync::Arc};
+mod scripted;
+pub use scripted::ScriptedChatModel;
 
-use async_trait::async_trait;
-use synapse_core::{ChatModel, ChatRequest, ChatResponse, SynapseError};
-use tokio::sync::Mutex;
+mod backend;
+pub use backend::{
+    ByteStream, FakeBackend, HttpBackend, ProviderBackend, ProviderRequest, ProviderResponse,
+};
 
-#[derive(Clone)]
-pub struct ScriptedChatModel {
-    responses: Arc<Mutex<VecDeque<ChatResponse>>>,
-}
+mod openai;
+pub use openai::{OpenAiChatModel, OpenAiConfig};
 
-impl ScriptedChatModel {
-    pub fn new(responses: Vec<ChatResponse>) -> Self {
-        Self {
-            responses: Arc::new(Mutex::new(VecDeque::from(responses))),
-        }
-    }
-}
+mod anthropic;
+pub use anthropic::{AnthropicChatModel, AnthropicConfig};
 
-#[async_trait]
-impl ChatModel for ScriptedChatModel {
-    async fn chat(&self, _request: ChatRequest) -> Result<ChatResponse, SynapseError> {
-        let mut responses = self.responses.lock().await;
-        responses
-            .pop_front()
-            .ok_or_else(|| SynapseError::Model("scripted model exhausted responses".to_string()))
-    }
-}
+mod gemini;
+pub use gemini::{GeminiChatModel, GeminiConfig};
+
+mod ollama;
+pub use ollama::{OllamaChatModel, OllamaConfig};
+
+mod retry;
+pub use retry::{RetryChatModel, RetryPolicy};
+
+mod rate_limit;
+pub use rate_limit::RateLimitedChatModel;

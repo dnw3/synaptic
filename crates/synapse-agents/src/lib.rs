@@ -87,7 +87,7 @@ impl Agent for ReActAgentExecutor {
                 })
                 .await?;
 
-            let response = self.model.chat(ChatRequest { messages }).await?;
+            let response = self.model.chat(ChatRequest::new(messages)).await?;
             self.memory
                 .append(session_id, response.message.clone())
                 .await?;
