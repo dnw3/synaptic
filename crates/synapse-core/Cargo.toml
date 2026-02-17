@@ -1,10 +1,12 @@
 [package]
 name = "synapse-core"
+description = "Core traits and types for Synapse: ChatModel, Message, Tool, SynapseError"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
 authors.workspace = true
 rust-version.workspace = true
+repository.workspace = true
 
 [dependencies]
 async-trait.workspace = true

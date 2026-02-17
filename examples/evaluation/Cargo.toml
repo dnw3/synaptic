@@ -1,0 +1,9 @@
+[package]
+name = "evaluation"
+edition.workspace = true
+version.workspace = true
+publish = false
+
+[dependencies]
+tokio.workspace = true
+synapse = { path = "../../crates/synapse", features = ["eval"] }

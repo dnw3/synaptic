@@ -46,6 +46,7 @@ pub enum ContentBlock {
 // Message
 // ---------------------------------------------------------------------------
 
+/// Represents a chat message. Tagged enum with System, Human, AI, and Tool variants.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "role")]
 pub enum Message {
@@ -587,7 +588,7 @@ pub fn trim_messages(
                 (None, messages.as_slice())
             };
 
-            let system_tokens = system_msg.as_ref().map(|m| token_counter(m)).unwrap_or(0);
+            let system_tokens = system_msg.as_ref().map(&token_counter).unwrap_or(0);
             let budget = max_tokens.saturating_sub(system_tokens);
 
             let mut selected = Vec::new();
@@ -678,6 +679,7 @@ pub fn get_buffer_string(messages: &[Message], human_prefix: &str, ai_prefix: &s
 // AIMessageChunk
 // ---------------------------------------------------------------------------
 
+/// A streaming chunk from an AI model response. Supports merge via `+`/`+=` operators and conversion to `Message` via `into_message()`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct AIMessageChunk {
     pub content: String,
@@ -735,6 +737,7 @@ impl std::ops::AddAssign for AIMessageChunk {
 // Tool-related types
 // ---------------------------------------------------------------------------
 
+/// Represents a tool invocation requested by an AI model, with an ID, function name, and JSON arguments.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ToolCall {
     pub id: String,
@@ -767,6 +770,7 @@ pub struct ToolCallChunk {
     pub index: Option<usize>,
 }
 
+/// Schema definition for a tool, including its name, description, and JSON Schema for parameters.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ToolDefinition {
     pub name: String,
@@ -774,6 +778,7 @@ pub struct ToolDefinition {
     pub parameters: Value,
 }
 
+/// Controls how the model selects tools: Auto, Required, None, or a Specific named tool.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ToolChoice {
@@ -787,6 +792,7 @@ pub enum ToolChoice {
 // Chat request / response
 // ---------------------------------------------------------------------------
 
+/// A request to a chat model containing messages, optional tool definitions, and tool choice configuration.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ChatRequest {
     pub messages: Vec<Message>,
@@ -816,6 +822,7 @@ impl ChatRequest {
     }
 }
 
+/// A response from a chat model containing the AI message and optional token usage statistics.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ChatResponse {
     pub message: Message,
@@ -859,6 +866,7 @@ pub struct OutputTokenDetails {
 // Events
 // ---------------------------------------------------------------------------
 
+/// Lifecycle events emitted during agent execution, used by `CallbackHandler` implementations.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RunEvent {
     RunStarted {
@@ -891,6 +899,7 @@ pub enum RunEvent {
 // Errors
 // ---------------------------------------------------------------------------
 
+/// Unified error type for the Synapse framework with variants covering all subsystems.
 #[derive(Debug, Error)]
 pub enum SynapseError {
     #[error("prompt error: {0}")]
@@ -937,9 +946,11 @@ pub enum SynapseError {
 // Core traits
 // ---------------------------------------------------------------------------
 
+/// Type alias for a pinned, boxed async stream of `AIMessageChunk` results.
 pub type ChatStream<'a> =
     Pin<Box<dyn Stream<Item = Result<AIMessageChunk, SynapseError>> + Send + 'a>>;
 
+/// The core trait for language model providers. Implementations provide `chat()` for single responses and optionally `stream_chat()` for streaming.
 #[async_trait]
 pub trait ChatModel: Send + Sync {
     async fn chat(&self, request: ChatRequest) -> Result<ChatResponse, SynapseError>;
@@ -961,6 +972,7 @@ pub trait ChatModel: Send + Sync {
     }
 }
 
+/// Defines an executable tool that can be called by an AI model. Each tool has a name, description, JSON schema for parameters, and an async `call()` method.
 #[async_trait]
 pub trait Tool: Send + Sync {
     fn name(&self) -> &'static str;
@@ -968,6 +980,7 @@ pub trait Tool: Send + Sync {
     async fn call(&self, args: Value) -> Result<Value, SynapseError>;
 }
 
+/// Persistent storage for conversation message history, keyed by session ID.
 #[async_trait]
 pub trait MemoryStore: Send + Sync {
     async fn append(&self, session_id: &str, message: Message) -> Result<(), SynapseError>;
@@ -975,6 +988,7 @@ pub trait MemoryStore: Send + Sync {
     async fn clear(&self, session_id: &str) -> Result<(), SynapseError>;
 }
 
+/// Handler for lifecycle events during agent execution. Receives `RunEvent` notifications at each stage.
 #[async_trait]
 pub trait CallbackHandler: Send + Sync {
     async fn on_event(&self, event: RunEvent) -> Result<(), SynapseError>;
@@ -984,6 +998,7 @@ pub trait CallbackHandler: Send + Sync {
 // RunnableConfig
 // ---------------------------------------------------------------------------
 
+/// Runtime configuration passed through runnable chains, including tags, metadata, concurrency limits, and run identification.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct RunnableConfig {
     #[serde(default)]

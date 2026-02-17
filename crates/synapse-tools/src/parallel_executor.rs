@@ -29,7 +29,7 @@ impl ParallelToolExecutor {
                 async move {
                     let tool = registry
                         .get(&name)
-                        .ok_or_else(|| SynapseError::ToolNotFound(name))?;
+                        .ok_or(SynapseError::ToolNotFound(name))?;
                     tool.call(args).await
                 }
             })

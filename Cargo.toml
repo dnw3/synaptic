@@ -21,6 +21,15 @@ members = [
   "examples/tool_calling_basic",
   "examples/memory_chat",
   "examples/graph_visualization",
+  "examples/lcel_chain",
+  "examples/prompt_parser_chain",
+  "examples/streaming",
+  "examples/rag_pipeline",
+  "examples/memory_strategy",
+  "examples/structured_output",
+  "examples/callbacks_tracing",
+  "examples/evaluation",
+  "examples/caching",
 ]
 resolver = "2"
 
@@ -30,6 +39,11 @@ version = "0.1.0"
 license = "MIT"
 authors = ["Synapse Contributors"]
 rust-version = "1.78"
+description = "A Rust agent framework with LangChain-compatible architecture"
+repository = "https://github.com/AIMOverse/synapse"
+homepage = "https://github.com/AIMOverse/synapse"
+keywords = ["ai", "agent", "langchain", "llm", "rag"]
+categories = ["science"]
 
 [workspace.dependencies]
 async-trait = "0.1"

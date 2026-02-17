@@ -13,6 +13,7 @@ use std::{
 
 use synapse_core::{SynapseError, Tool};
 
+/// Thread-safe registry for tool definitions and implementations, backed by `Arc<RwLock<HashMap>>`.
 #[derive(Default, Clone)]
 pub struct ToolRegistry {
     inner: Arc<RwLock<HashMap<String, Arc<dyn Tool>>>>,
@@ -38,6 +39,7 @@ impl ToolRegistry {
     }
 }
 
+/// Executes tool calls sequentially, looking up tools in a `ToolRegistry`.
 #[derive(Clone)]
 pub struct SerialToolExecutor {
     registry: ToolRegistry,

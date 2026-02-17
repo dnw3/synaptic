@@ -1,10 +1,12 @@
 [package]
 name = "synapse-splitters"
+description = "Text splitters: Character, Recursive, Markdown, HTML, Language, Token"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
 authors.workspace = true
 rust-version.workspace = true
+repository.workspace = true
 
 [dependencies]
 synapse-core = { path = "../synapse-core" }

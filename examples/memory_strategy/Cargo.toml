@@ -1,0 +1,10 @@
+[package]
+name = "memory_strategy"
+edition.workspace = true
+version.workspace = true
+publish = false
+
+[dependencies]
+serde_json.workspace = true
+tokio.workspace = true
+synapse = { path = "../../crates/synapse", features = ["models", "memory"] }

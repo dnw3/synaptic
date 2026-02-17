@@ -1,5 +1,11 @@
 # Synapse
 
+[![CI](https://github.com/AIMOverse/synapse/actions/workflows/ci.yml/badge.svg)](https://github.com/AIMOverse/synapse/actions/workflows/ci.yml)
+[![Crates.io](https://img.shields.io/crates/v/synapse.svg)](https://crates.io/crates/synapse)
+[![docs.rs](https://docs.rs/synapse/badge.svg)](https://docs.rs/synapse)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![MSRV](https://img.shields.io/badge/MSRV-1.78-orange.svg)](https://blog.rust-lang.org/2024/05/02/Rust-1.78.0.html)
+
 A Rust agent framework with LangChain-compatible architecture and Rust-native async interfaces.
 
 ## Features
@@ -18,9 +24,44 @@ A Rust agent framework with LangChain-compatible architecture and Rust-native as
 - **Structured Output** — `StructuredOutputChatModel<T>` with JSON schema enforcement
 - **Observability** — `TracingCallback` (structured spans), `CompositeCallback` (multi-handler)
 
+## Installation
+
+Add `synapse` to your `Cargo.toml`:
+
+```toml
+[dependencies]
+synapse = "0.1"
+```
+
+By default, all features are enabled. You can select specific features:
+
+```toml
+[dependencies]
+synapse = { version = "0.1", default-features = false, features = ["models", "runnables", "graph"] }
+```
+
+Available features: `models`, `runnables`, `prompts`, `parsers`, `tools`, `memory`, `callbacks`, `graph`, `retrieval`, `loaders`, `splitters`, `embeddings`, `vectorstores`, `cache`, `eval`.
+
+## Quick Start
+
+```rust
+use synapse::core::{ChatModel, Message, ChatRequest, ToolChoice};
+use synapse::runnables::{Runnable, RunnableLambda};
+use synapse::graph::{create_react_agent, MessageState};
+
+// LCEL pipe composition
+let chain = step1.boxed() | step2.boxed() | step3.boxed();
+let result = chain.invoke(input, &config).await?;
+
+// ReAct agent
+let graph = create_react_agent(model, tools)?;
+let state = MessageState { messages: vec![Message::human("Hello")] };
+let result = graph.invoke(state).await?;
+```
+
 ## Workspace Layout
 
-18 library crates in `crates/`, 3 examples in `examples/`:
+17 library crates in `crates/`, 13 examples in `examples/`:
 
 | Crate | Description |
 |-------|-------------|
@@ -42,37 +83,30 @@ A Rust agent framework with LangChain-compatible architecture and Rust-native as
 | `synapse-eval` | `Evaluator` trait, 5 evaluators, `Dataset`, batch `evaluate()` |
 | `synapse` | Unified facade re-exporting all crates |
 
-## Quick Start
+## Examples
 
 ```bash
-# Build & test
-cargo build --workspace
-cargo test --workspace
-
-# Run examples
 cargo run -p tool_calling_basic   # Tool registry and execution
 cargo run -p memory_chat          # Session-based conversation memory
 cargo run -p react_basic          # ReAct agent with tool calling
+cargo run -p graph_visualization  # Graph state machine visualization
+cargo run -p lcel_chain           # LCEL pipe composition and parallel
+cargo run -p prompt_parser_chain  # Prompt template -> model -> parser
+cargo run -p streaming            # Streaming chat and runnables
+cargo run -p rag_pipeline         # RAG: load -> split -> embed -> retrieve
+cargo run -p memory_strategy      # Memory strategies comparison
+cargo run -p structured_output    # Structured output with JSON schema
+cargo run -p callbacks_tracing    # Callbacks and tracing
+cargo run -p evaluation           # Evaluator pipeline
+cargo run -p caching              # LLM response caching
 ```
 
-## Usage
+All examples use `ScriptedChatModel` and `FakeEmbeddings` — no API keys required.
 
-```rust
-use synapse::core::{ChatModel, Message, ChatRequest, ToolChoice};
-use synapse::runnables::{Runnable, RunnableLambda};
-use synapse::graph::{create_react_agent, MessageState};
+## Documentation
 
-// LCEL pipe composition
-let chain = step1.boxed() | step2.boxed() | step3.boxed();
-let result = chain.invoke(input, &config).await?;
-
-// ReAct agent
-let graph = create_react_agent(model, tools)?;
-let state = MessageState { messages: vec![Message::human("Hello")] };
-let result = graph.invoke(state).await?;
-```
-
-See [`examples/`](examples/) for complete runnable demos.
+- **Book**: [aimoverse.github.io/synapse](https://aimoverse.github.io/synapse) — tutorials, how-to guides, concepts
+- **API Reference**: [docs.rs/synapse](https://docs.rs/synapse) — full Rustdoc API documentation
 
 ## Design Principles
 
@@ -81,3 +115,11 @@ See [`examples/`](examples/) for complete runnable demos.
 - All traits are async via `#[async_trait]`, runtime is tokio
 - Type-erased composition via `BoxRunnable` with `|` pipe operator
 - `Arc<RwLock<_>>` for shared registries, session-keyed memory isolation
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines, or the [full guide](https://aimoverse.github.io/synapse/contributing.html).
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.

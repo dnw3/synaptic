@@ -12,6 +12,7 @@ use async_trait::async_trait;
 use synapse_core::{CallbackHandler, RunEvent, SynapseError};
 use tokio::sync::RwLock;
 
+/// A callback handler that records all received events for later inspection, useful for testing.
 #[derive(Default, Clone)]
 pub struct RecordingCallback {
     events: Arc<RwLock<Vec<RunEvent>>>,

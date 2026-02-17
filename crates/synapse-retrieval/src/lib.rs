@@ -19,6 +19,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use synapse_core::SynapseError;
 
+/// A document with content and metadata, used throughout the retrieval pipeline.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Document {
     pub id: String,
@@ -49,11 +50,13 @@ impl Document {
     }
 }
 
+/// Trait for retrieving relevant documents given a query string.
 #[async_trait]
 pub trait Retriever: Send + Sync {
     async fn retrieve(&self, query: &str, top_k: usize) -> Result<Vec<Document>, SynapseError>;
 }
 
+/// A simple retriever that stores documents in memory and returns all of them for any query.
 #[derive(Debug, Clone)]
 pub struct InMemoryRetriever {
     documents: Vec<Document>,

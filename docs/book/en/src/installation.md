@@ -8,13 +8,51 @@
 
 ## Adding Synapse to Your Project
 
-The `synapse` facade crate re-exports all sub-crates, so a single dependency gives you access to everything.
+The `synapse` facade crate re-exports all sub-crates. Use **feature flags** to control which modules are compiled.
+
+### Feature Flags
+
+Synapse provides fine-grained feature flags, similar to tokio:
+
+```toml
+[dependencies]
+# Full — everything enabled (equivalent to previous default)
+synapse = { version = "0.1", features = ["full"] }
+
+# Agent development (models, tools, graph, memory, etc.)
+synapse = { version = "0.1", features = ["agent"] }
+
+# RAG applications (retrieval, loaders, splitters, embeddings, vectorstores, etc.)
+synapse = { version = "0.1", features = ["rag"] }
+
+# Agent + RAG
+synapse = { version = "0.1", features = ["agent", "rag"] }
+
+# Minimal — just model calls
+synapse = { version = "0.1", features = ["models"] }
+
+# Fine-grained control
+synapse = { version = "0.1", features = ["models", "graph", "cache"] }
+```
+
+| Feature | Description |
+|---------|-------------|
+| **`default`** | `models`, `runnables`, `prompts`, `parsers`, `tools`, `callbacks` |
+| **`agent`** | `default` + `graph`, `memory` |
+| **`rag`** | `default` + `retrieval`, `loaders`, `splitters`, `embeddings`, `vectorstores` |
+| **`full`** | All features enabled |
+
+Individual features: `models`, `runnables`, `prompts`, `parsers`, `tools`, `memory`, `callbacks`, `retrieval`, `loaders`, `splitters`, `embeddings`, `vectorstores`, `graph`, `cache`, `eval`.
+
+The `core` module (traits and types) is always available regardless of feature selection.
+
+### Quick Start Examples
 
 **From a local checkout** (during development or before the crate is published):
 
 ```toml
 [dependencies]
-synapse = { path = "path/to/synapse/crates/synapse" }
+synapse = { path = "path/to/synapse/crates/synapse", features = ["agent"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -22,7 +60,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 ```toml
 [dependencies]
-synapse = "0.1"
+synapse = { version = "0.1", features = ["agent"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 

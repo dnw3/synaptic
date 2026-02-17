@@ -19,6 +19,7 @@ pub struct RetryPolicy {
     pub max_delay: Duration,
     /// Optional predicate to decide if an error is retryable.
     /// When `None`, all errors are retried.
+    #[allow(clippy::type_complexity)]
     retry_on: Option<Box<dyn Fn(&SynapseError) -> bool + Send + Sync>>,
 }
 

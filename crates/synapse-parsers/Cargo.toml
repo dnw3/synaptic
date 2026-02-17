@@ -1,10 +1,12 @@
 [package]
 name = "synapse-parsers"
+description = "Output parsers: String, JSON, Structured, List, Enum — all composable as Runnable"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
 authors.workspace = true
 rust-version.workspace = true
+repository.workspace = true
 
 [dependencies]
 async-trait.workspace = true

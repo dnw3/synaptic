@@ -56,3 +56,44 @@ async fn semantic_cache_miss_below_threshold() {
         .unwrap();
     assert!(result.is_none());
 }
+
+#[tokio::test]
+async fn semantic_cache_clear_removes_all() {
+    let embeddings = Arc::new(FakeEmbeddings::new(4));
+    let cache = SemanticCache::new(embeddings, 0.95);
+
+    cache.put("key1", &make_response("answer1")).await.unwrap();
+    cache.put("key2", &make_response("answer2")).await.unwrap();
+
+    // Both should be cached
+    assert!(cache.get("key1").await.unwrap().is_some());
+    assert!(cache.get("key2").await.unwrap().is_some());
+
+    // Clear all
+    cache.clear().await.unwrap();
+    assert!(cache.get("key1").await.unwrap().is_none());
+    assert!(cache.get("key2").await.unwrap().is_none());
+}
+
+#[tokio::test]
+async fn semantic_cache_multiple_entries() {
+    let embeddings = Arc::new(FakeEmbeddings::new(4));
+    let cache = SemanticCache::new(embeddings, 0.95);
+
+    cache
+        .put("What is Rust?", &make_response("Rust answer"))
+        .await
+        .unwrap();
+    cache
+        .put("What is Python?", &make_response("Python answer"))
+        .await
+        .unwrap();
+    cache
+        .put("What is Java?", &make_response("Java answer"))
+        .await
+        .unwrap();
+
+    let rust = cache.get("What is Rust?").await.unwrap();
+    assert!(rust.is_some());
+    assert_eq!(rust.unwrap().message.content(), "Rust answer");
+}

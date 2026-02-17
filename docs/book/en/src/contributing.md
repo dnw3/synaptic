@@ -71,7 +71,7 @@ Ensure everything compiles cleanly.
 
 - When adding a new feature or changing a public API, update the corresponding documentation page in `docs/book/en/src/`.
 - How-to guides go in `how-to/`, conceptual explanations in `concepts/`, and step-by-step walkthroughs in `tutorials/`.
-- If your change affects the project overview, update `CLAUDE.md` at the repository root.
+- If your change affects the project overview, update the README at the repository root.
 
 ### Tests
 

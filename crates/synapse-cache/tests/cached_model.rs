@@ -58,3 +58,55 @@ async fn cached_model_different_requests_not_cached() {
     let r2 = model.chat(req_b).await.unwrap();
     assert_eq!(r2.message.content(), "answer B");
 }
+
+#[tokio::test]
+async fn cached_model_with_ttl() {
+    use std::time::Duration;
+    use synapse_cache::InMemoryCache;
+
+    let scripted = Arc::new(ScriptedChatModel::new(vec![
+        make_response("first"),
+        make_response("second"),
+    ]));
+    let cache = Arc::new(InMemoryCache::with_ttl(Duration::from_millis(50)));
+    let model = CachedChatModel::new(scripted, cache);
+
+    let request = ChatRequest::new(vec![Message::human("hello")]);
+
+    let r1 = model.chat(request.clone()).await.unwrap();
+    assert_eq!(r1.message.content(), "first");
+
+    // Should be cached
+    let r2 = model.chat(request.clone()).await.unwrap();
+    assert_eq!(r2.message.content(), "first");
+
+    // Wait for TTL to expire
+    tokio::time::sleep(Duration::from_millis(100)).await;
+
+    // Now cache miss, should get second response
+    let r3 = model.chat(request).await.unwrap();
+    assert_eq!(r3.message.content(), "second");
+}
+
+#[tokio::test]
+async fn cached_model_with_tools_in_request() {
+    use synapse_core::ToolDefinition;
+
+    let scripted = Arc::new(ScriptedChatModel::new(vec![make_response("tool response")]));
+    let cache = Arc::new(InMemoryCache::new());
+    let model = CachedChatModel::new(scripted, cache);
+
+    let request =
+        ChatRequest::new(vec![Message::human("use tool")]).with_tools(vec![ToolDefinition {
+            name: "test_tool".to_string(),
+            description: "A test tool".to_string(),
+            parameters: serde_json::json!({"type": "object"}),
+        }]);
+
+    let r1 = model.chat(request.clone()).await.unwrap();
+    assert_eq!(r1.message.content(), "tool response");
+
+    // Same request with tools should hit cache
+    let r2 = model.chat(request).await.unwrap();
+    assert_eq!(r2.message.content(), "tool response");
+}

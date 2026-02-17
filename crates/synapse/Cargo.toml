@@ -1,25 +1,55 @@
 [package]
 name = "synapse"
+description = "A Rust agent framework with LangChain-compatible architecture"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
 authors.workspace = true
 rust-version.workspace = true
+repository.workspace = true
 
 [dependencies]
 synapse-core = { path = "../synapse-core" }
-synapse-models = { path = "../synapse-models" }
-synapse-runnables = { path = "../synapse-runnables" }
-synapse-prompts = { path = "../synapse-prompts" }
-synapse-parsers = { path = "../synapse-parsers" }
-synapse-tools = { path = "../synapse-tools" }
-synapse-memory = { path = "../synapse-memory" }
-synapse-callbacks = { path = "../synapse-callbacks" }
-synapse-retrieval = { path = "../synapse-retrieval" }
-synapse-loaders = { path = "../synapse-loaders" }
-synapse-splitters = { path = "../synapse-splitters" }
-synapse-embeddings = { path = "../synapse-embeddings" }
-synapse-vectorstores = { path = "../synapse-vectorstores" }
-synapse-graph = { path = "../synapse-graph" }
-synapse-cache = { path = "../synapse-cache" }
-synapse-eval = { path = "../synapse-eval" }
+synapse-models = { path = "../synapse-models", optional = true }
+synapse-runnables = { path = "../synapse-runnables", optional = true }
+synapse-prompts = { path = "../synapse-prompts", optional = true }
+synapse-parsers = { path = "../synapse-parsers", optional = true }
+synapse-tools = { path = "../synapse-tools", optional = true }
+synapse-memory = { path = "../synapse-memory", optional = true }
+synapse-callbacks = { path = "../synapse-callbacks", optional = true }
+synapse-retrieval = { path = "../synapse-retrieval", optional = true }
+synapse-loaders = { path = "../synapse-loaders", optional = true }
+synapse-splitters = { path = "../synapse-splitters", optional = true }
+synapse-embeddings = { path = "../synapse-embeddings", optional = true }
+synapse-vectorstores = { path = "../synapse-vectorstores", optional = true }
+synapse-graph = { path = "../synapse-graph", optional = true }
+synapse-cache = { path = "../synapse-cache", optional = true }
+synapse-eval = { path = "../synapse-eval", optional = true }
+
+[features]
+default = ["models", "runnables", "prompts", "parsers", "tools", "callbacks"]
+
+# Fine-grained features (one per sub-crate)
+models = ["dep:synapse-models"]
+runnables = ["dep:synapse-runnables"]
+prompts = ["runnables", "embeddings", "dep:synapse-prompts"]
+parsers = ["runnables", "dep:synapse-parsers"]
+tools = ["dep:synapse-tools"]
+memory = ["runnables", "dep:synapse-memory"]
+callbacks = ["dep:synapse-callbacks"]
+retrieval = ["embeddings", "dep:synapse-retrieval"]
+loaders = ["retrieval", "dep:synapse-loaders"]
+splitters = ["retrieval", "dep:synapse-splitters"]
+embeddings = ["models", "dep:synapse-embeddings"]
+vectorstores = ["embeddings", "retrieval", "dep:synapse-vectorstores"]
+graph = ["tools", "dep:synapse-graph"]
+cache = ["embeddings", "dep:synapse-cache"]
+eval = ["embeddings", "dep:synapse-eval"]
+
+# Composite features (by use-case)
+agent = ["default", "graph", "memory"]
+rag = ["default", "retrieval", "loaders", "splitters", "embeddings", "vectorstores"]
+full = ["default", "agent", "rag", "cache", "eval"]
+
+[dev-dependencies]
+tokio.workspace = true

@@ -1,10 +1,12 @@
 [package]
 name = "synapse-graph"
+description = "LangGraph-style state machine: StateGraph, CompiledGraph, ReAct agent, checkpointing"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
 authors.workspace = true
 rust-version.workspace = true
+repository.workspace = true
 
 [dependencies]
 async-trait.workspace = true

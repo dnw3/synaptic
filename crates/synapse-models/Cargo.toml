@@ -1,10 +1,12 @@
 [package]
 name = "synapse-models"
+description = "LLM provider adapters (OpenAI, Anthropic, Gemini, Ollama) with streaming and wrappers"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
 authors.workspace = true
 rust-version.workspace = true
+repository.workspace = true
 
 [dependencies]
 async-trait.workspace = true

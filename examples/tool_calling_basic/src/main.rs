@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde_json::json;
-use synapse_core::{SynapseError, Tool};
-use synapse_tools::{SerialToolExecutor, ToolRegistry};
+use synapse::core::{SynapseError, Tool};
+use synapse::tools::{SerialToolExecutor, ToolRegistry};
 
 struct EchoTool;
 

@@ -20,6 +20,7 @@ use async_trait::async_trait;
 use synapse_core::{MemoryStore, Message, SynapseError};
 use tokio::sync::RwLock;
 
+/// In-memory implementation of `MemoryStore`, storing messages keyed by session ID.
 #[derive(Default, Clone)]
 pub struct InMemoryStore {
     sessions: Arc<RwLock<HashMap<String, Vec<Message>>>>,

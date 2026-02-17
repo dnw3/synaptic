@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use synapse_core::{ChatModel, ChatRequest, ChatResponse, ChatStream, SynapseError, Tool};
-use synapse_graph::{MessageState, Node, StateGraph, END};
+use synapse::core::{ChatModel, ChatRequest, ChatResponse, ChatStream, SynapseError, Tool};
+use synapse::graph::{MessageState, Node, StateGraph, END};
 
 /// A dummy tool for demonstration.
 struct DummyTool;
@@ -50,7 +50,7 @@ async fn main() {
 
     let model: Arc<dyn ChatModel> = Arc::new(DummyModel);
     let tools: Vec<Arc<dyn Tool>> = vec![Arc::new(DummyTool)];
-    let react_graph = synapse_graph::create_react_agent(model, tools).unwrap();
+    let react_graph = synapse::graph::create_react_agent(model, tools).unwrap();
 
     println!("--- Mermaid ---");
     println!("{}\n", react_graph.draw_mermaid());

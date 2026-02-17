@@ -81,5 +81,5 @@ cargo doc --workspace --open
 cargo doc -p synapse-core --open
 
 # 包含私有项的文档（开发者参考）
-cargo doc --workspace --document-private-items --open
+cargo doc --workspace --open
 ```

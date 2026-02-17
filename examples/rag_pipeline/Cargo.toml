@@ -1,0 +1,9 @@
+[package]
+name = "rag_pipeline"
+edition.workspace = true
+version.workspace = true
+publish = false
+
+[dependencies]
+tokio.workspace = true
+synapse = { path = "../../crates/synapse", features = ["rag"] }

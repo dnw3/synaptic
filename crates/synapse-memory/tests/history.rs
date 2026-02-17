@@ -58,3 +58,80 @@ async fn runnable_with_message_history_loads_and_saves() {
     assert_eq!(messages[2].content(), "world");
     assert_eq!(messages[3].content(), "Echo: world");
 }
+
+#[tokio::test]
+async fn session_isolation() {
+    let store = Arc::new(InMemoryStore::new());
+    let inner = EchoRunnable.boxed();
+    let history = RunnableWithMessageHistory::new(inner, store.clone());
+
+    let config_a = RunnableConfig::default().with_metadata(
+        "session_id",
+        serde_json::Value::String("session-a".to_string()),
+    );
+    let config_b = RunnableConfig::default().with_metadata(
+        "session_id",
+        serde_json::Value::String("session-b".to_string()),
+    );
+
+    history
+        .invoke("hello-a".to_string(), &config_a)
+        .await
+        .unwrap();
+    history
+        .invoke("hello-b".to_string(), &config_b)
+        .await
+        .unwrap();
+
+    let msgs_a = store.load("session-a").await.unwrap();
+    let msgs_b = store.load("session-b").await.unwrap();
+    assert_eq!(msgs_a.len(), 2); // human + ai
+    assert_eq!(msgs_b.len(), 2);
+    assert_eq!(msgs_a[0].content(), "hello-a");
+    assert_eq!(msgs_b[0].content(), "hello-b");
+}
+
+#[tokio::test]
+async fn message_roles_preserved() {
+    let store = Arc::new(InMemoryStore::new());
+    let inner = EchoRunnable.boxed();
+    let history = RunnableWithMessageHistory::new(inner, store.clone());
+
+    let config = RunnableConfig::default().with_metadata(
+        "session_id",
+        serde_json::Value::String("roles-test".to_string()),
+    );
+
+    history.invoke("test".to_string(), &config).await.unwrap();
+
+    let msgs = store.load("roles-test").await.unwrap();
+    assert!(msgs[0].is_human());
+    assert!(msgs[1].is_ai());
+}
+
+#[tokio::test]
+async fn system_message_in_history() {
+    let store = Arc::new(InMemoryStore::new());
+
+    // Pre-populate with a system message
+    store
+        .append("sys-test", Message::system("You are helpful"))
+        .await
+        .unwrap();
+
+    let inner = EchoRunnable.boxed();
+    let history = RunnableWithMessageHistory::new(inner, store.clone());
+
+    let config = RunnableConfig::default().with_metadata(
+        "session_id",
+        serde_json::Value::String("sys-test".to_string()),
+    );
+
+    history.invoke("hi".to_string(), &config).await.unwrap();
+
+    let msgs = store.load("sys-test").await.unwrap();
+    assert_eq!(msgs.len(), 3); // system + human + ai
+    assert!(msgs[0].is_system());
+    assert!(msgs[1].is_human());
+    assert!(msgs[2].is_ai());
+}

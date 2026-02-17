@@ -9,13 +9,43 @@
 
 ### 使用 facade crate（推荐）
 
-最简单的方式是添加 `synapse` facade crate，它重新导出了所有子 crate：
+`synapse` facade crate 重新导出所有子 crate。使用 **feature flags** 控制编译哪些模块。
+
+### Feature Flags
+
+Synapse 提供类似 tokio 的细粒度 feature flags：
 
 ```toml
 [dependencies]
-synapse = "0.1"
-tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
+# 全量引入（等同之前的默认行为）
+synapse = { version = "0.1", features = ["full"] }
+
+# Agent 开发（自动包含 models, tools, graph, memory 等）
+synapse = { version = "0.1", features = ["agent"] }
+
+# RAG 应用（自动包含 retrieval, loaders, splitters, embeddings, vectorstores 等）
+synapse = { version = "0.1", features = ["rag"] }
+
+# Agent + RAG
+synapse = { version = "0.1", features = ["agent", "rag"] }
+
+# 最小化 — 只要模型调用
+synapse = { version = "0.1", features = ["models"] }
+
+# 精细控制
+synapse = { version = "0.1", features = ["models", "graph", "cache"] }
 ```
+
+| Feature | 说明 |
+|---------|------|
+| **`default`** | `models`, `runnables`, `prompts`, `parsers`, `tools`, `callbacks` |
+| **`agent`** | `default` + `graph`, `memory` |
+| **`rag`** | `default` + `retrieval`, `loaders`, `splitters`, `embeddings`, `vectorstores` |
+| **`full`** | 启用全部 features |
+
+单独可用的 features：`models`, `runnables`, `prompts`, `parsers`, `tools`, `memory`, `callbacks`, `retrieval`, `loaders`, `splitters`, `embeddings`, `vectorstores`, `graph`, `cache`, `eval`。
+
+`core` 模块（核心 trait 和类型）始终可用，不受 feature 选择影响。
 
 然后在代码中使用：
 
@@ -26,7 +56,7 @@ use synapse::models::OpenAiChatModel;
 
 ### 按需引入单个 crate
 
-如果你只需要特定功能，可以单独添加所需的 crate 以减少编译时间：
+如果你只需要特定功能，也可以单独添加所需的 crate：
 
 ```toml
 [dependencies]
@@ -44,8 +74,7 @@ tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 
 ```toml
 [dependencies]
-synapse-core = "0.1"
-synapse-models = "0.1"
+synapse = { version = "0.1", features = ["models"] }
 tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -53,12 +82,8 @@ tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 
 ```toml
 [dependencies]
-synapse-core = "0.1"
-synapse-models = "0.1"
-synapse-tools = "0.1"
-synapse-graph = "0.1"
+synapse = { version = "0.1", features = ["agent"] }
 tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
-serde_json = "1.0"
 async-trait = "0.1"
 ```
 
@@ -66,13 +91,7 @@ async-trait = "0.1"
 
 ```toml
 [dependencies]
-synapse-core = "0.1"
-synapse-models = "0.1"
-synapse-embeddings = "0.1"
-synapse-vectorstores = "0.1"
-synapse-retrieval = "0.1"
-synapse-loaders = "0.1"
-synapse-splitters = "0.1"
+synapse = { version = "0.1", features = ["rag"] }
 tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 ```
 
