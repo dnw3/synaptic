@@ -1,27 +1,27 @@
 # Quickstart
 
-This guide walks you through a minimal Synapse program that sends a chat request and prints the response. It uses `ScriptedChatModel`, a test double that returns pre-configured responses, so you do not need any API keys to run it.
+This guide walks you through a minimal Synaptic program that sends a chat request and prints the response. It uses `ScriptedChatModel`, a test double that returns pre-configured responses, so you do not need any API keys to run it.
 
 ## The Complete Example
 
 ```rust
-use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
+use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
 use synaptic::models::ScriptedChatModel;
 
 #[tokio::main]
-async fn main() -> Result<(), SynapseError> {
+async fn main() -> Result<(), SynapticError> {
     // 1. Create a scripted model with a predefined response.
     //    ScriptedChatModel returns responses in order, one per chat() call.
     let model = ScriptedChatModel::new(vec![
         ChatResponse {
-            message: Message::ai("Hello! I'm a Synapse assistant. How can I help you today?"),
+            message: Message::ai("Hello! I'm a Synaptic assistant. How can I help you today?"),
             usage: None,
         },
     ]);
 
     // 2. Build a chat request with a system prompt and a user message.
     let request = ChatRequest::new(vec![
-        Message::system("You are a helpful assistant built with Synapse."),
+        Message::system("You are a helpful assistant built with Synaptic."),
         Message::human("Hello! What are you?"),
     ]);
 
@@ -38,7 +38,7 @@ async fn main() -> Result<(), SynapseError> {
 Running this program prints:
 
 ```text
-Assistant: Hello! I'm a Synapse assistant. How can I help you today?
+Assistant: Hello! I'm a Synaptic assistant. How can I help you today?
 ```
 
 ## What is Happening

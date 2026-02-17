@@ -4,7 +4,7 @@ This guide shows how to use `stream()` to consume incremental output from an LCE
 
 ## Overview
 
-Every `Runnable` provides a `stream()` method that returns a `RunnableOutputStream` -- a pinned, boxed `Stream` of `Result<O, SynapseError>` items. This allows downstream consumers to process results as they become available, rather than waiting for the entire chain to finish.
+Every `Runnable` provides a `stream()` method that returns a `RunnableOutputStream` -- a pinned, boxed `Stream` of `Result<O, SynapticError>` items. This allows downstream consumers to process results as they become available, rather than waiting for the entire chain to finish.
 
 The default `stream()` implementation wraps `invoke()` as a single-item stream. Runnables that support true incremental output (such as LLM model adapters or `RunnableGenerator`) override `stream()` to yield items one at a time.
 

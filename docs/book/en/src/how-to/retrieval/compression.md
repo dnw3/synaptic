@@ -19,11 +19,11 @@ pub trait DocumentCompressor: Send + Sync {
         &self,
         documents: Vec<Document>,
         query: &str,
-    ) -> Result<Vec<Document>, SynapseError>;
+    ) -> Result<Vec<Document>, SynapticError>;
 }
 ```
 
-Synapse provides `EmbeddingsFilter` as a built-in compressor.
+Synaptic provides `EmbeddingsFilter` as a built-in compressor.
 
 ## EmbeddingsFilter
 
@@ -118,7 +118,7 @@ You can implement your own `DocumentCompressor` for other filtering strategies -
 ```rust
 use async_trait::async_trait;
 use synaptic_retrieval::{DocumentCompressor, Document};
-use synaptic_core::SynapseError;
+use synaptic_core::SynapticError;
 
 struct MyCompressor;
 
@@ -128,7 +128,7 @@ impl DocumentCompressor for MyCompressor {
         &self,
         documents: Vec<Document>,
         query: &str,
-    ) -> Result<Vec<Document>, SynapseError> {
+    ) -> Result<Vec<Document>, SynapticError> {
         // Your filtering logic here
         Ok(documents)
     }

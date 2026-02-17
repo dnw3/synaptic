@@ -4,7 +4,7 @@
 
 # Getting Started
 
-- [What is Synapse?](what-is-synapse.md)
+- [What is Synaptic?](what-is-synapse.md)
 - [Architecture Overview](architecture-overview.md)
 - [Installation](installation.md)
 - [Quickstart](quickstart.md)

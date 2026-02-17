@@ -74,13 +74,13 @@ By default, all errors trigger a retry. Use `with_retry_on()` to specify a predi
 
 ```rust
 use synaptic_runnables::RetryPolicy;
-use synaptic_core::SynapseError;
+use synaptic_core::SynapticError;
 
 let policy = RetryPolicy::default()
     .with_max_attempts(4)
-    .with_retry_on(|error: &SynapseError| {
+    .with_retry_on(|error: &SynapticError| {
         // Only retry provider errors (e.g., rate limits, timeouts)
-        matches!(error, SynapseError::Provider(_))
+        matches!(error, SynapticError::Provider(_))
     });
 ```
 
@@ -138,7 +138,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 use synaptic_runnables::{Runnable, RunnableRetry, RetryPolicy, RunnableLambda};
-use synaptic_core::{RunnableConfig, SynapseError};
+use synaptic_core::{RunnableConfig, SynapticError};
 
 // Simulate a flaky service that fails twice then succeeds
 let call_count = Arc::new(AtomicUsize::new(0));
@@ -149,7 +149,7 @@ let flaky = RunnableLambda::new(move |x: String| {
     async move {
         let n = counter.fetch_add(1, Ordering::SeqCst);
         if n < 2 {
-            Err(SynapseError::Provider("temporary failure".into()))
+            Err(SynapticError::Provider("temporary failure".into()))
         } else {
             Ok(format!("Success: {x}"))
         }

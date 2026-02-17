@@ -1,6 +1,6 @@
 # 架构
 
-Synapse 采用分层的 Cargo 工作区架构，由 17 个库 crate、1 个门面 crate 和若干示例二进制程序组成。每一层都在下层的基础上构建，职责清晰、边界明确。
+Synaptic 采用分层的 Cargo 工作区架构，由 17 个库 crate、1 个门面 crate 和若干示例二进制程序组成。每一层都在下层的基础上构建，职责清晰、边界明确。
 
 ## Crate 分层结构
 
@@ -34,8 +34,8 @@ Synapse 采用分层的 Cargo 工作区架构，由 17 个库 crate、1 个门�
 
 - **Trait**: `ChatModel`、`Tool`、`MemoryStore`、`CallbackHandler`
 - **类型**: `Message`、`ChatRequest`、`ChatResponse`、`ToolCall`、`ToolDefinition`、`ToolChoice`、`AIMessageChunk`、`TokenUsage`、`RunEvent`、`RunnableConfig`
-- **错误类型**: `SynapseError`（19 个变体，覆盖所有子系统）
-- **流类型**: `ChatStream`（`Pin<Box<dyn Stream<Item = Result<AIMessageChunk, SynapseError>> + Send>>`）
+- **错误类型**: `SynapticError`（19 个变体，覆盖所有子系统）
+- **流类型**: `ChatStream`（`Pin<Box<dyn Stream<Item = Result<AIMessageChunk, SynapticError>> + Send>>`）
 
 ### 实现层
 
@@ -119,7 +119,7 @@ use synaptic::graph::{StateGraph, create_react_agent};
    |      |      |       |       |       |       |
    +------+------+-------+-------+-------+-------+
    |              synaptic-core                    |
-   |  (ChatModel, Tool, Message, SynapseError, .)|
+   |  (ChatModel, Tool, Message, SynapticError, .)|
    +----------------------------------------------+
 ```
 
@@ -127,11 +127,11 @@ use synaptic::graph::{StateGraph, create_react_agent};
 
 ### 异步优先，基于 `#[async_trait]`
 
-Synapse 中的所有 trait 都是异步的。`ChatModel::chat()`、`Tool::call()`、`MemoryStore::load()` 和 `Runnable::invoke()` 全部是异步方法。这意味着你可以在任何实现中自由地 `await` 网络调用、数据库查询和并发操作，而不会阻塞运行时。框架使用 Tokio 作为异步运行时。
+Synaptic 中的所有 trait 都是异步的。`ChatModel::chat()`、`Tool::call()`、`MemoryStore::load()` 和 `Runnable::invoke()` 全部是异步方法。这意味着你可以在任何实现中自由地 `await` 网络调用、数据库查询和并发操作，而不会阻塞运行时。框架使用 Tokio 作为异步运行时。
 
 ### 基于 `Arc` 的共享
 
-Synapse 对注册表（如 `ToolRegistry`）使用 `Arc<RwLock<_>>`，允许多个读者并发访问；对有状态组件（如回调和内存存储）使用 `Arc<tokio::sync::Mutex<_>>`，确保写入操作串行化。这样可以在异步任务和 Agent 会话之间安全共享数据。
+Synaptic 对注册表（如 `ToolRegistry`）使用 `Arc<RwLock<_>>`，允许多个读者并发访问；对有状态组件（如回调和内存存储）使用 `Arc<tokio::sync::Mutex<_>>`，确保写入操作串行化。这样可以在异步任务和 Agent 会话之间安全共享数据。
 
 ### 基于 `session_id` 的会话隔离
 
@@ -143,11 +143,11 @@ Synapse 对注册表（如 `ToolRegistry`）使用 `Arc<RwLock<_>>`，允许多�
 
 ### 类型化错误处理
 
-`SynapseError` 为每个子系统定义了独立的变体（`Prompt`、`Model`、`Tool`、`Memory`、`Graph` 等）。这使得针对特定故障模式进行匹配和提供定向恢复逻辑变得简单直观。
+`SynapticError` 为每个子系统定义了独立的变体（`Prompt`、`Model`、`Tool`、`Memory`、`Graph` 等）。这使得针对特定故障模式进行匹配和提供定向恢复逻辑变得简单直观。
 
 ### 组合优于继承
 
-Synapse 倾向于组合而非深层 trait 继承。`CachedChatModel` 包装任意 `ChatModel`，`RetryChatModel` 包装任意 `ChatModel`，`RunnableWithFallbacks` 包装任意 `Runnable`。你通过包装来叠加行为，而不是通过继承基类来扩展功能。
+Synaptic 倾向于组合而非深层 trait 继承。`CachedChatModel` 包装任意 `ChatModel`，`RetryChatModel` 包装任意 `ChatModel`，`RunnableWithFallbacks` 包装任意 `Runnable`。你通过包装来叠加行为，而不是通过继承基类来扩展功能。
 
 ## Provider 适配
 

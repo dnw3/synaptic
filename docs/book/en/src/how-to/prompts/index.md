@@ -1,6 +1,6 @@
 # Prompts
 
-Synapse provides two levels of prompt template:
+Synaptic provides two levels of prompt template:
 
 - **`PromptTemplate`** -- simple string interpolation with `{{ variable }}` syntax. Takes a `HashMap<String, String>` and returns a rendered `String`.
 - **`ChatPromptTemplate`** -- produces a `Vec<Message>` from a sequence of `MessageTemplate` entries. Each entry can be a system, human, or AI message template, or a `Placeholder` that injects an existing list of messages.

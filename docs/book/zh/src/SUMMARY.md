@@ -4,7 +4,7 @@
 
 # 入门
 
-- [什么是 Synapse？](what-is-synapse.md)
+- [什么是 Synaptic？](what-is-synapse.md)
 - [架构概览](architecture-overview.md)
 - [安装](installation.md)
 - [快速开始](quickstart.md)

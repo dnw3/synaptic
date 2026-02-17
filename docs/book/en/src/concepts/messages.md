@@ -1,6 +1,6 @@
 # Messages
 
-Messages are the fundamental unit of communication in Synapse. Every interaction with an LLM -- whether a simple question, a multi-turn conversation, a tool call, or a streaming response -- is expressed as a sequence of messages. This page explains the message system's design, its variants, and the utilities that operate on message sequences.
+Messages are the fundamental unit of communication in Synaptic. Every interaction with an LLM -- whether a simple question, a multi-turn conversation, a tool call, or a streaming response -- is expressed as a sequence of messages. This page explains the message system's design, its variants, and the utilities that operate on message sequences.
 
 ## Message as a Tagged Enum
 
@@ -23,7 +23,7 @@ An enum makes it impossible to construct an invalid message. An AI message alway
 
 ## Creating Messages
 
-Synapse provides factory methods rather than exposing struct literals. This keeps the API stable even as internal fields are added:
+Synaptic provides factory methods rather than exposing struct literals. This keeps the API stable even as internal fields are added:
 
 ```rust
 use synaptic::core::Message;
@@ -153,7 +153,7 @@ Content blocks are carried alongside the `content` string field, allowing messag
 
 ## Message Utility Functions
 
-Synapse provides four utility functions for working with message sequences:
+Synaptic provides four utility functions for working with message sequences:
 
 ### filter_messages
 
@@ -233,4 +233,4 @@ Messages serialize as JSON with a `role` discriminator field:
 
 The AI variant serializes its role as `"assistant"` (matching OpenAI convention), while `role()` returns `"assistant"` at runtime as well. Empty collections and None optionals are omitted from serialization via `skip_serializing_if` attributes.
 
-This serialization format is compatible with LangChain's message schema, making it straightforward to exchange message histories between Synapse and Python-based systems.
+This serialization format is compatible with LangChain's message schema, making it straightforward to exchange message histories between Synaptic and Python-based systems.

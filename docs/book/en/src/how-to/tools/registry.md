@@ -12,7 +12,7 @@
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapseError};
+use synaptic_core::{Tool, SynapticError};
 use synaptic_tools::ToolRegistry;
 
 struct EchoTool;
@@ -21,7 +21,7 @@ struct EchoTool;
 impl Tool for EchoTool {
     fn name(&self) -> &'static str { "echo" }
     fn description(&self) -> &'static str { "Echo back the input" }
-    async fn call(&self, args: Value) -> Result<Value, SynapseError> {
+    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
         Ok(json!({"echo": args}))
     }
 }
@@ -66,15 +66,15 @@ The `execute()` method:
 
 1. Looks up the tool by name in the registry.
 2. Calls `tool.call(args)` with the provided arguments.
-3. Returns the result or `SynapseError::ToolNotFound` if the tool does not exist.
+3. Returns the result or `SynapticError::ToolNotFound` if the tool does not exist.
 
 ### Handling Unknown Tools
 
-If you call `execute()` with a name that is not registered, it returns `SynapseError::ToolNotFound`:
+If you call `execute()` with a name that is not registered, it returns `SynapticError::ToolNotFound`:
 
 ```rust
 let err = executor.execute("nonexistent", json!({})).await.unwrap_err();
-assert!(matches!(err, synaptic_core::SynapseError::ToolNotFound(name) if name == "nonexistent"));
+assert!(matches!(err, synaptic_core::SynapticError::ToolNotFound(name) if name == "nonexistent"));
 ```
 
 ## Complete Example
@@ -85,7 +85,7 @@ Here is a full example that registers multiple tools and executes them:
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapseError};
+use synaptic_core::{Tool, SynapticError};
 use synaptic_tools::{ToolRegistry, SerialToolExecutor};
 
 struct AddTool;
@@ -94,7 +94,7 @@ struct AddTool;
 impl Tool for AddTool {
     fn name(&self) -> &'static str { "add" }
     fn description(&self) -> &'static str { "Add two numbers" }
-    async fn call(&self, args: Value) -> Result<Value, SynapseError> {
+    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
         let a = args["a"].as_f64().unwrap_or(0.0);
         let b = args["b"].as_f64().unwrap_or(0.0);
         Ok(json!({"result": a + b}))
@@ -107,7 +107,7 @@ struct MultiplyTool;
 impl Tool for MultiplyTool {
     fn name(&self) -> &'static str { "multiply" }
     fn description(&self) -> &'static str { "Multiply two numbers" }
-    async fn call(&self, args: Value) -> Result<Value, SynapseError> {
+    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
         let a = args["a"].as_f64().unwrap_or(0.0);
         let b = args["b"].as_f64().unwrap_or(0.0);
         Ok(json!({"result": a * b}))
@@ -115,7 +115,7 @@ impl Tool for MultiplyTool {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), SynapseError> {
+async fn main() -> Result<(), SynapticError> {
     let registry = ToolRegistry::new();
     registry.register(Arc::new(AddTool))?;
     registry.register(Arc::new(MultiplyTool))?;

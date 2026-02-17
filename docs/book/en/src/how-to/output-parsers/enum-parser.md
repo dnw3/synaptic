@@ -28,7 +28,7 @@ assert_eq!(result, "positive");
 
 ## Validation
 
-The parser trims whitespace from the input before checking. If the trimmed input does not match any allowed value, it returns `Err(SynapseError::Parsing(...))`:
+The parser trims whitespace from the input before checking. If the trimmed input does not match any allowed value, it returns `Err(SynapticError::Parsing(...))`:
 
 ```rust
 use synaptic_parsers::EnumOutputParser;

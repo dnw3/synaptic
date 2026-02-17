@@ -1,6 +1,6 @@
 # Streaming
 
-LLM responses can take seconds to generate. Without streaming, the user sees nothing until the entire response is complete. Streaming delivers tokens as they are produced, reducing perceived latency and enabling real-time UIs. This page explains how streaming works across Synapse's layers -- from individual model calls through LCEL chains to graph execution.
+LLM responses can take seconds to generate. Without streaming, the user sees nothing until the entire response is complete. Streaming delivers tokens as they are produced, reducing perceived latency and enabling real-time UIs. This page explains how streaming works across Synaptic's layers -- from individual model calls through LCEL chains to graph execution.
 
 ## Model-Level Streaming
 
@@ -9,7 +9,7 @@ The `ChatModel` trait provides two methods:
 ```rust
 #[async_trait]
 pub trait ChatModel: Send + Sync {
-    async fn chat(&self, request: ChatRequest) -> Result<ChatResponse, SynapseError>;
+    async fn chat(&self, request: ChatRequest) -> Result<ChatResponse, SynapticError>;
 
     fn stream_chat(&self, request: ChatRequest) -> ChatStream<'_>;
 }
@@ -19,7 +19,7 @@ pub trait ChatModel: Send + Sync {
 
 ```rust
 pub type ChatStream<'a> =
-    Pin<Box<dyn Stream<Item = Result<AIMessageChunk, SynapseError>> + Send + 'a>>;
+    Pin<Box<dyn Stream<Item = Result<AIMessageChunk, SynapticError>> + Send + 'a>>;
 ```
 
 This is a pinned, boxed, async stream of `AIMessageChunk` values. Each chunk contains a fragment of the response -- typically a few tokens of text, part of a tool call, or usage information.

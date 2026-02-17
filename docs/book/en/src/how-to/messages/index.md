@@ -1,6 +1,6 @@
 # Messages
 
-Messages are the fundamental unit of communication in Synapse. Every interaction with a chat model is expressed as a sequence of `Message` values, and every response comes back as a `Message`.
+Messages are the fundamental unit of communication in Synaptic. Every interaction with a chat model is expressed as a sequence of `Message` values, and every response comes back as a `Message`.
 
 The `Message` enum is defined in `synaptic_core` and uses a tagged union with six variants: `System`, `Human`, `AI`, `Tool`, `Chat`, and `Remove`. You create messages through factory methods rather than struct literals.
 

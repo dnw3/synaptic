@@ -21,7 +21,7 @@ Create a `ToolNode` by providing a `SerialToolExecutor` with registered tools:
 ```rust
 use synaptic_graph::ToolNode;
 use synaptic_tools::{ToolRegistry, SerialToolExecutor};
-use synaptic_core::{Tool, ToolDefinition, SynapseError};
+use synaptic_core::{Tool, ToolDefinition, SynapticError};
 use async_trait::async_trait;
 use serde_json::Value;
 use std::sync::Arc;
@@ -45,7 +45,7 @@ impl Tool for CalculatorTool {
         }
     }
 
-    async fn call(&self, args: Value) -> Result<Value, SynapseError> {
+    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
         let expr = args["expression"].as_str().unwrap_or("0");
         Ok(Value::String(format!("Result: {expr}")))
     }
@@ -128,7 +128,7 @@ This is exactly the pattern that `create_react_agent()` implements automatically
 
 ## `create_react_agent`
 
-For convenience, Synapse provides a factory function that assembles the standard ReAct agent graph:
+For convenience, Synaptic provides a factory function that assembles the standard ReAct agent graph:
 
 ```rust
 use synaptic_graph::create_react_agent;

@@ -43,8 +43,8 @@ The delay between retries follows exponential backoff: `base_delay * 2^attempt`.
 | 4th retry | 1600ms |
 
 Only retryable errors trigger retries:
-- `SynapseError::RateLimit` -- the provider returned a rate limit response.
-- `SynapseError::Timeout` -- the request timed out.
+- `SynapticError::RateLimit` -- the provider returned a rate limit response.
+- `SynapticError::Timeout` -- the request timed out.
 
 All other errors are returned immediately without retrying.
 

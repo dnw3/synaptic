@@ -4,7 +4,7 @@ Instead of waiting for the entire graph to finish, you can **stream** execution 
 
 ## `stream()` and `StreamMode`
 
-The `stream()` method on `CompiledGraph` returns a `GraphStream` -- a `Pin<Box<dyn Stream>>` that yields `Result<GraphEvent<S>, SynapseError>` values:
+The `stream()` method on `CompiledGraph` returns a `GraphStream` -- a `Pin<Box<dyn Stream>>` that yields `Result<GraphEvent<S>, SynapticError>` values:
 
 ```rust
 use synaptic_graph::{StateGraph, FnNode, MessageState, StreamMode, GraphEvent, END};

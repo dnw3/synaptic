@@ -1,4 +1,4 @@
-# Synapse
+# Synaptic
 
 [![CI](https://github.com/dnw3/synaptic/actions/workflows/ci.yml/badge.svg)](https://github.com/dnw3/synaptic/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/synaptic.svg)](https://crates.io/crates/synaptic)
@@ -65,7 +65,7 @@ let result = graph.invoke(state).await?;
 
 | Crate | Description |
 |-------|-------------|
-| `synaptic-core` | Shared traits and types: `ChatModel`, `Message`, `ToolChoice`, `SynapseError` |
+| `synaptic-core` | Shared traits and types: `ChatModel`, `Message`, `ToolChoice`, `SynapticError` |
 | `synaptic-models` | LLM provider adapters + retry/rate-limit/structured-output wrappers |
 | `synaptic-runnables` | LCEL: `Runnable`, `BoxRunnable`, pipe, Lambda, Parallel, Branch, Assign, Pick, Fallbacks |
 | `synaptic-prompts` | `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate` |

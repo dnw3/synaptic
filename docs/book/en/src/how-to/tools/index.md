@@ -1,6 +1,6 @@
 # Tools
 
-Tools give LLMs the ability to take actions in the world -- calling APIs, querying databases, performing calculations, or any other side effect. Synapse provides a complete tool system built around the `Tool` trait defined in `synaptic-core`.
+Tools give LLMs the ability to take actions in the world -- calling APIs, querying databases, performing calculations, or any other side effect. Synaptic provides a complete tool system built around the `Tool` trait defined in `synaptic-core`.
 
 ## Key Components
 
@@ -27,7 +27,7 @@ Tools give LLMs the ability to take actions in the world -- calling APIs, queryi
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapseError};
+use synaptic_core::{Tool, SynapticError};
 use synaptic_tools::{ToolRegistry, SerialToolExecutor};
 
 struct AddTool;
@@ -36,7 +36,7 @@ struct AddTool;
 impl Tool for AddTool {
     fn name(&self) -> &'static str { "add" }
     fn description(&self) -> &'static str { "Add two numbers" }
-    async fn call(&self, args: Value) -> Result<Value, SynapseError> {
+    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
         let a = args["a"].as_f64().unwrap_or(0.0);
         let b = args["b"].as_f64().unwrap_or(0.0);
         Ok(json!({"result": a + b}))

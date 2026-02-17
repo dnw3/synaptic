@@ -1,6 +1,6 @@
 # Custom Tools
 
-Every tool in Synapse implements the `Tool` trait from `synaptic-core`. This page shows how to define your own tools.
+Every tool in Synaptic implements the `Tool` trait from `synaptic-core`. This page shows how to define your own tools.
 
 ## The Tool Trait
 
@@ -9,7 +9,7 @@ The `Tool` trait requires three methods:
 ```rust
 use async_trait::async_trait;
 use serde_json::Value;
-use synaptic_core::SynapseError;
+use synaptic_core::SynapticError;
 
 #[async_trait]
 pub trait Tool: Send + Sync {
@@ -20,7 +20,7 @@ pub trait Tool: Send + Sync {
     fn description(&self) -> &'static str;
 
     /// Execute the tool with the given JSON arguments and return a JSON result.
-    async fn call(&self, args: Value) -> Result<Value, SynapseError>;
+    async fn call(&self, args: Value) -> Result<Value, SynapticError>;
 }
 ```
 
@@ -31,7 +31,7 @@ Here is a complete example of a weather tool:
 ```rust
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapseError};
+use synaptic_core::{Tool, SynapticError};
 
 struct WeatherTool;
 
@@ -45,7 +45,7 @@ impl Tool for WeatherTool {
         "Get the current weather for a location"
     }
 
-    async fn call(&self, args: Value) -> Result<Value, SynapseError> {
+    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
         let location = args["location"]
             .as_str()
             .unwrap_or("unknown");
@@ -69,12 +69,12 @@ Key points:
 
 ## Error Handling
 
-Return `SynapseError::Tool(...)` for tool-specific errors:
+Return `SynapticError::Tool(...)` for tool-specific errors:
 
 ```rust
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapseError};
+use synaptic_core::{Tool, SynapticError};
 
 struct DivisionTool;
 
@@ -88,14 +88,14 @@ impl Tool for DivisionTool {
         "Divide two numbers"
     }
 
-    async fn call(&self, args: Value) -> Result<Value, SynapseError> {
+    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
         let a = args["a"].as_f64()
-            .ok_or_else(|| SynapseError::Tool("missing argument 'a'".to_string()))?;
+            .ok_or_else(|| SynapticError::Tool("missing argument 'a'".to_string()))?;
         let b = args["b"].as_f64()
-            .ok_or_else(|| SynapseError::Tool("missing argument 'b'".to_string()))?;
+            .ok_or_else(|| SynapticError::Tool("missing argument 'b'".to_string()))?;
 
         if b == 0.0 {
-            return Err(SynapseError::Tool("division by zero".to_string()));
+            return Err(SynapticError::Tool("division by zero".to_string()));
         }
 
         Ok(json!({"result": a / b}))

@@ -1,6 +1,6 @@
 # Vector Stores
 
-This guide shows how to store and search document embeddings using Synapse's `VectorStore` trait and the built-in `InMemoryVectorStore`.
+This guide shows how to store and search document embeddings using Synaptic's `VectorStore` trait and the built-in `InMemoryVectorStore`.
 
 ## Overview
 
@@ -11,21 +11,21 @@ The `VectorStore` trait from `synaptic_vectorstores` provides methods for adding
 pub trait VectorStore: Send + Sync {
     async fn add_documents(
         &self, docs: Vec<Document>, embeddings: &dyn Embeddings,
-    ) -> Result<Vec<String>, SynapseError>;
+    ) -> Result<Vec<String>, SynapticError>;
 
     async fn similarity_search(
         &self, query: &str, k: usize, embeddings: &dyn Embeddings,
-    ) -> Result<Vec<Document>, SynapseError>;
+    ) -> Result<Vec<Document>, SynapticError>;
 
     async fn similarity_search_with_score(
         &self, query: &str, k: usize, embeddings: &dyn Embeddings,
-    ) -> Result<Vec<(Document, f32)>, SynapseError>;
+    ) -> Result<Vec<(Document, f32)>, SynapticError>;
 
     async fn similarity_search_by_vector(
         &self, embedding: &[f32], k: usize,
-    ) -> Result<Vec<Document>, SynapseError>;
+    ) -> Result<Vec<Document>, SynapticError>;
 
-    async fn delete(&self, ids: &[&str]) -> Result<(), SynapseError>;
+    async fn delete(&self, ids: &[&str]) -> Result<(), SynapticError>;
 }
 ```
 
@@ -142,7 +142,7 @@ let results = store.max_marginal_relevance_search(
 
 ## VectorStoreRetriever
 
-`VectorStoreRetriever` bridges any `VectorStore` to the `Retriever` trait, making it compatible with the rest of Synapse's retrieval infrastructure.
+`VectorStoreRetriever` bridges any `VectorStore` to the `Retriever` trait, making it compatible with the rest of Synaptic's retrieval infrastructure.
 
 ```rust
 use std::sync::Arc;

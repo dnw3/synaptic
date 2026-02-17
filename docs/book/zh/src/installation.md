@@ -2,7 +2,7 @@
 
 ## 前置要求
 
-- **Rust 1.78 或更高版本** -- Synapse 的最低支持 Rust 版本（MSRV）为 1.78。使用 `rustup update` 更新你的工具链。
+- **Rust 1.78 或更高版本** -- Synaptic 的最低支持 Rust 版本（MSRV）为 1.78。使用 `rustup update` 更新你的工具链。
 - **Cargo** -- Rust 的包管理器，随 Rust 一起安装。
 
 ## 添加依赖
@@ -13,7 +13,7 @@
 
 ### Feature Flags
 
-Synapse 提供类似 tokio 的细粒度 feature flags：
+Synaptic 提供类似 tokio 的细粒度 feature flags：
 
 ```toml
 [dependencies]
@@ -120,8 +120,8 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 创建一个新项目并验证安装是否成功：
 
 ```bash
-cargo new my-synapse-app
-cd my-synapse-app
+cargo new my-synaptic-app
+cd my-synaptic-app
 ```
 
 在 `Cargo.toml` 中添加依赖后，运行：
@@ -130,4 +130,4 @@ cd my-synapse-app
 cargo build
 ```
 
-如果编译成功，说明安装完成。接下来可以前往[快速开始](quickstart.md)编写你的第一个 Synapse 程序。
+如果编译成功，说明安装完成。接下来可以前往[快速开始](quickstart.md)编写你的第一个 Synaptic 程序。

@@ -1,14 +1,14 @@
 # Architecture
 
-Synapse is organized as a workspace of focused Rust crates. Each crate owns exactly one concern, and they compose together through shared traits defined in a single core crate. This page explains the layered design, the principles behind it, and how the crates depend on each other.
+Synaptic is organized as a workspace of focused Rust crates. Each crate owns exactly one concern, and they compose together through shared traits defined in a single core crate. This page explains the layered design, the principles behind it, and how the crates depend on each other.
 
 ## Design Principles
 
-**Async-first.** Every trait in Synapse is async via `#[async_trait]`, and the runtime is tokio. This is not an afterthought bolted onto a synchronous API -- async is the foundation. LLM calls, tool execution, memory access, and embedding queries are all naturally asynchronous operations, and Synapse models them as such from the start.
+**Async-first.** Every trait in Synaptic is async via `#[async_trait]`, and the runtime is tokio. This is not an afterthought bolted onto a synchronous API -- async is the foundation. LLM calls, tool execution, memory access, and embedding queries are all naturally asynchronous operations, and Synaptic models them as such from the start.
 
 **One crate, one concern.** The `synaptic-models` crate knows how to talk to LLM providers. The `synaptic-tools` crate knows how to register and execute tools. The `synaptic-memory` crate knows how to store and retrieve conversation history. No crate does two jobs. This keeps compile times manageable, makes it possible to use only what you need, and ensures that changes to one subsystem do not cascade across the codebase.
 
-**Shared traits in core.** The `synaptic-core` crate defines every trait and type that crosses crate boundaries: `ChatModel`, `Tool`, `MemoryStore`, `CallbackHandler`, `Message`, `ChatRequest`, `ChatResponse`, `ToolCall`, `SynapseError`, `RunnableConfig`, and more. Implementation crates depend on core, never on each other (unless composition requires it).
+**Shared traits in core.** The `synaptic-core` crate defines every trait and type that crosses crate boundaries: `ChatModel`, `Tool`, `MemoryStore`, `CallbackHandler`, `Message`, `ChatRequest`, `ChatResponse`, `ToolCall`, `SynapticError`, `RunnableConfig`, and more. Implementation crates depend on core, never on each other (unless composition requires it).
 
 **Concurrency-safe by default.** Shared registries use `Arc<RwLock<_>>` (standard library `RwLock` for low-contention read-heavy data like tool registries). Mutable state that requires async access -- callbacks, memory stores, checkpointers -- uses `Arc<tokio::sync::Mutex<_>>` or `Arc<tokio::sync::RwLock<_>>`. All core traits require `Send + Sync`.
 
@@ -18,7 +18,7 @@ Synapse is organized as a workspace of focused Rust crates. Each crate owns exac
 
 ## The Four Layers
 
-Synapse's crates fall into four layers, each building on the ones below it.
+Synaptic's crates fall into four layers, each building on the ones below it.
 
 ### Layer 1: Core
 
@@ -27,10 +27,10 @@ Synapse's crates fall into four layers, each building on the ones below it.
 - **Traits**: `ChatModel`, `Tool`, `MemoryStore`, `CallbackHandler`
 - **Message types**: The `Message` enum (System, Human, AI, Tool, Chat, Remove), `AIMessageChunk` for streaming, `ToolCall`, `ToolDefinition`, `ToolChoice`
 - **Request/response**: `ChatRequest`, `ChatResponse`, `TokenUsage`
-- **Streaming**: The `ChatStream` type alias (`Pin<Box<dyn Stream<Item = Result<AIMessageChunk, SynapseError>> + Send>>`)
+- **Streaming**: The `ChatStream` type alias (`Pin<Box<dyn Stream<Item = Result<AIMessageChunk, SynapticError>> + Send>>`)
 - **Configuration**: `RunnableConfig` (tags, metadata, concurrency limits, run IDs)
 - **Events**: `RunEvent` enum with six lifecycle variants
-- **Errors**: `SynapseError` enum with 19 variants spanning all subsystems
+- **Errors**: `SynapticError` enum with 19 variants spanning all subsystems
 
 Every other crate in the workspace depends on `synaptic-core`. Nothing depends on `synaptic-core` except through this single shared foundation.
 
@@ -69,7 +69,7 @@ The `synaptic` crate re-exports everything from all sub-crates under a unified n
 
 ```toml
 [dependencies]
-synaptic = { path = "crates/synapse" }
+synaptic = { path = "crates/synaptic" }
 ```
 
 And then import from organized modules:

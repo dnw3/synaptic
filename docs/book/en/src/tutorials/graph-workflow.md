@@ -1,10 +1,10 @@
 # Build a Graph Workflow
 
-This tutorial walks you through building a custom multi-step workflow using Synapse's LangGraph-style state graph. You will learn how to define nodes, wire them with edges, stream execution events, add conditional routing, and visualize the graph.
+This tutorial walks you through building a custom multi-step workflow using Synaptic's LangGraph-style state graph. You will learn how to define nodes, wire them with edges, stream execution events, add conditional routing, and visualize the graph.
 
 ## Prerequisites
 
-Add the required Synapse crates to your `Cargo.toml`:
+Add the required Synaptic crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
@@ -19,7 +19,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 ## How State Graphs Work
 
-A Synapse state graph is a directed graph where:
+A Synaptic state graph is a directed graph where:
 
 - **Nodes** are processing steps. Each node takes the current state, transforms it, and returns the new state.
 - **Edges** connect nodes. Fixed edges always route to the same target; conditional edges choose the target at runtime based on the state.
@@ -77,14 +77,14 @@ A node is any type that implements the `Node<S>` trait. The trait has a single a
 
 ```rust
 use async_trait::async_trait;
-use synaptic_core::{Message, SynapseError};
+use synaptic_core::{Message, SynapticError};
 use synaptic_graph::{MessageState, Node};
 
 struct GreetNode;
 
 #[async_trait]
 impl Node<MessageState> for GreetNode {
-    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapseError> {
+    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapticError> {
         state.messages.push(Message::ai("Hello! Let me help you."));
         Ok(state)
     }
@@ -94,7 +94,7 @@ struct ProcessNode;
 
 #[async_trait]
 impl Node<MessageState> for ProcessNode {
-    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapseError> {
+    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapticError> {
         state.messages.push(Message::ai("Processing your request..."));
         Ok(state)
     }
@@ -104,7 +104,7 @@ struct FinalizeNode;
 
 #[async_trait]
 impl Node<MessageState> for FinalizeNode {
-    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapseError> {
+    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapticError> {
         state.messages.push(Message::ai("Done! Here's the result."));
         Ok(state)
     }
@@ -305,14 +305,14 @@ Here is the full program combining all the concepts:
 use std::collections::HashMap;
 use async_trait::async_trait;
 use futures::StreamExt;
-use synaptic_core::{Message, SynapseError};
+use synaptic_core::{Message, SynapticError};
 use synaptic_graph::{MessageState, Node, StateGraph, StreamMode, END};
 
 struct GreetNode;
 
 #[async_trait]
 impl Node<MessageState> for GreetNode {
-    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapseError> {
+    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapticError> {
         state.messages.push(Message::ai("Hello! Let me help you."));
         Ok(state)
     }
@@ -322,7 +322,7 @@ struct ProcessNode;
 
 #[async_trait]
 impl Node<MessageState> for ProcessNode {
-    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapseError> {
+    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapticError> {
         state.messages.push(Message::ai("Processing your request..."));
         Ok(state)
     }
@@ -332,14 +332,14 @@ struct FinalizeNode;
 
 #[async_trait]
 impl Node<MessageState> for FinalizeNode {
-    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapseError> {
+    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapticError> {
         state.messages.push(Message::ai("Done! Here's the result."));
         Ok(state)
     }
 }
 
 #[tokio::main]
-async fn main() -> Result<(), SynapseError> {
+async fn main() -> Result<(), SynapticError> {
     // Build the graph with a conditional loop
     let graph = StateGraph::new()
         .add_node("greet", GreetNode)

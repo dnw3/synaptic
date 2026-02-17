@@ -1,6 +1,6 @@
 # Runnables & LCEL
 
-The LangChain Expression Language (LCEL) is a composition system for building data processing pipelines. In Synapse, this is implemented through the `Runnable` trait and a set of combinators that let you pipe, branch, parallelize, retry, and stream operations. This page explains the design and the key types.
+The LangChain Expression Language (LCEL) is a composition system for building data processing pipelines. In Synaptic, this is implemented through the `Runnable` trait and a set of combinators that let you pipe, branch, parallelize, retry, and stream operations. This page explains the design and the key types.
 
 ## The Runnable Trait
 
@@ -13,9 +13,9 @@ where
     I: Send + 'static,
     O: Send + 'static,
 {
-    async fn invoke(&self, input: I, config: &RunnableConfig) -> Result<O, SynapseError>;
+    async fn invoke(&self, input: I, config: &RunnableConfig) -> Result<O, SynapticError>;
 
-    async fn batch(&self, inputs: Vec<I>, config: &RunnableConfig) -> Vec<Result<O, SynapseError>>;
+    async fn batch(&self, inputs: Vec<I>, config: &RunnableConfig) -> Vec<Result<O, SynapticError>>;
 
     fn stream<'a>(&'a self, input: I, config: &'a RunnableConfig) -> RunnableOutputStream<'a, O>;
 
@@ -222,7 +222,7 @@ This means a chain like `prompt | model | parser` will stream the model's output
 
 ## Everything Is a Runnable
 
-Synapse's LCEL design means that many types across the framework implement `Runnable`:
+Synaptic's LCEL design means that many types across the framework implement `Runnable`:
 
 - **Prompt templates** (`ChatPromptTemplate`) implement `Runnable<Value, Vec<Message>>` -- they take template variables and produce messages.
 - **Output parsers** (`StrOutputParser`, `JsonOutputParser`, etc.) implement `Runnable` -- they transform one output format to another.

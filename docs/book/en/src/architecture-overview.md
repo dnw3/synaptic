@@ -1,6 +1,6 @@
 # Architecture Overview
 
-Synapse is organized as a Cargo workspace with 17 library crates, 1 facade crate, and several example binaries. The crates form a layered architecture where each layer builds on the one below it.
+Synaptic is organized as a Cargo workspace with 17 library crates, 1 facade crate, and several example binaries. The crates form a layered architecture where each layer builds on the one below it.
 
 ## Crate Layers
 
@@ -10,8 +10,8 @@ Synapse is organized as a Cargo workspace with 17 library crates, 1 facade crate
 
 - Traits: `ChatModel`, `Tool`, `MemoryStore`, `CallbackHandler`
 - Types: `Message`, `ChatRequest`, `ChatResponse`, `ToolCall`, `ToolDefinition`, `ToolChoice`, `AIMessageChunk`, `TokenUsage`, `RunEvent`, `RunnableConfig`
-- Error type: `SynapseError` (19 variants covering all subsystems)
-- Stream type: `ChatStream` (`Pin<Box<dyn Stream<Item = Result<AIMessageChunk, SynapseError>> + Send>>`)
+- Error type: `SynapticError` (19 variants covering all subsystems)
+- Stream type: `ChatStream` (`Pin<Box<dyn Stream<Item = Result<AIMessageChunk, SynapticError>> + Send>>`)
 
 ### Implementation Crates
 
@@ -91,7 +91,7 @@ All crates depend on `synaptic-core` for shared traits and types. Higher-level c
   │  │   │      │       │       │       │       │
   ┌──┴───┴──────┴───────┴───────┴───────┴───────┴──┐
   │             synaptic-core                       │
-  │  (ChatModel, Tool, Message, SynapseError, ...) │
+  │  (ChatModel, Tool, Message, SynapticError, ...) │
   └─────────────────────────────────────────────────┘
 
   Retrieval pipeline:
@@ -105,11 +105,11 @@ All crates depend on `synaptic-core` for shared traits and types. Higher-level c
 
 ### Async-first with `#[async_trait]`
 
-Every trait in Synapse is async. The `ChatModel::chat()` method, `Tool::call()`, `MemoryStore::load()`, and `Runnable::invoke()` are all async functions. This means you can freely `await` network calls, database queries, and concurrent operations inside any implementation without blocking the runtime.
+Every trait in Synaptic is async. The `ChatModel::chat()` method, `Tool::call()`, `MemoryStore::load()`, and `Runnable::invoke()` are all async functions. This means you can freely `await` network calls, database queries, and concurrent operations inside any implementation without blocking the runtime.
 
 ### `Arc`-based sharing
 
-Synapse uses `Arc<RwLock<_>>` for registries (like `ToolRegistry`) where many readers need concurrent access, and `Arc<tokio::sync::Mutex<_>>` for stateful components (like callbacks and memory stores) where mutations must be serialized. This allows safe sharing across async tasks and agent sessions.
+Synaptic uses `Arc<RwLock<_>>` for registries (like `ToolRegistry`) where many readers need concurrent access, and `Arc<tokio::sync::Mutex<_>>` for stateful components (like callbacks and memory stores) where mutations must be serialized. This allows safe sharing across async tasks and agent sessions.
 
 ### Session isolation
 
@@ -121,8 +121,8 @@ The `CallbackHandler` trait receives `RunEvent` values at each lifecycle stage (
 
 ### Typed error handling
 
-`SynapseError` has one variant per subsystem (`Prompt`, `Model`, `Tool`, `Memory`, `Graph`, etc.). This makes it straightforward to match on specific failure modes and provide targeted recovery logic.
+`SynapticError` has one variant per subsystem (`Prompt`, `Model`, `Tool`, `Memory`, `Graph`, etc.). This makes it straightforward to match on specific failure modes and provide targeted recovery logic.
 
 ### Composition over inheritance
 
-Rather than deep trait hierarchies, Synapse favors composition. A `CachedChatModel` wraps any `ChatModel`. A `RetryChatModel` wraps any `ChatModel`. A `RunnableWithFallbacks` wraps any `Runnable`. You stack behaviors by wrapping, not by extending base classes.
+Rather than deep trait hierarchies, Synaptic favors composition. A `CachedChatModel` wraps any `ChatModel`. A `RetryChatModel` wraps any `ChatModel`. A `RunnableWithFallbacks` wraps any `Runnable`. You stack behaviors by wrapping, not by extending base classes.

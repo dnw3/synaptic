@@ -7,9 +7,9 @@ Checkpointing persists graph state between invocations, enabling resumable execu
 ```rust
 #[async_trait]
 pub trait Checkpointer: Send + Sync {
-    async fn put(&self, config: &CheckpointConfig, checkpoint: &Checkpoint) -> Result<(), SynapseError>;
-    async fn get(&self, config: &CheckpointConfig) -> Result<Option<Checkpoint>, SynapseError>;
-    async fn list(&self, config: &CheckpointConfig) -> Result<Vec<Checkpoint>, SynapseError>;
+    async fn put(&self, config: &CheckpointConfig, checkpoint: &Checkpoint) -> Result<(), SynapticError>;
+    async fn get(&self, config: &CheckpointConfig) -> Result<Option<Checkpoint>, SynapticError>;
+    async fn list(&self, config: &CheckpointConfig) -> Result<Vec<Checkpoint>, SynapticError>;
 }
 ```
 

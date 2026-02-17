@@ -1,17 +1,17 @@
 # Agents & Tools
 
-Agents are systems where an LLM decides what actions to take. Rather than following a fixed script, the model examines the conversation, chooses which tools to call (if any), processes the results, and decides whether to call more tools or produce a final answer. This page explains how Synapse models tools, how they are registered and executed, and how the agent loop works.
+Agents are systems where an LLM decides what actions to take. Rather than following a fixed script, the model examines the conversation, chooses which tools to call (if any), processes the results, and decides whether to call more tools or produce a final answer. This page explains how Synaptic models tools, how they are registered and executed, and how the agent loop works.
 
 ## The Tool Trait
 
-A tool in Synapse is anything that implements the `Tool` trait:
+A tool in Synaptic is anything that implements the `Tool` trait:
 
 ```rust
 #[async_trait]
 pub trait Tool: Send + Sync {
     fn name(&self) -> &'static str;
     fn description(&self) -> &'static str;
-    async fn call(&self, args: Value) -> Result<Value, SynapseError>;
+    async fn call(&self, args: Value) -> Result<Value, SynapticError>;
 }
 ```
 
@@ -92,7 +92,7 @@ let result = executor.execute("weather", json!({"city": "Tokyo"})).await?;
 
 ## Tool Wrappers
 
-Synapse provides wrapper types that add behavior to existing tools:
+Synaptic provides wrapper types that add behavior to existing tools:
 
 - **`HandleErrorTool`** -- catches errors from the inner tool and returns them as a string result instead of propagating the error. This allows the LLM to see the error and retry with different arguments.
 - **`ReturnDirectTool`** -- marks the tool's output as the final response, short-circuiting the agent loop instead of feeding the result back to the LLM.
@@ -110,7 +110,7 @@ In the graph system, `ToolNode` is a pre-built graph node that processes AI mess
 
 ## The ReAct Agent Pattern
 
-ReAct (Reasoning + Acting) is the most common agent pattern. The model alternates between reasoning about what to do and acting by calling tools. Synapse provides a prebuilt ReAct agent via `create_react_agent()`:
+ReAct (Reasoning + Acting) is the most common agent pattern. The model alternates between reasoning about what to do and acting by calling tools. Synaptic provides a prebuilt ReAct agent via `create_react_agent()`:
 
 ```rust
 use synaptic::graph::{create_react_agent, MessageState};

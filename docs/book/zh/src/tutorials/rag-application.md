@@ -12,7 +12,7 @@
 
 ## RAG 管道概述
 
-RAG 管道由五个阶段组成，每个阶段对应 Synapse 中的一个或多个 crate：
+RAG 管道由五个阶段组成，每个阶段对应 Synaptic 中的一个或多个 crate：
 
 ```text
 加载文档 --> 拆分文档 --> 嵌入和存储 --> 检索 --> 生成
@@ -32,18 +32,18 @@ RAG 管道由五个阶段组成，每个阶段对应 Synapse 中的一个或多�
 
 ```toml
 [dependencies]
-synaptic-core = { path = "../crates/synapse-core" }
-synaptic-loaders = { path = "../crates/synapse-loaders" }
-synaptic-splitters = { path = "../crates/synapse-splitters" }
-synaptic-embeddings = { path = "../crates/synapse-embeddings" }
-synaptic-vectorstores = { path = "../crates/synapse-vectorstores" }
-synaptic-retrieval = { path = "../crates/synapse-retrieval" }
+synaptic-core = { path = "../crates/synaptic-core" }
+synaptic-loaders = { path = "../crates/synaptic-loaders" }
+synaptic-splitters = { path = "../crates/synaptic-splitters" }
+synaptic-embeddings = { path = "../crates/synaptic-embeddings" }
+synaptic-vectorstores = { path = "../crates/synaptic-vectorstores" }
+synaptic-retrieval = { path = "../crates/synaptic-retrieval" }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
 ## 第一步：加载文档
 
-Synapse 提供多种文档加载器。最简单的是 `TextLoader`，它从文本文件加载内容并创建 `Document` 对象：
+Synaptic 提供多种文档加载器。最简单的是 `TextLoader`，它从文本文件加载内容并创建 `Document` 对象：
 
 ```rust
 use synaptic_loaders::{Loader, TextLoader};
@@ -56,7 +56,7 @@ let documents = loader.load().await?;
 // 也可以直接创建 Document
 let documents = vec![
     Document::new("Rust 是一门系统编程语言，注重安全、并发和性能。"),
-    Document::new("Synapse 是一个基于 Rust 的 AI Agent 框架，兼容 LangChain 架构。"),
+    Document::new("Synaptic 是一个基于 Rust 的 AI Agent 框架，兼容 LangChain 架构。"),
     Document::new("RAG 通过检索外部知识来增强 LLM 的回答能力。"),
 ];
 ```
@@ -131,7 +131,7 @@ let embeddings = OpenAiEmbeddings::new("text-embedding-3-small");
 
 ## 第四步：检索
 
-使用 `VectorStoreRetriever` 将向量存储桥接到 `Retriever` trait，方便与 Synapse 的其他组件集成：
+使用 `VectorStoreRetriever` 将向量存储桥接到 `Retriever` trait，方便与 Synaptic 的其他组件集成：
 
 ```rust
 use synaptic_vectorstores::VectorStoreRetriever;
@@ -141,7 +141,7 @@ use synaptic_retrieval::Retriever;
 let retriever = VectorStoreRetriever::new(store, embeddings, 3);
 
 // 检索相关文档
-let relevant_docs = retriever.retrieve("什么是 Synapse？").await?;
+let relevant_docs = retriever.retrieve("什么是 Synaptic？").await?;
 for doc in &relevant_docs {
     println!("检索到: {}", doc.content);
 }
@@ -149,7 +149,7 @@ for doc in &relevant_docs {
 
 ### 高级检索器
 
-Synapse 提供多种高级检索策略，可以显著提高检索质量：
+Synaptic 提供多种高级检索策略，可以显著提高检索质量：
 
 - **`BM25Retriever`** -- 基于 Okapi BM25 评分的关键词检索，不依赖嵌入模型
 - **`MultiQueryRetriever`** -- 使用 LLM 生成多个查询变体，合并检索结果以提高召回率
@@ -163,7 +163,7 @@ Synapse 提供多种高级检索策略，可以显著提高检索质量：
 将检索到的文档作为上下文，结合用户问题构建提示，发送给 LLM 生成回答：
 
 ```rust
-use synaptic_core::{ChatModel, ChatRequest, Message, SynapseError};
+use synaptic_core::{ChatModel, ChatRequest, Message, SynapticError};
 
 // 将检索到的文档拼接为上下文
 let context = relevant_docs.iter()
@@ -179,7 +179,7 @@ let messages = vec![
          上下文：\n{}",
         context
     )),
-    Message::human("什么是 Synapse？"),
+    Message::human("什么是 Synaptic？"),
 ];
 
 let request = ChatRequest::new(messages);
@@ -192,18 +192,18 @@ println!("回答: {}", response.message.content());
 以下是将所有步骤组合在一起的完整示例：
 
 ```rust
-use synaptic_core::{ChatModel, ChatRequest, Message, SynapseError};
+use synaptic_core::{ChatModel, ChatRequest, Message, SynapticError};
 use synaptic_embeddings::FakeEmbeddings;
 use synaptic_retrieval::{Document, Retriever};
 use synaptic_splitters::{TextSplitter, RecursiveCharacterTextSplitter};
 use synaptic_vectorstores::{VectorStore, InMemoryVectorStore, VectorStoreRetriever};
 
 #[tokio::main]
-async fn main() -> Result<(), SynapseError> {
+async fn main() -> Result<(), SynapticError> {
     // 1. 准备文档
     let documents = vec![
         Document::new("Rust 是一门系统编程语言，注重安全、并发和性能。它通过所有权系统在编译时保证内存安全。"),
-        Document::new("Synapse 是一个基于 Rust 的 AI Agent 框架，兼容 LangChain 架构。它提供了 Chat Models、Tools、Memory、Graph 等组件。"),
+        Document::new("Synaptic 是一个基于 Rust 的 AI Agent 框架，兼容 LangChain 架构。它提供了 Chat Models、Tools、Memory、Graph 等组件。"),
         Document::new("RAG（检索增强生成）通过检索外部知识库来增强 LLM 的回答能力，减少幻觉。"),
     ];
 
@@ -219,7 +219,7 @@ async fn main() -> Result<(), SynapseError> {
 
     // 4. 检索
     let retriever = VectorStoreRetriever::new(store, embeddings, 2);
-    let relevant_docs = retriever.retrieve("Synapse 是什么？").await?;
+    let relevant_docs = retriever.retrieve("Synaptic 是什么？").await?;
 
     // 5. 生成（这里使用伪代码，实际使用你的 ChatModel）
     let context = relevant_docs.iter()
@@ -229,7 +229,7 @@ async fn main() -> Result<(), SynapseError> {
 
     let messages = vec![
         Message::system(&format!("根据以下上下文回答问题：\n{}", context)),
-        Message::human("Synapse 是什么？"),
+        Message::human("Synaptic 是什么？"),
     ];
 
     let request = ChatRequest::new(messages);

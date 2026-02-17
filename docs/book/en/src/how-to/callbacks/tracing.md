@@ -1,6 +1,6 @@
 # Tracing Callback
 
-`TracingCallback` integrates Synapse's callback system with the Rust [`tracing`](https://docs.rs/tracing) ecosystem. Instead of storing events in memory, it emits structured tracing spans and events that flow into whatever subscriber you have configured -- terminal output, JSON logs, OpenTelemetry, etc.
+`TracingCallback` integrates Synaptic's callback system with the Rust [`tracing`](https://docs.rs/tracing) ecosystem. Instead of storing events in memory, it emits structured tracing spans and events that flow into whatever subscriber you have configured -- terminal output, JSON logs, OpenTelemetry, etc.
 
 ## Setup
 
@@ -43,10 +43,10 @@ All events except `RunFailed` are logged at the `INFO` level. Failures are logge
 With the default `fmt` subscriber, you might see:
 
 ```
-2026-02-17T10:30:00.123Z  INFO synapse: run started run_id="abc-123" session_id="user-1"
-2026-02-17T10:30:00.456Z  INFO synapse: LLM called run_id="abc-123" message_count=3
-2026-02-17T10:30:01.234Z  INFO synapse: tool called run_id="abc-123" tool_name="calculator"
-2026-02-17T10:30:01.567Z  INFO synapse: run finished run_id="abc-123" output_len=42
+2026-02-17T10:30:00.123Z  INFO synaptic: run started run_id="abc-123" session_id="user-1"
+2026-02-17T10:30:00.456Z  INFO synaptic: LLM called run_id="abc-123" message_count=3
+2026-02-17T10:30:01.234Z  INFO synaptic: tool called run_id="abc-123" tool_name="calculator"
+2026-02-17T10:30:01.567Z  INFO synaptic: run finished run_id="abc-123" output_len=42
 ```
 
 ## Integration with the Tracing Ecosystem

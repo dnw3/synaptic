@@ -1,6 +1,6 @@
 # Retrieval
 
-Synapse provides a complete Retrieval-Augmented Generation (RAG) pipeline. The pipeline follows five stages:
+Synaptic provides a complete Retrieval-Augmented Generation (RAG) pipeline. The pipeline follows five stages:
 
 1. **Load** -- ingest raw data from files, JSON, CSV, web URLs, or entire directories.
 2. **Split** -- break large documents into smaller chunks that fit within context windows.
@@ -21,7 +21,7 @@ Synapse provides a complete Retrieval-Augmented Generation (RAG) pipeline. The p
 
 ## Retrievers
 
-Synapse ships with seven retriever implementations, each suited to different use cases:
+Synaptic ships with seven retriever implementations, each suited to different use cases:
 
 | Retriever | Strategy |
 |-----------|----------|

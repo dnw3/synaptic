@@ -1,6 +1,6 @@
 # API 参考
 
-Synapse 的完整 API 文档由 `rustdoc` 生成。你可以在本地构建并浏览：
+Synaptic 的完整 API 文档由 `rustdoc` 生成。你可以在本地构建并浏览：
 
 ```bash
 cargo doc --workspace --open
@@ -10,12 +10,12 @@ cargo doc --workspace --open
 
 ## Crate 一览
 
-下表列出了 Synapse 的所有 crate 及其职责：
+下表列出了 Synaptic 的所有 crate 及其职责：
 
 | Crate | 说明 |
 |---|---|
 | [`synaptic`](https://docs.rs/synaptic) | 统一 facade crate，重新导出所有子 crate |
-| [`synaptic-core`](https://docs.rs/synaptic-core) | 核心 trait 和类型：`ChatModel`、`Message`、`Tool`、`SynapseError`、`RunnableConfig` 等 |
+| [`synaptic-core`](https://docs.rs/synaptic-core) | 核心 trait 和类型：`ChatModel`、`Message`、`Tool`、`SynapticError`、`RunnableConfig` 等 |
 | [`synaptic-models`](https://docs.rs/synaptic-models) | LLM 提供商适配器（OpenAI、Anthropic、Gemini、Ollama）及装饰器（重试、速率限制、结构化输出） |
 | [`synaptic-prompts`](https://docs.rs/synaptic-prompts) | 提示模板：`PromptTemplate`、`ChatPromptTemplate`、`FewShotChatMessagePromptTemplate` |
 | [`synaptic-parsers`](https://docs.rs/synaptic-parsers) | 输出解析器：`StrOutputParser`、`JsonOutputParser`、`StructuredOutputParser`、`ListOutputParser`、`EnumOutputParser` 等 |
@@ -38,7 +38,7 @@ cargo doc --workspace --open
 
 ```rust
 // 核心类型
-use synaptic::core::{ChatModel, Message, ChatRequest, ChatResponse, SynapseError};
+use synaptic::core::{ChatModel, Message, ChatRequest, ChatResponse, SynapticError};
 use synaptic::core::{Tool, ToolCall, ToolChoice, ToolDefinition};
 use synaptic::core::{RunnableConfig, TokenUsage, RunEvent};
 use synaptic::core::{AIMessageChunk, ChatStream};

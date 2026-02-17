@@ -1,6 +1,6 @@
 # Basic Parsers
 
-Synapse provides several simple output parsers for common transformations. Each implements `Runnable`, so it can be used standalone or composed in a pipeline.
+Synaptic provides several simple output parsers for common transformations. Each implements `Runnable`, so it can be used standalone or composed in a pipeline.
 
 ## StrOutputParser
 
@@ -37,15 +37,15 @@ let parser = JsonOutputParser;
 let config = RunnableConfig::default();
 
 let result = parser.invoke(
-    r#"{"name": "Synapse", "version": 1}"#.to_string(),
+    r#"{"name": "Synaptic", "version": 1}"#.to_string(),
     &config,
 ).await?;
 
-assert_eq!(result["name"], "Synapse");
+assert_eq!(result["name"], "Synaptic");
 assert_eq!(result["version"], 1);
 ```
 
-If the input is not valid JSON, the parser returns `Err(SynapseError::Parsing(...))`.
+If the input is not valid JSON, the parser returns `Err(SynapticError::Parsing(...))`.
 
 ## ListOutputParser
 

@@ -1,6 +1,6 @@
 # Chat Models
 
-Synapse supports multiple LLM providers through the `ChatModel` trait defined in `synaptic_core`. Every provider adapter implements this trait, giving you a uniform interface for sending messages and receiving responses -- whether you are using OpenAI, Anthropic, Gemini, or a local Ollama instance.
+Synaptic supports multiple LLM providers through the `ChatModel` trait defined in `synaptic_core`. Every provider adapter implements this trait, giving you a uniform interface for sending messages and receiving responses -- whether you are using OpenAI, Anthropic, Gemini, or a local Ollama instance.
 
 ## Providers
 
@@ -26,7 +26,7 @@ For testing, use `ScriptedChatModel` (returns pre-defined responses) or `FakeBac
 
 ## Wrappers
 
-Synapse provides composable wrappers that add behavior on top of any `ChatModel`:
+Synaptic provides composable wrappers that add behavior on top of any `ChatModel`:
 
 | Wrapper | Purpose |
 |---------|---------|

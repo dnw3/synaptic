@@ -1,12 +1,12 @@
 # 快速开始
 
-本指南将带你用不到 30 行代码编写你的第一个 Synapse 程序。我们使用 `ScriptedChatModel`（一个测试替身），无需 API 密钥即可运行。
+本指南将带你用不到 30 行代码编写你的第一个 Synaptic 程序。我们使用 `ScriptedChatModel`（一个测试替身），无需 API 密钥即可运行。
 
 ## 第 1 步：创建项目
 
 ```bash
-cargo new synapse-quickstart
-cd synapse-quickstart
+cargo new synaptic-quickstart
+cd synaptic-quickstart
 ```
 
 ## 第 2 步：添加依赖
@@ -25,15 +25,15 @@ tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 将 `src/main.rs` 替换为以下内容：
 
 ```rust
-use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
 use synaptic_models::ScriptedChatModel;
 
 #[tokio::main]
-async fn main() -> Result<(), SynapseError> {
+async fn main() -> Result<(), SynapticError> {
     // 创建一个脚本化模型，预先定义好返回的响应
     let model = ScriptedChatModel::new(vec![
         ChatResponse {
-            message: Message::ai("你好！我是 Synapse 助手。"),
+            message: Message::ai("你好！我是 Synaptic 助手。"),
             usage: None,
         },
     ]);
@@ -61,7 +61,7 @@ cargo run
 你应该会看到输出：
 
 ```
-你好！我是 Synapse 助手。
+你好！我是 Synaptic 助手。
 ```
 
 ## 代码解析
@@ -70,7 +70,7 @@ cargo run
 
 1. **`ScriptedChatModel`** -- 这是一个测试替身，按顺序返回预设的响应。在实际应用中，你会使用 `OpenAiChatModel`、`AnthropicChatModel` 等真实模型适配器。
 
-2. **`Message` 工厂方法** -- Synapse 使用枚举变体表示不同类型的消息：
+2. **`Message` 工厂方法** -- Synaptic 使用枚举变体表示不同类型的消息：
    - `Message::system(...)` -- 系统提示，设定 AI 的行为
    - `Message::human(...)` -- 用户输入
    - `Message::ai(...)` -- AI 的回复
@@ -78,7 +78,7 @@ cargo run
 
 3. **`ChatRequest::new(messages)`** -- 将消息列表包装为请求。可以链式调用 `.with_tools()` 和 `.with_tool_choice()` 添加工具支持。
 
-4. **`model.chat(request).await?`** -- 异步发送请求。所有 Synapse 的 trait 方法都是异步的，使用 `await` 等待结果，`?` 传播错误。
+4. **`model.chat(request).await?`** -- 异步发送请求。所有 Synaptic 的 trait 方法都是异步的，使用 `await` 等待结果，`?` 传播错误。
 
 ## 使用真实模型
 
@@ -96,4 +96,4 @@ let model = OpenAiChatModel::new("gpt-4o");
 
 - [构建一个简单的 LLM 应用](tutorials/simple-llm-app.md) -- 使用 Prompt Template 和 Output Parser 构建完整的链式调用
 - [构建 ReAct Agent](tutorials/react-agent.md) -- 让 AI 调用工具并自主推理
-- [架构概览](architecture-overview.md) -- 深入了解 Synapse 的 crate 架构
+- [架构概览](architecture-overview.md) -- 深入了解 Synaptic 的 crate 架构

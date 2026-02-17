@@ -4,7 +4,7 @@ This guide shows how to consume LLM responses as a stream of tokens, rather than
 
 ## Overview
 
-Every `ChatModel` in Synapse provides two methods:
+Every `ChatModel` in Synaptic provides two methods:
 
 - `chat()` -- returns a complete `ChatResponse` once the model finishes generating.
 - `stream_chat()` -- returns a `ChatStream`, which yields `AIMessageChunk` items as the model produces them.
@@ -39,7 +39,7 @@ async fn stream_example(model: &dyn ChatModel) -> Result<(), Box<dyn std::error:
 The `ChatStream` type is defined as:
 
 ```rust
-type ChatStream<'a> = Pin<Box<dyn Stream<Item = Result<AIMessageChunk, SynapseError>> + Send + 'a>>;
+type ChatStream<'a> = Pin<Box<dyn Stream<Item = Result<AIMessageChunk, SynapticError>> + Send + 'a>>;
 ```
 
 ## Accumulating chunks into a message

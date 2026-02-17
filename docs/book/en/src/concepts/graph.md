@@ -1,6 +1,6 @@
 # Graph
 
-LCEL chains are powerful for linear pipelines, but some workflows need cycles, conditional branching, checkpointed state, and human intervention. The graph system (Synapse's equivalent of LangGraph) provides these capabilities through a state-machine abstraction. This page explains the graph model, its key concepts, and how it differs from chain-based composition.
+LCEL chains are powerful for linear pipelines, but some workflows need cycles, conditional branching, checkpointed state, and human intervention. The graph system (Synaptic's equivalent of LangGraph) provides these capabilities through a state-machine abstraction. This page explains the graph model, its key concepts, and how it differs from chain-based composition.
 
 ## Why Graphs?
 
@@ -22,7 +22,7 @@ The `merge()` method defines how state updates are combined. When a node returns
 
 ### MessageState
 
-Synapse provides `MessageState` as the built-in state type for conversational agents:
+Synaptic provides `MessageState` as the built-in state type for conversational agents:
 
 ```rust
 pub struct MessageState {
@@ -41,7 +41,7 @@ A node is a unit of computation within the graph:
 ```rust
 #[async_trait]
 pub trait Node<S: State>: Send + Sync {
-    async fn process(&self, state: S) -> Result<S, SynapseError>;
+    async fn process(&self, state: S) -> Result<S, SynapticError>;
 }
 ```
 
@@ -173,7 +173,7 @@ Two mechanisms pause graph execution for human intervention:
 
 ### interrupt_before(nodes)
 
-The graph pauses **before** executing the named nodes. The current state is checkpointed, and the graph returns a `SynapseError::Graph("interrupted before node '...'")`.
+The graph pauses **before** executing the named nodes. The current state is checkpointed, and the graph returns a `SynapticError::Graph("interrupted before node '...'")`.
 
 ```rust
 let graph = StateGraph::new()
@@ -260,4 +260,4 @@ graph TD
 
 ## Safety Limits
 
-The graph runtime enforces a maximum of 100 iterations per execution to prevent infinite loops. If a graph cycles more than 100 times, it returns `SynapseError::Graph("max iterations (100) exceeded")`. This is a safety guard, not a configurable limit -- if your workflow legitimately needs more iterations, the graph structure should be reconsidered.
+The graph runtime enforces a maximum of 100 iterations per execution to prevent infinite loops. If a graph cycles more than 100 times, it returns `SynapticError::Graph("max iterations (100) exceeded")`. This is a safety guard, not a configurable limit -- if your workflow legitimately needs more iterations, the graph structure should be reconsidered.

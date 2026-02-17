@@ -4,30 +4,30 @@
 
 ## 前置条件
 
-在 `Cargo.toml` 中添加所需的 Synapse crate：
+在 `Cargo.toml` 中添加所需的 Synaptic crate：
 
 ```toml
 [dependencies]
-synaptic-core = { path = "../crates/synapse-core" }
-synaptic-memory = { path = "../crates/synapse-memory" }
+synaptic-core = { path = "../crates/synaptic-core" }
+synaptic-memory = { path = "../crates/synaptic-memory" }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
 ## 第一步：存储和加载消息
 
-每个聊天机器人都需要记住对话内容。Synapse 提供了 `MemoryStore` trait 来定义这个能力，`InMemoryStore` 是一个基于 `HashMap` 的简单内存实现。
+每个聊天机器人都需要记住对话内容。Synaptic 提供了 `MemoryStore` trait 来定义这个能力，`InMemoryStore` 是一个基于 `HashMap` 的简单内存实现。
 
 ```rust
-use synaptic_core::{MemoryStore, Message, SynapseError};
+use synaptic_core::{MemoryStore, Message, SynapticError};
 use synaptic_memory::InMemoryStore;
 
 #[tokio::main]
-async fn main() -> Result<(), SynapseError> {
+async fn main() -> Result<(), SynapticError> {
     let memory = InMemoryStore::new();
     let session_id = "demo-session";
 
     // 模拟一段对话
-    memory.append(session_id, Message::human("你好，Synapse")).await?;
+    memory.append(session_id, Message::human("你好，Synaptic")).await?;
     memory.append(session_id, Message::ai("你好！有什么可以帮你的？")).await?;
     memory.append(session_id, Message::human("你能做什么？")).await?;
     memory.append(session_id, Message::ai("我可以帮你完成很多任务！")).await?;
@@ -47,7 +47,7 @@ async fn main() -> Result<(), SynapseError> {
 输出为：
 
 ```text
-human: 你好，Synapse
+human: 你好，Synaptic
 ai: 你好！有什么可以帮你的？
 human: 你能做什么？
 ai: 我可以帮你完成很多任务！
@@ -64,11 +64,11 @@ ai: 我可以帮你完成很多任务！
 每个 session ID 对应一个独立的对话历史。这就是你将多个用户或对话线程分开的方式：
 
 ```rust
-use synaptic_core::{MemoryStore, Message, SynapseError};
+use synaptic_core::{MemoryStore, Message, SynapticError};
 use synaptic_memory::InMemoryStore;
 
 #[tokio::main]
-async fn main() -> Result<(), SynapseError> {
+async fn main() -> Result<(), SynapticError> {
     let memory = InMemoryStore::new();
 
     // Alice 的对话
@@ -96,7 +96,7 @@ Session ID 是任意字符串。在 Web 应用中，你通常会使用用户 ID�
 
 ## 第三步：选择记忆策略
 
-随着对话增长，将所有消息都发送给 LLM 会变得昂贵，最终会超过上下文窗口的限制。Synapse 提供了多种记忆策略，它们包装底层的 `MemoryStore` 并控制 `load()` 返回的内容。
+随着对话增长，将所有消息都发送给 LLM 会变得昂贵，最终会超过上下文窗口的限制。Synaptic 提供了多种记忆策略，它们包装底层的 `MemoryStore` 并控制 `load()` 返回的内容。
 
 ### ConversationBufferMemory
 
@@ -218,7 +218,7 @@ let response = chatbot.invoke("Rust 是什么？".to_string(), &config).await?;
 
 ## 整体架构
 
-以下是 Synapse 记忆系统的心智模型：
+以下是 Synaptic 记忆系统的心智模型：
 
 ```text
                     +-----------------------+

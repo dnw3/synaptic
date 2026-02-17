@@ -1,6 +1,6 @@
 # Development Setup
 
-This page covers everything you need to build, test, and run Synapse locally.
+This page covers everything you need to build, test, and run Synaptic locally.
 
 ## Prerequisites
 
@@ -19,8 +19,8 @@ This page covers everything you need to build, test, and run Synapse locally.
 ## Clone the Repository
 
 ```bash
-git clone https://github.com/<your-username>/synapse.git
-cd synapse
+git clone https://github.com/<your-username>/synaptic.git
+cd synaptic
 ```
 
 ## Build
@@ -126,7 +126,7 @@ The output is written to `docs/book/en/book/`.
 
 ## Editor Setup
 
-Synapse is a standard Cargo workspace. Any editor with rust-analyzer support will provide inline errors, completions, and go-to-definition across all crates. Recommended:
+Synaptic is a standard Cargo workspace. Any editor with rust-analyzer support will provide inline errors, completions, and go-to-definition across all crates. Recommended:
 
 - **VS Code** with the rust-analyzer extension
 - **IntelliJ IDEA** with the Rust plugin

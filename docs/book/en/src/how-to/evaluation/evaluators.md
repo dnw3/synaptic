@@ -1,6 +1,6 @@
 # Evaluators
 
-Synapse provides five built-in evaluators, ranging from simple string matching to LLM-based judgment. All implement the `Evaluator` trait and return an `EvalResult` with a score, pass/fail status, and optional reasoning.
+Synaptic provides five built-in evaluators, ranging from simple string matching to LLM-based judgment. All implement the `Evaluator` trait and return an `EvalResult` with a score, pass/fail status, and optional reasoning.
 
 ## ExactMatchEvaluator
 
@@ -62,7 +62,7 @@ let result = eval.evaluate("January 15, 2024", "", "").await?;
 assert!(!result.passed);
 ```
 
-The constructor returns a `Result` because the regex pattern is validated at creation time. Invalid patterns produce a `SynapseError::Validation`.
+The constructor returns a `Result` because the regex pattern is validated at creation time. Invalid patterns produce a `SynapticError::Validation`.
 
 ## EmbeddingDistanceEvaluator
 
@@ -126,7 +126,7 @@ Rate accuracy from 0 (wrong) to 10 (perfect). Reply with a single number."#,
 );
 ```
 
-The default prompt asks the LLM to rate overall quality. The response is parsed for a number between 0 and 10; if no valid number is found, the evaluator returns a `SynapseError::Parsing`.
+The default prompt asks the LLM to rate overall quality. The response is parsed for a number between 0 and 10; if no valid number is found, the evaluator returns a `SynapticError::Parsing`.
 
 ## Summary
 

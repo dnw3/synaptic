@@ -1,6 +1,6 @@
 # Evaluation
 
-Synapse provides an evaluation framework for measuring the quality of AI outputs. The `Evaluator` trait defines a standard interface for scoring predictions against references, and the `Dataset` + `evaluate()` pipeline makes it easy to run batch evaluations across many test cases.
+Synaptic provides an evaluation framework for measuring the quality of AI outputs. The `Evaluator` trait defines a standard interface for scoring predictions against references, and the `Dataset` + `evaluate()` pipeline makes it easy to run batch evaluations across many test cases.
 
 ## The `Evaluator` Trait
 
@@ -14,7 +14,7 @@ pub trait Evaluator: Send + Sync {
         prediction: &str,
         reference: &str,
         input: &str,
-    ) -> Result<EvalResult, SynapseError>;
+    ) -> Result<EvalResult, SynapticError>;
 }
 ```
 
@@ -46,7 +46,7 @@ You can attach reasoning with `.with_reasoning("explanation")`.
 
 ## Built-in Evaluators
 
-Synapse provides five evaluators out of the box:
+Synaptic provides five evaluators out of the box:
 
 | Evaluator | What It Checks |
 |-----------|----------------|

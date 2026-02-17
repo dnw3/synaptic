@@ -1,6 +1,6 @@
 # Message Types
 
-This guide covers all message variants in Synapse, how to create them, and how to inspect their contents.
+This guide covers all message variants in Synaptic, how to create them, and how to inspect their contents.
 
 ## The `Message` enum
 

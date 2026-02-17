@@ -1,6 +1,6 @@
 # Document Loaders
 
-This guide shows how to load documents from various sources using Synapse's `Loader` trait and its built-in implementations.
+This guide shows how to load documents from various sources using Synaptic's `Loader` trait and its built-in implementations.
 
 ## Overview
 
@@ -9,7 +9,7 @@ Every loader implements the `Loader` trait from `synaptic_loaders`:
 ```rust
 #[async_trait]
 pub trait Loader: Send + Sync {
-    async fn load(&self) -> Result<Vec<Document>, SynapseError>;
+    async fn load(&self) -> Result<Vec<Document>, SynapticError>;
 }
 ```
 

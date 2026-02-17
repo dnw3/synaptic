@@ -1,6 +1,6 @@
 # Memory
 
-Synapse provides session-keyed conversation memory through the `MemoryStore` trait and a family of memory strategies that control how conversation history is stored, trimmed, and summarized.
+Synaptic provides session-keyed conversation memory through the `MemoryStore` trait and a family of memory strategies that control how conversation history is stored, trimmed, and summarized.
 
 ## The `MemoryStore` Trait
 
@@ -9,9 +9,9 @@ All memory strategies implement the `MemoryStore` trait, which defines three asy
 ```rust
 #[async_trait]
 pub trait MemoryStore: Send + Sync {
-    async fn append(&self, session_id: &str, message: Message) -> Result<(), SynapseError>;
-    async fn load(&self, session_id: &str) -> Result<Vec<Message>, SynapseError>;
-    async fn clear(&self, session_id: &str) -> Result<(), SynapseError>;
+    async fn append(&self, session_id: &str, message: Message) -> Result<(), SynapticError>;
+    async fn load(&self, session_id: &str) -> Result<Vec<Message>, SynapticError>;
+    async fn clear(&self, session_id: &str) -> Result<(), SynapticError>;
 }
 ```
 
@@ -58,7 +58,7 @@ Each memory strategy wraps an underlying `MemoryStore` and applies a different p
 
 ## Auto-Managing History
 
-For the common pattern of loading history before a chain call and saving the result afterward, Synapse provides [RunnableWithMessageHistory](runnable-with-history.md). It wraps any `Runnable<Vec<Message>, String>` and handles the load/save lifecycle automatically, keyed by a session ID in the `RunnableConfig` metadata.
+For the common pattern of loading history before a chain call and saving the result afterward, Synaptic provides [RunnableWithMessageHistory](runnable-with-history.md). It wraps any `Runnable<Vec<Message>, String>` and handles the load/save lifecycle automatically, keyed by a session ID in the `RunnableConfig` metadata.
 
 ## Choosing a Strategy
 

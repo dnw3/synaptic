@@ -1,14 +1,14 @@
 # Contributing
 
-Thank you for your interest in contributing to Synapse. This guide covers the workflow and standards for submitting changes.
+Thank you for your interest in contributing to Synaptic. This guide covers the workflow and standards for submitting changes.
 
 ## Getting Started
 
 1. **Fork** the repository on GitHub.
 2. **Clone** your fork locally:
    ```bash
-   git clone https://github.com/<your-username>/synapse.git
-   cd synapse
+   git clone https://github.com/<your-username>/synaptic.git
+   cd synaptic
    ```
 3. **Create a branch** for your changes:
    ```bash

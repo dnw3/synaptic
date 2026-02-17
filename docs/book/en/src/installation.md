@@ -6,13 +6,13 @@
 - **Minimum supported Rust version (MSRV)**: 1.78
 - **Runtime**: Tokio (async runtime)
 
-## Adding Synapse to Your Project
+## Adding Synaptic to Your Project
 
 The `synaptic` facade crate re-exports all sub-crates. Use **feature flags** to control which modules are compiled.
 
 ### Feature Flags
 
-Synapse provides fine-grained feature flags, similar to tokio:
+Synaptic provides fine-grained feature flags, similar to tokio:
 
 ```toml
 [dependencies]
@@ -52,7 +52,7 @@ The `core` module (traits and types) is always available regardless of feature s
 
 ```toml
 [dependencies]
-synaptic = { path = "path/to/synapse/crates/synapse", features = ["agent"] }
+synaptic = { path = "path/to/synaptic/crates/synaptic", features = ["agent"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -69,7 +69,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 The facade crate provides namespaced re-exports for all sub-crates. You access types through their module path:
 
 ```rust
-use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
+use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
 use synaptic::models::{OpenAiChatModel, ScriptedChatModel};
 use synaptic::runnables::{Runnable, BoxRunnable, RunnableLambda};
 use synaptic::prompts::ChatPromptTemplate;
@@ -86,13 +86,13 @@ Alternatively, you can depend on individual crates directly if you want to minim
 
 ```toml
 [dependencies]
-synaptic-core = { path = "path/to/synapse/crates/synapse-core" }
-synaptic-models = { path = "path/to/synapse/crates/synapse-models" }
+synaptic-core = { path = "path/to/synaptic/crates/synaptic-core" }
+synaptic-models = { path = "path/to/synaptic/crates/synaptic-models" }
 ```
 
 ## Provider API Keys
 
-Synapse reads API keys from environment variables. Set the ones you need for your chosen provider:
+Synaptic reads API keys from environment variables. Set the ones you need for your chosen provider:
 
 | Provider | Environment Variable |
 |---|---|
@@ -137,7 +137,7 @@ cargo clippy --workspace
 
 ## Workspace Dependencies
 
-Synapse uses Cargo workspace-level dependency management. Key shared dependencies include:
+Synaptic uses Cargo workspace-level dependency management. Key shared dependencies include:
 
 - `async-trait` -- async trait methods
 - `serde` / `serde_json` -- serialization

@@ -1,4 +1,4 @@
-# Contributing to Synapse
+# Contributing to Synaptic
 
 Thank you for your interest in contributing!
 

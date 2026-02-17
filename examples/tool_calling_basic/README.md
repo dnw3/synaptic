@@ -1,6 +1,6 @@
 # tool_calling_basic
 
-Demonstrates the Synapse tool system: defining a custom `Tool`, registering it in a `ToolRegistry`, and executing it through `SerialToolExecutor`.
+Demonstrates the Synaptic tool system: defining a custom `Tool`, registering it in a `ToolRegistry`, and executing it through `SerialToolExecutor`.
 
 ## What it does
 
@@ -18,7 +18,7 @@ cargo run -p tool_calling_basic
 ## Expected output
 
 ```
-{"echo":{"message":"hello from synapse"}}
+{"echo":{"message":"hello from synaptic"}}
 ```
 
 ## Key concepts

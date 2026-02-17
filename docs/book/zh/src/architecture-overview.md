@@ -1,13 +1,13 @@
 # 架构概览
 
-Synapse 采用分层 crate 架构，将核心 trait 与具体实现分离。这种设计使得每个组件可以独立测试、替换和演进，同时通过 Cargo workspace 统一管理版本和依赖。
+Synaptic 采用分层 crate 架构，将核心 trait 与具体实现分离。这种设计使得每个组件可以独立测试、替换和演进，同时通过 Cargo workspace 统一管理版本和依赖。
 
 ## 设计原则
 
 1. **Trait 驱动** -- 所有核心抽象（`ChatModel`、`Tool`、`Embeddings`、`Retriever` 等）都定义为 trait。具体实现在独立的 crate 中提供，消费方只依赖 trait，不依赖具体类型。
 2. **关注点分离** -- 每个 crate 只负责一个职责：`synaptic-models` 处理 LLM 适配，`synaptic-memory` 处理会话记忆，`synaptic-graph` 处理状态机编排，以此类推。
 3. **零开销抽象** -- 利用 Rust 的泛型和 trait 系统，在编译时消除不需要的间接调用。`BoxRunnable` 提供类型擦除以支持动态组合，但核心路径保持零开销。
-4. **异步优先** -- 所有 I/O 操作都是异步的，基于 Tokio 运行时。这使得 Synapse 可以高效处理并发请求，无需线程池开销。
+4. **异步优先** -- 所有 I/O 操作都是异步的，基于 Tokio 运行时。这使得 Synaptic 可以高效处理并发请求，无需线程池开销。
 
 ## Crate 依赖关系图
 
@@ -49,7 +49,7 @@ Synapse 采用分层 crate 架构，将核心 trait 与具体实现分离。这�
 - `ChatRequest` / `ChatResponse` -- 请求/响应结构
 - `Tool` trait -- 工具定义和调用接口
 - `ToolChoice` -- 工具选择策略（`Auto`、`Required`、`None`、`Specific`）
-- `SynapseError` -- 统一错误类型（19 个变体）
+- `SynapticError` -- 统一错误类型（19 个变体）
 - `RunnableConfig` -- 运行时配置（标签、元数据、并发限制等）
 
 ### 实现层（Implementation Layer）

@@ -1,6 +1,6 @@
 # Output Parsers
 
-Output parsers transform raw LLM output into structured data. Every parser in Synapse implements the `Runnable` trait, so they compose naturally with prompt templates, chat models, and other runnables using the LCEL pipe operator (`|`).
+Output parsers transform raw LLM output into structured data. Every parser in Synaptic implements the `Runnable` trait, so they compose naturally with prompt templates, chat models, and other runnables using the LCEL pipe operator (`|`).
 
 ## Available Parsers
 

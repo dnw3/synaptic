@@ -1,6 +1,6 @@
 # Text Splitters
 
-This guide shows how to break large documents into smaller chunks using Synapse's `TextSplitter` trait and its built-in implementations.
+This guide shows how to break large documents into smaller chunks using Synaptic's `TextSplitter` trait and its built-in implementations.
 
 ## Overview
 

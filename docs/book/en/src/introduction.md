@@ -1,10 +1,10 @@
 # Introduction
 
-**Synapse is a Rust agent framework with LangChain-compatible architecture.**
+**Synaptic is a Rust agent framework with LangChain-compatible architecture.**
 
 Build production-grade AI agents, chains, and retrieval pipelines in Rust with the same mental model you know from LangChain -- but with compile-time safety, zero-cost abstractions, and native async performance.
 
-## Why Synapse?
+## Why Synaptic?
 
 - **Type-safe** -- Message types, tool definitions, and runnable pipelines are checked at compile time. No runtime surprises from mismatched schemas.
 - **Async-native** -- Built on Tokio and `async-trait` from the ground up. Every trait method is async, and streaming is a first-class citizen via `Stream`.
@@ -29,9 +29,9 @@ Build production-grade AI agents, chains, and retrieval pipelines in Rust with t
 
 ## Quick Links
 
-- [What is Synapse?](what-is-synapse.md) -- Concept mapping from LangChain Python to Synapse Rust
+- [What is Synaptic?](what-is-synapse.md) -- Concept mapping from LangChain Python to Synaptic Rust
 - [Architecture Overview](architecture-overview.md) -- Layered crate design and dependency graph
-- [Installation](installation.md) -- Add Synapse to your project
-- [Quickstart](quickstart.md) -- Your first Synapse program in 30 lines
+- [Installation](installation.md) -- Add Synaptic to your project
+- [Quickstart](quickstart.md) -- Your first Synaptic program in 30 lines
 - [Tutorials](tutorials/simple-llm-app.md) -- Step-by-step guides for common use cases
 - [API Reference](api-reference.md) -- Full API documentation

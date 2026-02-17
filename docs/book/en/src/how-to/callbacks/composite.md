@@ -29,7 +29,7 @@ When `composite.on_event(event)` is called, the event is forwarded to each handl
 
 ```rust
 // Pseudocode of the dispatch logic
-async fn on_event(&self, event: RunEvent) -> Result<(), SynapseError> {
+async fn on_event(&self, event: RunEvent) -> Result<(), SynapticError> {
     for handler in &self.handlers {
         handler.on_event(event.clone()).await?;
     }
@@ -43,7 +43,7 @@ You can mix built-in and custom handlers:
 
 ```rust
 use async_trait::async_trait;
-use synaptic_core::{CallbackHandler, RunEvent, SynapseError};
+use synaptic_core::{CallbackHandler, RunEvent, SynapticError};
 use synaptic_callbacks::{
     CompositeCallback, RecordingCallback, TracingCallback, StdOutCallbackHandler,
 };
@@ -55,7 +55,7 @@ struct ToolCounter {
 
 #[async_trait]
 impl CallbackHandler for ToolCounter {
-    async fn on_event(&self, event: RunEvent) -> Result<(), SynapseError> {
+    async fn on_event(&self, event: RunEvent) -> Result<(), SynapticError> {
         if matches!(event, RunEvent::ToolCalled { .. }) {
             *self.count.write().await += 1;
         }

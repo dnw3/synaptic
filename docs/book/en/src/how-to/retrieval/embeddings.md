@@ -1,6 +1,6 @@
 # Embeddings
 
-This guide shows how to convert text into vector representations using Synapse's `Embeddings` trait and its built-in providers.
+This guide shows how to convert text into vector representations using Synaptic's `Embeddings` trait and its built-in providers.
 
 ## Overview
 
@@ -9,8 +9,8 @@ All embedding providers implement the `Embeddings` trait from `synaptic_embeddin
 ```rust
 #[async_trait]
 pub trait Embeddings: Send + Sync {
-    async fn embed_documents(&self, texts: &[&str]) -> Result<Vec<Vec<f32>>, SynapseError>;
-    async fn embed_query(&self, text: &str) -> Result<Vec<f32>, SynapseError>;
+    async fn embed_documents(&self, texts: &[&str]) -> Result<Vec<Vec<f32>>, SynapticError>;
+    async fn embed_query(&self, text: &str) -> Result<Vec<f32>, SynapticError>;
 }
 ```
 

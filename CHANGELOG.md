@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Core** — `ChatModel`, `Message`, `Tool`, `MemoryStore`, `CallbackHandler` traits; `ChatRequest`/`ChatResponse`; `SynapseError` (19 variants); `RunnableConfig`
+- **Core** — `ChatModel`, `Message`, `Tool`, `MemoryStore`, `CallbackHandler` traits; `ChatRequest`/`ChatResponse`; `SynapticError` (19 variants); `RunnableConfig`
 - **Models** — OpenAI, Anthropic, Gemini, Ollama adapters with streaming; `ScriptedChatModel` test double; `RetryChatModel`, `RateLimitedChatModel`, `TokenBucketChatModel` wrappers; `StructuredOutputChatModel<T>`
 - **LCEL Runnables** — `Runnable` trait with `invoke`/`batch`/`stream`; pipe operator (`|`); `RunnableLambda`, `RunnableParallel`, `RunnableBranch`, `RunnablePassthrough`, `RunnableWithFallbacks`, `RunnableAssign`, `RunnablePick`; `bind()` for config transforms
 - **Prompts** — `PromptTemplate`, `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate`; all implement `Runnable`

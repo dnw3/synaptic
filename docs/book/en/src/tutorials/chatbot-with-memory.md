@@ -4,7 +4,7 @@ This tutorial walks you through building a session-based chatbot that remembers 
 
 ## Prerequisites
 
-Add the required Synapse crates to your `Cargo.toml`:
+Add the required Synaptic crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
@@ -15,19 +15,19 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 ## Step 1: Store and Load Messages
 
-Every chatbot needs to remember what was said. Synapse provides the `MemoryStore` trait for this purpose, and `InMemoryStore` as a simple in-process implementation backed by a `HashMap`.
+Every chatbot needs to remember what was said. Synaptic provides the `MemoryStore` trait for this purpose, and `InMemoryStore` as a simple in-process implementation backed by a `HashMap`.
 
 ```rust
-use synaptic_core::{MemoryStore, Message, SynapseError};
+use synaptic_core::{MemoryStore, Message, SynapticError};
 use synaptic_memory::InMemoryStore;
 
 #[tokio::main]
-async fn main() -> Result<(), SynapseError> {
+async fn main() -> Result<(), SynapticError> {
     let memory = InMemoryStore::new();
     let session_id = "demo-session";
 
     // Simulate a conversation
-    memory.append(session_id, Message::human("Hello, Synapse")).await?;
+    memory.append(session_id, Message::human("Hello, Synaptic")).await?;
     memory.append(session_id, Message::ai("Hello! How can I help you?")).await?;
     memory.append(session_id, Message::human("What can you do?")).await?;
     memory.append(session_id, Message::ai("I can help with many tasks!")).await?;
@@ -47,7 +47,7 @@ async fn main() -> Result<(), SynapseError> {
 The output will be:
 
 ```text
-human: Hello, Synapse
+human: Hello, Synaptic
 ai: Hello! How can I help you?
 human: What can you do?
 ai: I can help with many tasks!
@@ -64,11 +64,11 @@ The `MemoryStore` trait defines three methods:
 Each session ID maps to an independent conversation history. This is how you keep multiple users or threads separate:
 
 ```rust
-use synaptic_core::{MemoryStore, Message, SynapseError};
+use synaptic_core::{MemoryStore, Message, SynapticError};
 use synaptic_memory::InMemoryStore;
 
 #[tokio::main]
-async fn main() -> Result<(), SynapseError> {
+async fn main() -> Result<(), SynapticError> {
     let memory = InMemoryStore::new();
 
     // Alice's conversation
@@ -96,7 +96,7 @@ Session IDs are arbitrary strings. In a web application you would typically use 
 
 ## Step 3: Choose a Memory Strategy
 
-As conversations grow long, sending every message to the LLM becomes expensive and eventually exceeds the context window. Synapse provides several memory strategies that wrap an underlying `MemoryStore` and control what gets returned by `load()`.
+As conversations grow long, sending every message to the LLM becomes expensive and eventually exceeds the context window. Synaptic provides several memory strategies that wrap an underlying `MemoryStore` and control what gets returned by `load()`.
 
 ### ConversationBufferMemory
 
@@ -218,7 +218,7 @@ This is the recommended approach for production chatbots because it keeps the me
 
 ## How It All Fits Together
 
-Here is the mental model for Synapse memory:
+Here is the mental model for Synaptic memory:
 
 ```text
                     +-----------------------+

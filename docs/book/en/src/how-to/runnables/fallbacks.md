@@ -12,11 +12,11 @@ This is particularly useful when working with LLM providers that may experience 
 
 ```rust
 use synaptic_runnables::{Runnable, RunnableWithFallbacks, RunnableLambda};
-use synaptic_core::{RunnableConfig, SynapseError};
+use synaptic_core::{RunnableConfig, SynapticError};
 
 // A runnable that always fails
 let unreliable = RunnableLambda::new(|_x: String| async move {
-    Err::<String, _>(SynapseError::Provider("service unavailable".into()))
+    Err::<String, _>(SynapticError::Provider("service unavailable".into()))
 });
 
 // A reliable fallback

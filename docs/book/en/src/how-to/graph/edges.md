@@ -1,6 +1,6 @@
 # Edges
 
-Edges define the flow of execution between nodes in a graph. Synapse supports two kinds of edges: **fixed edges** that always route to the same target, and **conditional edges** that route dynamically based on the current state.
+Edges define the flow of execution between nodes in a graph. Synaptic supports two kinds of edges: **fixed edges** that always route to the same target, and **conditional edges** that route dynamically based on the current state.
 
 ## Fixed Edges
 
@@ -128,4 +128,4 @@ When you call `.compile()`, the graph validates:
 - Every conditional edge source refers to an existing node.
 - All `path_map` targets refer to existing nodes (or `END`).
 
-If any validation fails, `compile()` returns a `SynapseError::Graph` with a descriptive message.
+If any validation fails, `compile()` returns a `SynapticError::Graph` with a descriptive message.

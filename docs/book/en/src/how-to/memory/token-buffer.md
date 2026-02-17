@@ -34,7 +34,7 @@ let history = memory.load(session).await?;
 
 ### Token Estimation
 
-Synapse uses a simple heuristic of approximately 4 characters per token, with a minimum of 1 token per message:
+Synaptic uses a simple heuristic of approximately 4 characters per token, with a minimum of 1 token per message:
 
 ```rust
 fn estimate_tokens(text: &str) -> usize {

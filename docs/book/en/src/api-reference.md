@@ -1,12 +1,12 @@
 # API Reference
 
-Synapse is organized as a workspace of focused crates. Each crate has its own API documentation generated from doc comments in the source code.
+Synaptic is organized as a workspace of focused crates. Each crate has its own API documentation generated from doc comments in the source code.
 
 ## Crate Reference
 
 | Crate | Description | Docs |
 |-------|-------------|------|
-| `synaptic-core` | Shared traits and types (`ChatModel`, `Tool`, `Message`, `SynapseError`, etc.) | [docs.rs](https://docs.rs/synaptic-core) |
+| `synaptic-core` | Shared traits and types (`ChatModel`, `Tool`, `Message`, `SynapticError`, etc.) | [docs.rs](https://docs.rs/synaptic-core) |
 | `synaptic-models` | LLM provider adapters (OpenAI, Anthropic, Gemini, Ollama) plus retry, rate limiting, and structured output wrappers | [docs.rs](https://docs.rs/synaptic-models) |
 | `synaptic-runnables` | LCEL composition (`Runnable` trait, `BoxRunnable`, pipe operator, parallel, branch, fallbacks, assign, pick) | [docs.rs](https://docs.rs/synaptic-runnables) |
 | `synaptic-prompts` | Prompt templates (`PromptTemplate`, `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate`) | [docs.rs](https://docs.rs/synaptic-prompts) |
@@ -48,7 +48,7 @@ If you prefer a single dependency instead of listing individual crates, use the 
 
 ```toml
 [dependencies]
-synaptic = { path = "crates/synapse" }
+synaptic = { path = "crates/synaptic" }
 ```
 
 Then import through the unified namespace:

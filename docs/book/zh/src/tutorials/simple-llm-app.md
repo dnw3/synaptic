@@ -1,6 +1,6 @@
 # 构建一个简单的 LLM 应用
 
-本教程将引导你构建一个完整的 LLM 应用，使用 Prompt Template 格式化输入，通过 Chat Model 生成回复，并使用 Output Parser 提取结果。这是 Synapse 中最基础的链式调用模式。
+本教程将引导你构建一个完整的 LLM 应用，使用 Prompt Template 格式化输入，通过 Chat Model 生成回复，并使用 Output Parser 提取结果。这是 Synaptic 中最基础的链式调用模式。
 
 ## 你将学到什么
 
@@ -11,7 +11,7 @@
 ## 完整代码
 
 ```rust
-use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
 use synaptic_models::ScriptedChatModel;
 use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
 use synaptic_parsers::StrOutputParser;
@@ -19,7 +19,7 @@ use synaptic_runnables::Runnable;
 use std::collections::HashMap;
 
 #[tokio::main]
-async fn main() -> Result<(), SynapseError> {
+async fn main() -> Result<(), SynapticError> {
     // 1. 创建提示模板
     let prompt = ChatPromptTemplate::new(vec![
         MessageTemplate::system("You are a helpful translator. Translate the following text to {{ language }}."),
@@ -107,7 +107,7 @@ let chain = prompt.boxed() | model.boxed() | parser.boxed();
 let result = chain.invoke(variables).await?;
 ```
 
-管道运算符 `|` 将前一个组件的输出作为后一个组件的输入，自动串联调用。这就是 LCEL（LangChain Expression Language）在 Synapse 中的体现。
+管道运算符 `|` 将前一个组件的输出作为后一个组件的输入，自动串联调用。这就是 LCEL（LangChain Expression Language）在 Synaptic 中的体现。
 
 ## 核心概念回顾
 

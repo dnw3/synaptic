@@ -123,6 +123,6 @@ let graph = StateGraph::new()
 ## Notes
 
 - Interrupts require a checkpointer. Without one, the graph cannot save state for resumption.
-- The interrupt error is a `SynapseError::Graph` with a message like `"interrupted before node 'tools'"` or `"interrupted after node 'agent'"`.
+- The interrupt error is a `SynapticError::Graph` with a message like `"interrupted before node 'tools'"` or `"interrupted after node 'agent'"`.
 - You can interrupt at multiple nodes by passing multiple names to `interrupt_before()` or `interrupt_after()`.
 - You can combine `interrupt_before` and `interrupt_after` on different nodes in the same graph.

@@ -43,7 +43,7 @@ assert_eq!(result["greeting"], "Hello, Alice!");
 
 ### How it works
 
-1. The input must be a JSON object (`Value::Object`). If it is not, `RunnableAssign` returns a `SynapseError::Validation` error.
+1. The input must be a JSON object (`Value::Object`). If it is not, `RunnableAssign` returns a `SynapticError::Validation` error.
 2. Each branch receives a clone of the full input object.
 3. All branches run concurrently via `futures::future::join_all`.
 4. Branch outputs are inserted into the original object using the branch name as the key. If a branch name collides with an existing key, the branch output overwrites the original value.
@@ -105,7 +105,7 @@ assert_eq!(result, json!({"name": "Alice", "age": 30}));
 
 ### Error handling
 
-`RunnablePick` expects a JSON object as input. If the input is not an object (e.g., a string or array), it returns a `SynapseError::Validation` error.
+`RunnablePick` expects a JSON object as input. If the input is not an object (e.g., a string or array), it returns a `SynapticError::Validation` error.
 
 Missing keys are not an error -- they are simply absent from the output:
 

@@ -1,7 +1,7 @@
 [book]
-title = "Synapse"
+title = "Synaptic"
 description = "A Rust agent framework with LangChain-compatible architecture"
-authors = ["Synapse Contributors"]
+authors = ["Synaptic Contributors"]
 language = "en"
 src = "src"
 

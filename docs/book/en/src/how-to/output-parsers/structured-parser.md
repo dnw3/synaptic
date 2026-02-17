@@ -34,7 +34,7 @@ assert_eq!(result.age, 30);
 
 ## Error Handling
 
-If the input string is not valid JSON or does not match the struct's schema, the parser returns `Err(SynapseError::Parsing(...))`:
+If the input string is not valid JSON or does not match the struct's schema, the parser returns `Err(SynapticError::Parsing(...))`:
 
 ```rust
 use synaptic_parsers::StructuredOutputParser;

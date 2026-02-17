@@ -1,6 +1,6 @@
 # State & Nodes
 
-Graphs in Synapse operate on a **state** value that flows through **nodes**. Each node receives the current state, processes it, and returns an updated state. The `State` trait defines how states are merged, and the `Node<S>` trait defines how nodes process state.
+Graphs in Synaptic operate on a **state** value that flows through **nodes**. Each node receives the current state, processes it, and returns an updated state. The `State` trait defines how states are merged, and the `Node<S>` trait defines how nodes process state.
 
 ## The `State` Trait
 
@@ -17,7 +17,7 @@ The `merge()` method is called when combining state updates -- for example, when
 
 ## `MessageState` -- The Built-in State
 
-For the common case of conversational agents, Synapse provides `MessageState`:
+For the common case of conversational agents, Synaptic provides `MessageState`:
 
 ```rust
 use synaptic_graph::MessageState;
@@ -81,7 +81,7 @@ A node is any type that implements `Node<S>`:
 
 ```rust
 use async_trait::async_trait;
-use synaptic_core::SynapseError;
+use synaptic_core::SynapticError;
 use synaptic_graph::{Node, MessageState};
 use synaptic_core::Message;
 
@@ -89,7 +89,7 @@ struct GreeterNode;
 
 #[async_trait]
 impl Node<MessageState> for GreeterNode {
-    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapseError> {
+    async fn process(&self, mut state: MessageState) -> Result<MessageState, SynapticError> {
         state.messages.push(Message::ai("Hello! How can I help?"));
         Ok(state)
     }
@@ -112,7 +112,7 @@ let greeter = FnNode::new(|mut state: MessageState| async move {
 });
 ```
 
-`FnNode` accepts any function with the signature `Fn(S) -> Future<Output = Result<S, SynapseError>>` where `S: State`.
+`FnNode` accepts any function with the signature `Fn(S) -> Future<Output = Result<S, SynapticError>>` where `S: State`.
 
 ## Adding Nodes to a Graph
 

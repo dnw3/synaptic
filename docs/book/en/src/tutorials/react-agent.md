@@ -11,7 +11,7 @@ A ReAct agent follows a loop:
 3. **Observe** -- The tool results are added to the conversation as `Tool` messages.
 4. **Repeat** -- The LLM reviews the tool output and either calls more tools or produces a final answer.
 
-Synapse provides `create_react_agent(model, tools)`, which builds a compiled `StateGraph` that implements this loop automatically.
+Synaptic provides `create_react_agent(model, tools)`, which builds a compiled `StateGraph` that implements this loop automatically.
 
 ## Prerequisites
 
@@ -29,12 +29,12 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 ## Step 1: Define a Custom Tool
 
-Every tool in Synapse implements the `Tool` trait. A tool has a name, a description (used by the LLM to decide when to call it), and an async `call` method that receives JSON arguments and returns a JSON result.
+Every tool in Synaptic implements the `Tool` trait. A tool has a name, a description (used by the LLM to decide when to call it), and an async `call` method that receives JSON arguments and returns a JSON result.
 
 ```rust
 use async_trait::async_trait;
 use serde_json::json;
-use synaptic_core::{SynapseError, Tool};
+use synaptic_core::{SynapticError, Tool};
 
 struct AddTool;
 
@@ -48,7 +48,7 @@ impl Tool for AddTool {
         "Adds two numbers."
     }
 
-    async fn call(&self, args: serde_json::Value) -> Result<serde_json::Value, SynapseError> {
+    async fn call(&self, args: serde_json::Value) -> Result<serde_json::Value, SynapticError> {
         let a = args["a"].as_i64().unwrap_or_default();
         let b = args["b"].as_i64().unwrap_or_default();
         Ok(json!({ "value": a + b }))
@@ -56,7 +56,7 @@ impl Tool for AddTool {
 }
 ```
 
-The `args` parameter is a `serde_json::Value` -- typically a JSON object whose keys match whatever the LLM was told to provide. In production, you would validate the arguments more carefully and return a descriptive `SynapseError` on failure.
+The `args` parameter is a `serde_json::Value` -- typically a JSON object whose keys match whatever the LLM was told to provide. In production, you would validate the arguments more carefully and return a descriptive `SynapticError` on failure.
 
 ## Step 2: Create a Chat Model
 
@@ -65,13 +65,13 @@ For this tutorial we build a simple demo model that simulates the ReAct loop. On
 ```rust
 use async_trait::async_trait;
 use serde_json::json;
-use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError, ToolCall};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError, ToolCall};
 
 struct DemoModel;
 
 #[async_trait]
 impl ChatModel for DemoModel {
-    async fn chat(&self, request: ChatRequest) -> Result<ChatResponse, SynapseError> {
+    async fn chat(&self, request: ChatRequest) -> Result<ChatResponse, SynapticError> {
         let has_tool_output = request.messages.iter().any(|m| m.is_tool());
 
         if !has_tool_output {
@@ -151,7 +151,7 @@ Here is the complete program that ties all the pieces together:
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::json;
-use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError, Tool, ToolCall};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError, Tool, ToolCall};
 use synaptic_graph::{create_react_agent, MessageState};
 
 // --- Model ---
@@ -160,7 +160,7 @@ struct DemoModel;
 
 #[async_trait]
 impl ChatModel for DemoModel {
-    async fn chat(&self, request: ChatRequest) -> Result<ChatResponse, SynapseError> {
+    async fn chat(&self, request: ChatRequest) -> Result<ChatResponse, SynapticError> {
         let has_tool_output = request.messages.iter().any(|m| m.is_tool());
         if !has_tool_output {
             Ok(ChatResponse {
@@ -191,7 +191,7 @@ struct AddTool;
 impl Tool for AddTool {
     fn name(&self) -> &'static str { "add" }
     fn description(&self) -> &'static str { "Adds two numbers." }
-    async fn call(&self, args: serde_json::Value) -> Result<serde_json::Value, SynapseError> {
+    async fn call(&self, args: serde_json::Value) -> Result<serde_json::Value, SynapticError> {
         let a = args["a"].as_i64().unwrap_or_default();
         let b = args["b"].as_i64().unwrap_or_default();
         Ok(json!({ "value": a + b }))
@@ -201,7 +201,7 @@ impl Tool for AddTool {
 // --- Main ---
 
 #[tokio::main]
-async fn main() -> Result<(), SynapseError> {
+async fn main() -> Result<(), SynapticError> {
     let model = Arc::new(DemoModel);
     let tools: Vec<Arc<dyn Tool>> = vec![Arc::new(AddTool)];
 

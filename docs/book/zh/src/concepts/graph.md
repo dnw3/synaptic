@@ -1,6 +1,6 @@
 # Graph
 
-Synapse 的 Graph 系统实现了 LangGraph 风格的状态机编排。它让你可以定义复杂的多步骤工作流，支持条件路由、循环、检查点、人机交互和可视化。
+Synaptic 的 Graph 系统实现了 LangGraph 风格的状态机编排。它让你可以定义复杂的多步骤工作流，支持条件路由、循环、检查点、人机交互和可视化。
 
 ## 核心概念
 
@@ -71,7 +71,7 @@ impl State for MyState {
 ```rust
 #[async_trait]
 pub trait Node<S: State>: Send + Sync {
-    async fn process(&self, state: S) -> Result<S, SynapseError>;
+    async fn process(&self, state: S) -> Result<S, SynapticError>;
 }
 ```
 

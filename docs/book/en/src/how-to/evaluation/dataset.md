@@ -57,7 +57,7 @@ println!("Passed: {}", report.passed);     // 2
 println!("Accuracy: {:.0}%", report.accuracy * 100.0);  // 67%
 ```
 
-The number of predictions must match the number of dataset items. If they differ, `evaluate()` returns a `SynapseError::Validation`.
+The number of predictions must match the number of dataset items. If they differ, `evaluate()` returns a `SynapticError::Validation`.
 
 ## `EvalReport`
 

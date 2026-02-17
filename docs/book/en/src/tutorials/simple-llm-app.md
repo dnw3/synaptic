@@ -1,10 +1,10 @@
 # Build a Simple LLM Application
 
-This tutorial walks you through building a basic chat application with Synapse. You will learn how to create a chat model, send messages, template prompts, and compose processing pipelines using the LCEL pipe operator.
+This tutorial walks you through building a basic chat application with Synaptic. You will learn how to create a chat model, send messages, template prompts, and compose processing pipelines using the LCEL pipe operator.
 
 ## Prerequisites
 
-Add the required Synapse crates to your `Cargo.toml`:
+Add the required Synaptic crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
@@ -19,7 +19,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 ## Step 1: Create a Chat Model
 
-Every LLM interaction in Synapse goes through a type that implements the `ChatModel` trait. For production use you would reach for `OpenAiChatModel`, `AnthropicChatModel`, or one of the other provider adapters. For this tutorial we use `ScriptedChatModel`, which returns pre-configured responses -- perfect for offline development and testing.
+Every LLM interaction in Synaptic goes through a type that implements the `ChatModel` trait. For production use you would reach for `OpenAiChatModel`, `AnthropicChatModel`, or one of the other provider adapters. For this tutorial we use `ScriptedChatModel`, which returns pre-configured responses -- perfect for offline development and testing.
 
 ```rust
 use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message};
@@ -67,7 +67,7 @@ Key points:
 
 - `Message::system()`, `Message::human()`, and `Message::ai()` are factory methods for building typed messages.
 - `ChatRequest::new(messages)` is the constructor. Never build the struct literal directly.
-- `model.chat(request)` is async and returns `Result<ChatResponse, SynapseError>`.
+- `model.chat(request)` is async and returns `Result<ChatResponse, SynapticError>`.
 
 ## Step 3: Template Messages with ChatPromptTemplate
 
@@ -107,7 +107,7 @@ let messages = template.format(&values).unwrap();
 
 ## Step 4: Compose a Pipeline with the Pipe Operator
 
-Synapse implements LangChain Expression Language (LCEL) composition through the `|` pipe operator. You can chain any two runnables together as long as the output type of the first matches the input type of the second.
+Synaptic implements LangChain Expression Language (LCEL) composition through the `|` pipe operator. You can chain any two runnables together as long as the output type of the first matches the input type of the second.
 
 Here is a complete example that templates a prompt and extracts the response text:
 

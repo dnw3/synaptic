@@ -1,6 +1,6 @@
 # Memory
 
-Without memory, every LLM call is stateless -- the model has no knowledge of previous interactions. Memory in Synapse solves this by storing, retrieving, and managing conversation history so that subsequent calls include relevant context. This page explains the memory abstraction, the available strategies, and how they trade off between completeness and cost.
+Without memory, every LLM call is stateless -- the model has no knowledge of previous interactions. Memory in Synaptic solves this by storing, retrieving, and managing conversation history so that subsequent calls include relevant context. This page explains the memory abstraction, the available strategies, and how they trade off between completeness and cost.
 
 ## The MemoryStore Trait
 
@@ -9,9 +9,9 @@ All memory backends implement a single trait:
 ```rust
 #[async_trait]
 pub trait MemoryStore: Send + Sync {
-    async fn append(&self, session_id: &str, message: Message) -> Result<(), SynapseError>;
-    async fn load(&self, session_id: &str) -> Result<Vec<Message>, SynapseError>;
-    async fn clear(&self, session_id: &str) -> Result<(), SynapseError>;
+    async fn append(&self, session_id: &str, message: Message) -> Result<(), SynapticError>;
+    async fn load(&self, session_id: &str) -> Result<Vec<Message>, SynapticError>;
+    async fn clear(&self, session_id: &str) -> Result<(), SynapticError>;
 }
 ```
 
@@ -20,7 +20,7 @@ Three operations, keyed by a session identifier:
 - **`load`** -- retrieve the full history for a session
 - **`clear`** -- delete all messages for a session
 
-The `session_id` parameter is central to Synapse's memory design. Two conversations with different session IDs are completely isolated, even if they share the same memory store instance. This enables multi-tenant applications where many users interact concurrently through a single system.
+The `session_id` parameter is central to Synaptic's memory design. Two conversations with different session IDs are completely isolated, even if they share the same memory store instance. This enables multi-tenant applications where many users interact concurrently through a single system.
 
 ## InMemoryStore
 

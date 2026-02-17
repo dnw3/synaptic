@@ -1,6 +1,6 @@
 # Graph
 
-Synapse provides LangGraph-style graph orchestration through the `synaptic_graph` crate. A `StateGraph` is a state machine where **nodes** process state and **edges** control the flow between nodes. This architecture supports fixed routing, conditional branching, checkpointing for persistence, human-in-the-loop interrupts, and streaming execution.
+Synaptic provides LangGraph-style graph orchestration through the `synaptic_graph` crate. A `StateGraph` is a state machine where **nodes** process state and **edges** control the flow between nodes. This architecture supports fixed routing, conditional branching, checkpointing for persistence, human-in-the-loop interrupts, and streaming execution.
 
 ## Core Concepts
 

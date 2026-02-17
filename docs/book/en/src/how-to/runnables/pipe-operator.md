@@ -4,7 +4,7 @@ This guide shows how to chain runnables together using the `|` pipe operator to 
 
 ## Overview
 
-The `|` operator on `BoxRunnable` creates a `RunnableSequence` that feeds the output of the first runnable into the input of the second. This is the primary way to build LCEL chains in Synapse.
+The `|` operator on `BoxRunnable` creates a `RunnableSequence` that feeds the output of the first runnable into the input of the second. This is the primary way to build LCEL chains in Synaptic.
 
 The pipe operator is implemented via Rust's `BitOr` trait on `BoxRunnable`. Both sides must be boxed first with `.boxed()`, because the operator needs type-erased wrappers to connect runnables with different concrete types.
 
@@ -96,10 +96,10 @@ assert_eq!(result, "unchanged");
 If any step in the chain returns an `Err`, the chain short-circuits immediately and returns that error. Subsequent steps are not executed:
 
 ```rust
-use synaptic_core::SynapseError;
+use synaptic_core::SynapticError;
 
 let failing = RunnableLambda::new(|_x: String| async move {
-    Err::<String, _>(SynapseError::Validation("something went wrong".into()))
+    Err::<String, _>(SynapticError::Validation("something went wrong".into()))
 });
 
 let after = RunnableLambda::new(|x: String| async move {

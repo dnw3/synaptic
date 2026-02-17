@@ -17,7 +17,7 @@ cargo run -p memory_chat
 ## Expected output
 
 ```
-human: Hello, Synapse
+human: Hello, Synaptic
 ai: Hello, how can I help you?
 ```
 

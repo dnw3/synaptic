@@ -1,10 +1,10 @@
 # Runnables 与 LCEL
 
-LCEL（LangChain Expression Language）是一种声明式的组件组合方式。在 Synapse 中，LCEL 通过 `Runnable` trait 和管道运算符 `|` 实现，让你可以像搭积木一样将组件串联成链式调用。
+LCEL（LangChain Expression Language）是一种声明式的组件组合方式。在 Synaptic 中，LCEL 通过 `Runnable` trait 和管道运算符 `|` 实现，让你可以像搭积木一样将组件串联成链式调用。
 
 ## Runnable trait
 
-`Runnable<I, O>` 是 Synapse 的核心组合抽象。任何可以接受输入并产生输出的组件都实现了这个 trait：
+`Runnable<I, O>` 是 Synaptic 的核心组合抽象。任何可以接受输入并产生输出的组件都实现了这个 trait：
 
 ```rust
 #[async_trait]
@@ -14,10 +14,10 @@ where
     O: Send + 'static,
 {
     /// 执行单次调用
-    async fn invoke(&self, input: I, config: &RunnableConfig) -> Result<O, SynapseError>;
+    async fn invoke(&self, input: I, config: &RunnableConfig) -> Result<O, SynapticError>;
 
     /// 批量执行（默认实现为顺序调用 invoke）
-    async fn batch(&self, inputs: Vec<I>, config: &RunnableConfig) -> Vec<Result<O, SynapseError>>;
+    async fn batch(&self, inputs: Vec<I>, config: &RunnableConfig) -> Vec<Result<O, SynapticError>>;
 
     /// 流式输出（默认实现将 invoke 结果包装为单元素流）
     fn stream<'a>(&'a self, input: I, config: &'a RunnableConfig) -> RunnableOutputStream<'a, O>;
@@ -60,7 +60,7 @@ let result = chain.invoke(input, &config).await?;
 
 ## 核心组合类型
 
-Synapse 提供了丰富的 `Runnable` 实现类型，覆盖常见的组合模式：
+Synaptic 提供了丰富的 `Runnable` 实现类型，覆盖常见的组合模式：
 
 ### RunnablePassthrough
 

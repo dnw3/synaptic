@@ -1,10 +1,10 @@
 # Build a RAG Application
 
-This tutorial walks you through building a Retrieval-Augmented Generation (RAG) pipeline with Synapse. RAG is a pattern where you retrieve relevant documents from a knowledge base and include them as context in a prompt, so the LLM can answer questions grounded in your data rather than relying solely on its training.
+This tutorial walks you through building a Retrieval-Augmented Generation (RAG) pipeline with Synaptic. RAG is a pattern where you retrieve relevant documents from a knowledge base and include them as context in a prompt, so the LLM can answer questions grounded in your data rather than relying solely on its training.
 
 ## Prerequisites
 
-Add the required Synapse crates to your `Cargo.toml`:
+Add the required Synaptic crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
@@ -52,7 +52,7 @@ A RAG pipeline has two phases:
 
 ## Step 1: Load Documents
 
-Synapse provides several document loaders. `TextLoader` wraps an in-memory string into a `Document`. For files on disk, use `FileLoader`.
+Synaptic provides several document loaders. `TextLoader` wraps an in-memory string into a `Document`. For files on disk, use `FileLoader`.
 
 ```rust
 use synaptic_loaders::{Loader, TextLoader};
@@ -172,7 +172,7 @@ let retriever = VectorStoreRetriever::new(
 let results = retriever.retrieve("What is Rust?", 3).await?;
 ```
 
-The `Retriever` trait has a single method -- `retrieve(query, top_k)` -- and is implemented by many retrieval strategies in Synapse:
+The `Retriever` trait has a single method -- `retrieve(query, top_k)` -- and is implemented by many retrieval strategies in Synaptic:
 
 - **`VectorStoreRetriever`** -- wraps any `VectorStore` for similarity search.
 - **`BM25Retriever`** -- keyword-based scoring (no embeddings needed).
@@ -184,7 +184,7 @@ The `Retriever` trait has a single method -- `retrieve(query, top_k)` -- and is 
 The final step combines retrieved context with the user's question in a prompt. Here is the complete pipeline:
 
 ```rust
-use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
 use synaptic_models::ScriptedChatModel;
 use synaptic_loaders::{Loader, TextLoader};
 use synaptic_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
@@ -194,7 +194,7 @@ use synaptic_retrieval::Retriever;
 use std::sync::Arc;
 
 #[tokio::main]
-async fn main() -> Result<(), SynapseError> {
+async fn main() -> Result<(), SynapticError> {
     // 1. Load
     let loader = TextLoader::new(
         "rust-guide",

@@ -1,6 +1,6 @@
 # Callbacks
 
-Synapse provides an event-driven callback system for observing agent execution. The `CallbackHandler` trait receives `RunEvent` values at key lifecycle points -- when a run starts, when the LLM is called, when tools are executed, and when the run finishes or fails.
+Synaptic provides an event-driven callback system for observing agent execution. The `CallbackHandler` trait receives `RunEvent` values at key lifecycle points -- when a run starts, when the LLM is called, when tools are executed, and when the run finishes or fails.
 
 ## The `CallbackHandler` Trait
 
@@ -9,7 +9,7 @@ The trait is defined in `synaptic_core`:
 ```rust
 #[async_trait]
 pub trait CallbackHandler: Send + Sync {
-    async fn on_event(&self, event: RunEvent) -> Result<(), SynapseError>;
+    async fn on_event(&self, event: RunEvent) -> Result<(), SynapticError>;
 }
 ```
 
@@ -32,7 +32,7 @@ The `RunEvent` enum covers the full agent lifecycle:
 
 ## Built-in Handlers
 
-Synapse ships with four callback handlers:
+Synaptic ships with four callback handlers:
 
 | Handler | Purpose |
 |---------|---------|
@@ -47,13 +47,13 @@ You can implement `CallbackHandler` to add your own observability:
 
 ```rust
 use async_trait::async_trait;
-use synaptic_core::{CallbackHandler, RunEvent, SynapseError};
+use synaptic_core::{CallbackHandler, RunEvent, SynapticError};
 
 struct MetricsCallback;
 
 #[async_trait]
 impl CallbackHandler for MetricsCallback {
-    async fn on_event(&self, event: RunEvent) -> Result<(), SynapseError> {
+    async fn on_event(&self, event: RunEvent) -> Result<(), SynapticError> {
         match event {
             RunEvent::LlmCalled { message_count, .. } => {
                 // Record to your metrics system

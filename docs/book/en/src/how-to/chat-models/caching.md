@@ -4,7 +4,7 @@ This guide shows how to cache LLM responses to avoid redundant API calls and red
 
 ## Overview
 
-Synapse provides two cache implementations through the `LlmCache` trait:
+Synaptic provides two cache implementations through the `LlmCache` trait:
 
 - **`InMemoryCache`** -- exact-match caching with optional TTL expiration.
 - **`SemanticCache`** -- embedding-based similarity matching for semantically equivalent queries.
@@ -85,9 +85,9 @@ Both cache types implement the `LlmCache` trait:
 ```rust
 #[async_trait]
 pub trait LlmCache: Send + Sync {
-    async fn get(&self, key: &str) -> Result<Option<ChatResponse>, SynapseError>;
-    async fn put(&self, key: &str, response: &ChatResponse) -> Result<(), SynapseError>;
-    async fn clear(&self) -> Result<(), SynapseError>;
+    async fn get(&self, key: &str) -> Result<Option<ChatResponse>, SynapticError>;
+    async fn put(&self, key: &str, response: &ChatResponse) -> Result<(), SynapticError>;
+    async fn clear(&self) -> Result<(), SynapticError>;
 }
 ```
 

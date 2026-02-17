@@ -1,6 +1,6 @@
 # Graph Visualization
 
-Synapse provides multiple ways to visualize a compiled graph, from text-based formats suitable for terminals and documentation to image formats for presentations and debugging.
+Synaptic provides multiple ways to visualize a compiled graph, from text-based formats suitable for terminals and documentation to image formats for presentations and debugging.
 
 ## Mermaid Diagram
 

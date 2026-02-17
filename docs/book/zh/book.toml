@@ -1,7 +1,7 @@
 [book]
-title = "Synapse"
+title = "Synaptic"
 description = "Rust AI Agent 框架，兼容 LangChain 架构"
-authors = ["Synapse Contributors"]
+authors = ["Synaptic Contributors"]
 language = "zh"
 src = "src"
 

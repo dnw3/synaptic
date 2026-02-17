@@ -111,7 +111,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
 use synaptic_core::{
-    ChatModel, ChatRequest, Message, SynapseError, Tool,
+    ChatModel, ChatRequest, Message, SynapticError, Tool,
     ToolChoice, ToolDefinition,
 };
 use synaptic_tools::{ToolRegistry, SerialToolExecutor};
@@ -123,7 +123,7 @@ struct CalculatorTool;
 impl Tool for CalculatorTool {
     fn name(&self) -> &'static str { "calculator" }
     fn description(&self) -> &'static str { "Perform arithmetic calculations" }
-    async fn call(&self, args: Value) -> Result<Value, SynapseError> {
+    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
         let expr = args["expression"].as_str().unwrap_or("");
         // Simplified: in production, parse and evaluate the expression
         Ok(json!({"result": expr}))
@@ -168,6 +168,6 @@ for tc in response.message.tool_calls() {
 
 ## Provider Support
 
-All Synapse provider adapters (`OpenAiChatModel`, `AnthropicChatModel`, `GeminiChatModel`, `OllamaChatModel`) support `ToolChoice`. The adapter translates the Synapse `ToolChoice` enum into the provider-specific format automatically.
+All Synaptic provider adapters (`OpenAiChatModel`, `AnthropicChatModel`, `GeminiChatModel`, `OllamaChatModel`) support `ToolChoice`. The adapter translates the Synaptic `ToolChoice` enum into the provider-specific format automatically.
 
 See also: [Bind Tools](../chat-models/bind-tools.md) for attaching tools to a model permanently, and the [ReAct Agent tutorial](../../tutorials/react-agent.md) for a complete agent loop.

@@ -1,6 +1,6 @@
 # Runnables (LCEL)
 
-Synapse implements LCEL (LangChain Expression Language) through the `Runnable` trait and a set of composable building blocks. Every component in an LCEL chain -- prompts, models, parsers, custom logic -- implements the same `Runnable<I, O>` interface, so they can be combined freely with a uniform API.
+Synaptic implements LCEL (LangChain Expression Language) through the `Runnable` trait and a set of composable building blocks. Every component in an LCEL chain -- prompts, models, parsers, custom logic -- implements the same `Runnable<I, O>` interface, so they can be combined freely with a uniform API.
 
 ## The `Runnable` trait
 
@@ -35,7 +35,7 @@ assert_eq!(result, "HELLO");
 
 ## Building blocks
 
-Synapse provides the following LCEL building blocks:
+Synaptic provides the following LCEL building blocks:
 
 | Type | Purpose |
 |------|---------|

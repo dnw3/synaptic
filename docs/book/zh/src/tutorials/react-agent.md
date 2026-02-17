@@ -27,7 +27,7 @@ ReAct Agent 遵循一个简单的循环：
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::json;
-use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError, Tool, ToolCall};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError, Tool, ToolCall};
 use synaptic_graph::{create_react_agent, MessageState};
 
 // 自定义模型（演示用，模拟 LLM 的工具调用行为）
@@ -35,7 +35,7 @@ struct DemoModel;
 
 #[async_trait]
 impl ChatModel for DemoModel {
-    async fn chat(&self, request: ChatRequest) -> Result<ChatResponse, SynapseError> {
+    async fn chat(&self, request: ChatRequest) -> Result<ChatResponse, SynapticError> {
         // 检查是否已经有工具调用的结果
         let has_tool_output = request.messages.iter().any(|m| m.is_tool());
 
@@ -75,7 +75,7 @@ impl Tool for AddTool {
         "Adds two numbers."
     }
 
-    async fn call(&self, args: serde_json::Value) -> Result<serde_json::Value, SynapseError> {
+    async fn call(&self, args: serde_json::Value) -> Result<serde_json::Value, SynapticError> {
         let a = args["a"].as_i64().unwrap_or_default();
         let b = args["b"].as_i64().unwrap_or_default();
         Ok(json!({ "value": a + b }))
@@ -83,7 +83,7 @@ impl Tool for AddTool {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), SynapseError> {
+async fn main() -> Result<(), SynapticError> {
     // 1. 创建模型和工具
     let model = Arc::new(DemoModel);
     let tools: Vec<Arc<dyn Tool>> = vec![Arc::new(AddTool)];
@@ -123,7 +123,7 @@ struct AddTool;
 impl Tool for AddTool {
     fn name(&self) -> &'static str { "add" }
     fn description(&self) -> &'static str { "Adds two numbers." }
-    async fn call(&self, args: serde_json::Value) -> Result<serde_json::Value, SynapseError> {
+    async fn call(&self, args: serde_json::Value) -> Result<serde_json::Value, SynapticError> {
         let a = args["a"].as_i64().unwrap_or_default();
         let b = args["b"].as_i64().unwrap_or_default();
         Ok(json!({ "value": a + b }))
@@ -144,7 +144,7 @@ let tools: Vec<Arc<dyn Tool>> = vec![Arc::new(AddTool)];
 let graph = create_react_agent(model, tools)?;
 ```
 
-`create_react_agent` 是 Synapse 提供的便捷函数，等价于 LangChain 的同名函数。它内部构建了一个 `StateGraph`，包含：
+`create_react_agent` 是 Synaptic 提供的便捷函数，等价于 LangChain 的同名函数。它内部构建了一个 `StateGraph`，包含：
 - **agent 节点** -- 调用 LLM 进行推理
 - **tools 节点** -- 使用 `ToolNode` 执行工具
 - **条件边** -- 根据 LLM 是否返回了 `ToolCall` 决定下一步走向
@@ -210,4 +210,4 @@ LLM 会根据问题自动选择合适的工具。
 
 - [构建 Graph 工作流](graph-workflow.md) -- 构建自定义状态机工作流
 - [Graph 概念](../concepts/graph.md) -- 深入了解 StateGraph 的工作原理
-- [什么是 Synapse？](../what-is-synapse.md) -- 回顾 LangChain 到 Synapse 的概念映射
+- [什么是 Synaptic？](../what-is-synapse.md) -- 回顾 LangChain 到 Synaptic 的概念映射
