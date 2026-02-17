@@ -1,4 +1,4 @@
-use synapse_graph::Send;
+use synaptic_graph::Send;
 
 #[test]
 fn send_new_creates_instance() {

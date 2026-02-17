@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use synapse_prompts::{PromptError, PromptTemplate};
+use synaptic_prompts::{PromptError, PromptTemplate};
 
 #[test]
 fn partial_variables_fill_in_template() {

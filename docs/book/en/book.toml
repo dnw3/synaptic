@@ -12,9 +12,9 @@ create-missing = false
 [output.html]
 default-theme = "navy"
 preferred-dark-theme = "ayu"
-git-repository-url = "https://github.com/AIMOverse/synapse"
+git-repository-url = "https://github.com/dnw3/synaptic"
 git-repository-icon = "fa-github"
-edit-url-template = "https://github.com/AIMOverse/synapse/edit/main/docs/book/en/src/{path}"
+edit-url-template = "https://github.com/dnw3/synaptic/edit/main/docs/book/en/src/{path}"
 additional-css = ["../theme/custom.css"]
 additional-js = ["../theme/lang-switcher.js"]
 

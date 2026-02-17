@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use serde::Deserialize;
-use synapse::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
-use synapse::models::{ScriptedChatModel, StructuredOutputChatModel};
+use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
+use synaptic::models::{ScriptedChatModel, StructuredOutputChatModel};
 
 #[derive(Debug, Deserialize)]
 struct MovieReview {

@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde_json::json;
-use synapse_core::{SynapseError, Tool};
-use synapse_tools::HandleErrorTool;
+use synaptic_core::{SynapseError, Tool};
+use synaptic_tools::HandleErrorTool;
 
 struct FailingTool;
 

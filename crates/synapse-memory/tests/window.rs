@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use synapse_core::{MemoryStore, Message};
-use synapse_memory::{ConversationWindowMemory, InMemoryStore};
+use synaptic_core::{MemoryStore, Message};
+use synaptic_memory::{ConversationWindowMemory, InMemoryStore};
 
 #[tokio::test]
 async fn window_returns_last_n_messages() {

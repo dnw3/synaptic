@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use serde_json::{json, Value};
-use synapse_core::{Message, RunnableConfig};
-use synapse_prompts::{ChatPromptTemplate, MessageTemplate, PromptTemplate};
-use synapse_runnables::Runnable;
+use synaptic_core::{Message, RunnableConfig};
+use synaptic_prompts::{ChatPromptTemplate, MessageTemplate, PromptTemplate};
+use synaptic_runnables::Runnable;
 
 #[test]
 fn chat_template_renders_system_and_human() {

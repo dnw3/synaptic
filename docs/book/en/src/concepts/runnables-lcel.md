@@ -37,7 +37,7 @@ Rust's type system requires concrete types for composition, but LCEL chains can 
 The pipe operator (`|`) connects two boxed runnables into a `RunnableSequence`:
 
 ```rust
-use synapse::runnables::{BoxRunnable, Runnable, RunnableLambda};
+use synaptic::runnables::{BoxRunnable, Runnable, RunnableLambda};
 
 let step1 = RunnableLambda::new(|x: String| async move {
     Ok(x.to_uppercase())

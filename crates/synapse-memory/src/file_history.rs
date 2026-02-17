@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use async_trait::async_trait;
-use synapse_core::{MemoryStore, Message, SynapseError};
+use synaptic_core::{MemoryStore, Message, SynapseError};
 
 /// A chat message history backed by a JSON file on disk.
 ///

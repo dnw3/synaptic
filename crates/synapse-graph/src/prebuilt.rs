@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use synapse_core::{ChatModel, ChatRequest, Message, SynapseError, Tool, ToolDefinition};
-use synapse_tools::{SerialToolExecutor, ToolRegistry};
+use synaptic_core::{ChatModel, ChatRequest, Message, SynapseError, Tool, ToolDefinition};
+use synaptic_tools::{SerialToolExecutor, ToolRegistry};
 
 use crate::builder::StateGraph;
 use crate::checkpoint::Checkpointer;
@@ -85,7 +85,7 @@ pub fn create_react_agent(
 ///
 /// ```ignore
 /// use std::sync::Arc;
-/// use synapse_graph::{create_react_agent_with_options, ReactAgentOptions, MemorySaver};
+/// use synaptic_graph::{create_react_agent_with_options, ReactAgentOptions, MemorySaver};
 ///
 /// let options = ReactAgentOptions {
 ///     checkpointer: Some(Arc::new(MemorySaver::new())),

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use synapse_core::SynapseError;
-use synapse_retrieval::{Document, EnsembleRetriever, InMemoryRetriever, Retriever};
+use synaptic_core::SynapseError;
+use synaptic_retrieval::{Document, EnsembleRetriever, InMemoryRetriever, Retriever};
 
 #[tokio::test]
 async fn ensemble_combines_results_from_multiple_retrievers() -> Result<(), SynapseError> {

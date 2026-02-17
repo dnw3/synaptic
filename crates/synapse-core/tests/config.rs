@@ -1,4 +1,4 @@
-use synapse_core::RunnableConfig;
+use synaptic_core::RunnableConfig;
 
 #[test]
 fn default_config_has_empty_fields() {

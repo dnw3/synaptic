@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use synapse_prompts::{PromptError, PromptTemplate};
+use synaptic_prompts::{PromptError, PromptTemplate};
 
 #[test]
 fn renders_all_variables() {

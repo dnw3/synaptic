@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use synapse::core::SynapseError;
-use synapse::embeddings::FakeEmbeddings;
-use synapse::loaders::{Loader, TextLoader};
-use synapse::retrieval::Retriever;
-use synapse::splitters::{RecursiveCharacterTextSplitter, TextSplitter};
-use synapse::vectorstores::{InMemoryVectorStore, VectorStore, VectorStoreRetriever};
+use synaptic::core::SynapseError;
+use synaptic::embeddings::FakeEmbeddings;
+use synaptic::loaders::{Loader, TextLoader};
+use synaptic::retrieval::Retriever;
+use synaptic::splitters::{RecursiveCharacterTextSplitter, TextSplitter};
+use synaptic::vectorstores::{InMemoryVectorStore, VectorStore, VectorStoreRetriever};
 
 #[tokio::main]
 async fn main() -> Result<(), SynapseError> {

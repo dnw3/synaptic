@@ -1,4 +1,4 @@
-use synapse_splitters::{Language, RecursiveCharacterTextSplitter, TextSplitter};
+use synaptic_splitters::{Language, RecursiveCharacterTextSplitter, TextSplitter};
 
 #[test]
 fn python_splits_on_class_and_def() {

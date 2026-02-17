@@ -1,5 +1,5 @@
 [package]
-name = "synapse-splitters"
+name = "synaptic-splitters"
 description = "Text splitters: Character, Recursive, Markdown, HTML, Language, Token"
 edition.workspace = true
 version.workspace = true
@@ -9,8 +9,8 @@ rust-version.workspace = true
 repository.workspace = true
 
 [dependencies]
-synapse-core = { path = "../synapse-core" }
-synapse-retrieval = { path = "../synapse-retrieval" }
+synaptic-core = { version = "0.1.0", path = "../synapse-core" }
+synaptic-retrieval = { version = "0.1.0", path = "../synapse-retrieval" }
 serde_json.workspace = true
 
 [dev-dependencies]

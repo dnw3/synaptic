@@ -6,23 +6,23 @@ Synapse is organized as a workspace of focused crates. Each crate has its own AP
 
 | Crate | Description | Docs |
 |-------|-------------|------|
-| `synapse-core` | Shared traits and types (`ChatModel`, `Tool`, `Message`, `SynapseError`, etc.) | [docs.rs](https://docs.rs/synapse-core) |
-| `synapse-models` | LLM provider adapters (OpenAI, Anthropic, Gemini, Ollama) plus retry, rate limiting, and structured output wrappers | [docs.rs](https://docs.rs/synapse-models) |
-| `synapse-runnables` | LCEL composition (`Runnable` trait, `BoxRunnable`, pipe operator, parallel, branch, fallbacks, assign, pick) | [docs.rs](https://docs.rs/synapse-runnables) |
-| `synapse-prompts` | Prompt templates (`PromptTemplate`, `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate`) | [docs.rs](https://docs.rs/synapse-prompts) |
-| `synapse-parsers` | Output parsers (string, JSON, structured, list, enum, boolean, XML, fixing, retry) | [docs.rs](https://docs.rs/synapse-parsers) |
-| `synapse-tools` | Tool system (`ToolRegistry`, `SerialToolExecutor`, `ParallelToolExecutor`) | [docs.rs](https://docs.rs/synapse-tools) |
-| `synapse-memory` | Memory strategies (buffer, window, summary, token buffer, summary buffer, `RunnableWithMessageHistory`) | [docs.rs](https://docs.rs/synapse-memory) |
-| `synapse-callbacks` | Callback handlers (`RecordingCallback`, `TracingCallback`, `CompositeCallback`) | [docs.rs](https://docs.rs/synapse-callbacks) |
-| `synapse-retrieval` | Retriever implementations (in-memory, BM25, multi-query, ensemble, contextual compression, self-query, parent document) | [docs.rs](https://docs.rs/synapse-retrieval) |
-| `synapse-loaders` | Document loaders (text, JSON, CSV, directory, file, markdown, web) | [docs.rs](https://docs.rs/synapse-loaders) |
-| `synapse-splitters` | Text splitters (character, recursive character, markdown header, token, HTML header, language) | [docs.rs](https://docs.rs/synapse-splitters) |
-| `synapse-embeddings` | Embedding providers (`OpenAiEmbeddings`, `OllamaEmbeddings`, `FakeEmbeddings`, `CachedEmbeddings`) | [docs.rs](https://docs.rs/synapse-embeddings) |
-| `synapse-vectorstores` | Vector store implementations (`InMemoryVectorStore`, `VectorStoreRetriever`, `MultiVectorRetriever`) | [docs.rs](https://docs.rs/synapse-vectorstores) |
-| `synapse-graph` | Graph orchestration (`StateGraph`, `CompiledGraph`, `ToolNode`, `create_react_agent`, checkpointing, streaming) | [docs.rs](https://docs.rs/synapse-graph) |
-| `synapse-cache` | LLM caching (`InMemoryCache`, `SemanticCache`, `CachedChatModel`) | [docs.rs](https://docs.rs/synapse-cache) |
-| `synapse-eval` | Evaluation framework (exact match, regex, JSON validity, embedding distance, LLM judge evaluators; `Dataset` and `evaluate()`) | [docs.rs](https://docs.rs/synapse-eval) |
-| `synapse` | Unified facade crate that re-exports all sub-crates under a single namespace | [docs.rs](https://docs.rs/synapse) |
+| `synaptic-core` | Shared traits and types (`ChatModel`, `Tool`, `Message`, `SynapseError`, etc.) | [docs.rs](https://docs.rs/synaptic-core) |
+| `synaptic-models` | LLM provider adapters (OpenAI, Anthropic, Gemini, Ollama) plus retry, rate limiting, and structured output wrappers | [docs.rs](https://docs.rs/synaptic-models) |
+| `synaptic-runnables` | LCEL composition (`Runnable` trait, `BoxRunnable`, pipe operator, parallel, branch, fallbacks, assign, pick) | [docs.rs](https://docs.rs/synaptic-runnables) |
+| `synaptic-prompts` | Prompt templates (`PromptTemplate`, `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate`) | [docs.rs](https://docs.rs/synaptic-prompts) |
+| `synaptic-parsers` | Output parsers (string, JSON, structured, list, enum, boolean, XML, fixing, retry) | [docs.rs](https://docs.rs/synaptic-parsers) |
+| `synaptic-tools` | Tool system (`ToolRegistry`, `SerialToolExecutor`, `ParallelToolExecutor`) | [docs.rs](https://docs.rs/synaptic-tools) |
+| `synaptic-memory` | Memory strategies (buffer, window, summary, token buffer, summary buffer, `RunnableWithMessageHistory`) | [docs.rs](https://docs.rs/synaptic-memory) |
+| `synaptic-callbacks` | Callback handlers (`RecordingCallback`, `TracingCallback`, `CompositeCallback`) | [docs.rs](https://docs.rs/synaptic-callbacks) |
+| `synaptic-retrieval` | Retriever implementations (in-memory, BM25, multi-query, ensemble, contextual compression, self-query, parent document) | [docs.rs](https://docs.rs/synaptic-retrieval) |
+| `synaptic-loaders` | Document loaders (text, JSON, CSV, directory, file, markdown, web) | [docs.rs](https://docs.rs/synaptic-loaders) |
+| `synaptic-splitters` | Text splitters (character, recursive character, markdown header, token, HTML header, language) | [docs.rs](https://docs.rs/synaptic-splitters) |
+| `synaptic-embeddings` | Embedding providers (`OpenAiEmbeddings`, `OllamaEmbeddings`, `FakeEmbeddings`, `CachedEmbeddings`) | [docs.rs](https://docs.rs/synaptic-embeddings) |
+| `synaptic-vectorstores` | Vector store implementations (`InMemoryVectorStore`, `VectorStoreRetriever`, `MultiVectorRetriever`) | [docs.rs](https://docs.rs/synaptic-vectorstores) |
+| `synaptic-graph` | Graph orchestration (`StateGraph`, `CompiledGraph`, `ToolNode`, `create_react_agent`, checkpointing, streaming) | [docs.rs](https://docs.rs/synaptic-graph) |
+| `synaptic-cache` | LLM caching (`InMemoryCache`, `SemanticCache`, `CachedChatModel`) | [docs.rs](https://docs.rs/synaptic-cache) |
+| `synaptic-eval` | Evaluation framework (exact match, regex, JSON validity, embedding distance, LLM judge evaluators; `Dataset` and `evaluate()`) | [docs.rs](https://docs.rs/synaptic-eval) |
+| `synaptic` | Unified facade crate that re-exports all sub-crates under a single namespace | [docs.rs](https://docs.rs/synaptic) |
 
 > **Note:** The docs.rs links above will become active once the crates are published to crates.io. In the meantime, generate local documentation as described below.
 
@@ -44,18 +44,18 @@ cargo doc --workspace --no-deps
 
 ## Using the Facade Crate
 
-If you prefer a single dependency instead of listing individual crates, use the `synapse` facade:
+If you prefer a single dependency instead of listing individual crates, use the `synaptic` facade:
 
 ```toml
 [dependencies]
-synapse = { path = "crates/synapse" }
+synaptic = { path = "crates/synapse" }
 ```
 
 Then import through the unified namespace:
 
 ```rust
-use synapse::core::Message;
-use synapse::models::OpenAiChatModel;
-use synapse::graph::create_react_agent;
-use synapse::runnables::Runnable;
+use synaptic::core::Message;
+use synaptic::models::OpenAiChatModel;
+use synaptic::graph::create_react_agent;
+use synaptic::runnables::Runnable;
 ```

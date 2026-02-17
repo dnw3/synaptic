@@ -1,6 +1,6 @@
 use futures::StreamExt;
-use synapse_core::{RunnableConfig, SynapseError};
-use synapse_runnables::{
+use synaptic_core::{RunnableConfig, SynapseError};
+use synaptic_runnables::{
     BoxRunnable, Runnable, RunnableLambda, RunnableOutputStream, RunnableWithFallbacks,
 };
 

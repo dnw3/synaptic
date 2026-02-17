@@ -1,6 +1,6 @@
 use serde_json::json;
-use synapse_core::RunnableConfig;
-use synapse_runnables::{
+use synaptic_core::RunnableConfig;
+use synaptic_runnables::{
     Runnable, RunnableAssign, RunnableLambda, RunnablePassthrough, RunnablePick,
 };
 

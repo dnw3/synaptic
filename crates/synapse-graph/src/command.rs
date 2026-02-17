@@ -25,7 +25,7 @@ pub enum GraphCommand {
 /// # Example
 ///
 /// ```ignore
-/// use synapse_graph::GraphContext;
+/// use synaptic_graph::GraphContext;
 ///
 /// async fn my_node_logic(ctx: &GraphContext) {
 ///     // Skip normal routing and go directly to "summary" node

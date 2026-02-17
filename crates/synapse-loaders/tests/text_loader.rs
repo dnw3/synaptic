@@ -1,4 +1,4 @@
-use synapse_loaders::{Loader, TextLoader};
+use synaptic_loaders::{Loader, TextLoader};
 
 #[tokio::test]
 async fn text_loader_returns_single_document() {

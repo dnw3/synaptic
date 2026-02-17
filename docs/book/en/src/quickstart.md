@@ -5,8 +5,8 @@ This guide walks you through a minimal Synapse program that sends a chat request
 ## The Complete Example
 
 ```rust
-use synapse::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
-use synapse::models::ScriptedChatModel;
+use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
+use synaptic::models::ScriptedChatModel;
 
 #[tokio::main]
 async fn main() -> Result<(), SynapseError> {
@@ -56,7 +56,7 @@ Assistant: Hello! I'm a Synapse assistant. How can I help you today?
 To use OpenAI instead of the scripted model, replace the model creation:
 
 ```rust
-use synapse::models::OpenAiChatModel;
+use synaptic::models::OpenAiChatModel;
 
 // Reads OPENAI_API_KEY from the environment automatically.
 let model = OpenAiChatModel::new("gpt-4o");

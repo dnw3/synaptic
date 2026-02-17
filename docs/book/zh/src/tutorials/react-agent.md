@@ -27,8 +27,8 @@ ReAct Agent 遵循一个简单的循环：
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::json;
-use synapse_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError, Tool, ToolCall};
-use synapse_graph::{create_react_agent, MessageState};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError, Tool, ToolCall};
+use synaptic_graph::{create_react_agent, MessageState};
 
 // 自定义模型（演示用，模拟 LLM 的工具调用行为）
 struct DemoModel;
@@ -184,7 +184,7 @@ let result = graph.invoke(state).await?;
 在实际应用中，将 `DemoModel` 替换为真实的模型适配器：
 
 ```rust
-use synapse_models::OpenAiChatModel;
+use synaptic_models::OpenAiChatModel;
 
 let model = Arc::new(OpenAiChatModel::new("gpt-4o"));
 ```

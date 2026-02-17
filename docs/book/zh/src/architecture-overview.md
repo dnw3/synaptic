@@ -5,44 +5,44 @@ Synapse 采用分层 crate 架构，将核心 trait 与具体实现分离。这�
 ## 设计原则
 
 1. **Trait 驱动** -- 所有核心抽象（`ChatModel`、`Tool`、`Embeddings`、`Retriever` 等）都定义为 trait。具体实现在独立的 crate 中提供，消费方只依赖 trait，不依赖具体类型。
-2. **关注点分离** -- 每个 crate 只负责一个职责：`synapse-models` 处理 LLM 适配，`synapse-memory` 处理会话记忆，`synapse-graph` 处理状态机编排，以此类推。
+2. **关注点分离** -- 每个 crate 只负责一个职责：`synaptic-models` 处理 LLM 适配，`synaptic-memory` 处理会话记忆，`synaptic-graph` 处理状态机编排，以此类推。
 3. **零开销抽象** -- 利用 Rust 的泛型和 trait 系统，在编译时消除不需要的间接调用。`BoxRunnable` 提供类型擦除以支持动态组合，但核心路径保持零开销。
 4. **异步优先** -- 所有 I/O 操作都是异步的，基于 Tokio 运行时。这使得 Synapse 可以高效处理并发请求，无需线程池开销。
 
 ## Crate 依赖关系图
 
 ```text
-                              synapse (facade)
+                              synaptic (facade)
                                     |
         ┌───────────┬───────────┬───┴───┬───────────┬───────────┐
         |           |           |       |           |           |
-   synapse-graph synapse-   synapse- synapse-  synapse-   synapse-
+   synaptic-graph synaptic-  synaptic- synaptic- synaptic-  synaptic-
         |       runnables   models   cache    eval       callbacks
         |           |           |       |
-        |     synapse-parsers   |  synapse-embeddings
+        |     synaptic-parsers   |  synaptic-embeddings
         |           |           |       |
-        |     synapse-prompts   |  synapse-vectorstores
+        |     synaptic-prompts   |  synaptic-vectorstores
         |           |           |       |
-        |           |           |  synapse-retrieval
+        |           |           |  synaptic-retrieval
         |           |           |       |
-        |     synapse-tools     |  synapse-splitters
+        |     synaptic-tools     |  synaptic-splitters
         |           |           |       |
-        |           |           |  synapse-loaders
+        |           |           |  synaptic-loaders
         |           |           |
         └───────────┴───────────┘
                     |
-              synapse-core
+              synaptic-core
                     |
-              synapse-memory
+              synaptic-memory
 ```
 
-所有 crate 最终依赖 `synapse-core`，后者定义了共享的 trait 和类型。
+所有 crate 最终依赖 `synaptic-core`，后者定义了共享的 trait 和类型。
 
 ## 层级说明
 
 ### 核心层（Core Layer）
 
-**`synapse-core`** -- 定义所有共享的 trait 和类型：
+**`synaptic-core`** -- 定义所有共享的 trait 和类型：
 
 - `ChatModel` trait -- LLM 交互的统一接口（`chat()` 和 `stream_chat()`）
 - `Message` 枚举 -- `System`、`Human`、`AI`、`Tool` 四种变体
@@ -56,39 +56,39 @@ Synapse 采用分层 crate 架构，将核心 trait 与具体实现分离。这�
 
 | Crate | 职责 |
 |---|---|
-| `synapse-models` | LLM 提供商适配器（OpenAI、Anthropic、Gemini、Ollama）及装饰器（重试、速率限制、结构化输出） |
-| `synapse-memory` | 会话记忆策略（Buffer、Window、Summary、Token Buffer、Summary Buffer） |
-| `synapse-callbacks` | 回调处理器（Recording、Tracing、Composite） |
-| `synapse-prompts` | 提示模板（`PromptTemplate`、`ChatPromptTemplate`、`FewShotChatMessagePromptTemplate`） |
-| `synapse-parsers` | 输出解析器（String、JSON、结构化、列表、枚举等） |
-| `synapse-tools` | 工具注册表和执行器 |
-| `synapse-cache` | LLM 缓存（内存缓存、语义缓存） |
+| `synaptic-models` | LLM 提供商适配器（OpenAI、Anthropic、Gemini、Ollama）及装饰器（重试、速率限制、结构化输出） |
+| `synaptic-memory` | 会话记忆策略（Buffer、Window、Summary、Token Buffer、Summary Buffer） |
+| `synaptic-callbacks` | 回调处理器（Recording、Tracing、Composite） |
+| `synaptic-prompts` | 提示模板（`PromptTemplate`、`ChatPromptTemplate`、`FewShotChatMessagePromptTemplate`） |
+| `synaptic-parsers` | 输出解析器（String、JSON、结构化、列表、枚举等） |
+| `synaptic-tools` | 工具注册表和执行器 |
+| `synaptic-cache` | LLM 缓存（内存缓存、语义缓存） |
 
 ### 组合与检索层（Composition & Retrieval Layer）
 
 | Crate | 职责 |
 |---|---|
-| `synapse-runnables` | LCEL 组合原语：`Runnable` trait、管道运算符、并行、分支、回退等 |
-| `synapse-graph` | LangGraph 风格状态机：`StateGraph`、`CompiledGraph`、`ToolNode`、`create_react_agent` |
-| `synapse-loaders` | 文档加载器（文本、JSON、CSV、目录） |
-| `synapse-splitters` | 文本分割器（字符、递归、Markdown Header、Token） |
-| `synapse-embeddings` | 嵌入模型（OpenAI、Ollama、Fake） |
-| `synapse-vectorstores` | 向量存储（内存存储、cosine 相似度） |
-| `synapse-retrieval` | 检索器（BM25、Multi-Query、Ensemble、Compression、Self-Query、Parent Document） |
-| `synapse-eval` | 评估器（精确匹配、正则、JSON 有效性、嵌入距离、LLM Judge） |
+| `synaptic-runnables` | LCEL 组合原语：`Runnable` trait、管道运算符、并行、分支、回退等 |
+| `synaptic-graph` | LangGraph 风格状态机：`StateGraph`、`CompiledGraph`、`ToolNode`、`create_react_agent` |
+| `synaptic-loaders` | 文档加载器（文本、JSON、CSV、目录） |
+| `synaptic-splitters` | 文本分割器（字符、递归、Markdown Header、Token） |
+| `synaptic-embeddings` | 嵌入模型（OpenAI、Ollama、Fake） |
+| `synaptic-vectorstores` | 向量存储（内存存储、cosine 相似度） |
+| `synaptic-retrieval` | 检索器（BM25、Multi-Query、Ensemble、Compression、Self-Query、Parent Document） |
+| `synaptic-eval` | 评估器（精确匹配、正则、JSON 有效性、嵌入距离、LLM Judge） |
 
 ### Facade 层
 
-**`synapse`** -- 统一门面 crate，重新导出所有子 crate：
+**`synaptic`** -- 统一门面 crate，重新导出所有子 crate：
 
 ```rust
-use synapse::core::{ChatModel, Message, ChatRequest};
-use synapse::models::OpenAiChatModel;
-use synapse::runnables::{Runnable, RunnableLambda};
-use synapse::graph::{StateGraph, create_react_agent};
+use synaptic::core::{ChatModel, Message, ChatRequest};
+use synaptic::models::OpenAiChatModel;
+use synaptic::runnables::{Runnable, RunnableLambda};
+use synaptic::graph::{StateGraph, create_react_agent};
 ```
 
-只需在 `Cargo.toml` 中添加 `synapse` 一个依赖，即可使用所有功能。
+只需在 `Cargo.toml` 中添加 `synaptic` 一个依赖，即可使用所有功能。
 
 ## Workspace 依赖管理
 

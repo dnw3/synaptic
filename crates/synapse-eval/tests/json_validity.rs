@@ -1,4 +1,4 @@
-use synapse_eval::{Evaluator, JsonValidityEvaluator};
+use synaptic_eval::{Evaluator, JsonValidityEvaluator};
 
 #[tokio::test]
 async fn valid_json_passes() {

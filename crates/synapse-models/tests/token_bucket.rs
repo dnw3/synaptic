@@ -1,8 +1,8 @@
 use std::sync::Arc;
 use std::time::Instant;
 
-use synapse_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
-use synapse_models::TokenBucketChatModel;
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
+use synaptic_models::TokenBucketChatModel;
 
 struct InstantModel;
 

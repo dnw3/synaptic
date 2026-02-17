@@ -11,7 +11,7 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use synapse_core::{SynapseError, Tool};
+use synaptic_core::{SynapseError, Tool};
 
 /// Thread-safe registry for tool definitions and implementations, backed by `Arc<RwLock<HashMap>>`.
 #[derive(Default, Clone)]

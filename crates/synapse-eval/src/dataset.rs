@@ -1,4 +1,4 @@
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 
 use crate::evaluator::Evaluator;
 use crate::EvalReport;

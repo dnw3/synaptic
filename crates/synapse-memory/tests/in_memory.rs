@@ -1,5 +1,5 @@
-use synapse_core::{MemoryStore, Message};
-use synapse_memory::InMemoryStore;
+use synaptic_core::{MemoryStore, Message};
+use synaptic_memory::InMemoryStore;
 
 #[tokio::test]
 async fn stores_and_reads_messages_by_session() {

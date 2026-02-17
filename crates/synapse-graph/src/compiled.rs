@@ -3,7 +3,7 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use futures::Stream;
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 
 use crate::checkpoint::{Checkpoint, CheckpointConfig, Checkpointer};
 use crate::command::{GraphCommand, GraphContext};

@@ -5,8 +5,8 @@
 ## Usage
 
 ```rust
-use synapse_callbacks::RecordingCallback;
-use synapse_core::RunEvent;
+use synaptic_callbacks::RecordingCallback;
+use synaptic_core::RunEvent;
 
 let callback = RecordingCallback::new();
 

@@ -1,5 +1,5 @@
-use synapse_core::SynapseError;
-use synapse_retrieval::{BM25Retriever, Document, Retriever};
+use synaptic_core::SynapseError;
+use synaptic_retrieval::{BM25Retriever, Document, Retriever};
 
 #[tokio::test]
 async fn bm25_ranks_by_term_relevance() -> Result<(), SynapseError> {

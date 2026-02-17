@@ -1,6 +1,6 @@
 use std::fs;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use synapse_loaders::{DirectoryLoader, Loader};
+use synaptic_loaders::{DirectoryLoader, Loader};
 
 static COUNTER: AtomicUsize = AtomicUsize::new(0);
 

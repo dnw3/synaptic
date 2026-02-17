@@ -9,7 +9,7 @@ When you attach tools to a `ChatRequest`, the model decides by default whether t
 ## The `ToolChoice` enum
 
 ```rust
-use synapse_core::ToolChoice;
+use synaptic_core::ToolChoice;
 
 // Auto -- the model decides whether to use tools (this is the default)
 ToolChoice::Auto
@@ -29,7 +29,7 @@ ToolChoice::Specific("get_weather".to_string())
 Use `ChatRequest::with_tool_choice()`:
 
 ```rust
-use synapse_core::{ChatRequest, Message, ToolChoice, ToolDefinition};
+use synaptic_core::{ChatRequest, Message, ToolChoice, ToolDefinition};
 use serde_json::json;
 
 let tools = vec![

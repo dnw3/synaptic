@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde::de::DeserializeOwned;
-use synapse_core::{ChatModel, ChatRequest, ChatResponse, ChatStream, Message, SynapseError};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, ChatStream, Message, SynapseError};
 
 /// Wraps a ChatModel to produce structured JSON output.
 ///

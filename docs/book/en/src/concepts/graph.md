@@ -63,7 +63,7 @@ let my_node = FnNode::new(|state: MessageState| async move {
 `StateGraph<S>` is the builder:
 
 ```rust
-use synapse::graph::{StateGraph, MessageState, END};
+use synaptic::graph::{StateGraph, MessageState, END};
 
 let graph = StateGraph::new()
     .add_node("step_1", node_1)
@@ -127,7 +127,7 @@ Returns a `GraphStream` that yields `GraphEvent<S>` after each node executes:
 
 ```rust
 use futures::StreamExt;
-use synapse::graph::StreamMode;
+use synaptic::graph::StreamMode;
 
 let mut stream = graph.stream(initial, StreamMode::Values);
 while let Some(event) = stream.next().await {
@@ -148,7 +148,7 @@ Graphs support state persistence through the `Checkpointer` trait. After each no
 `MemorySaver` is the built-in in-memory checkpointer. For production use, you would implement `Checkpointer` with a database backend.
 
 ```rust
-use synapse::graph::MemorySaver;
+use synaptic::graph::MemorySaver;
 
 let checkpointer = Arc::new(MemorySaver::new());
 let graph = graph.with_checkpointer(checkpointer);

@@ -46,8 +46,8 @@
 
 ```rust
 use serde::{Serialize, Deserialize};
-use synapse_core::Message;
-use synapse_graph::State;
+use synaptic_core::Message;
+use synaptic_graph::State;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct WorkflowState {
@@ -76,7 +76,7 @@ impl State for WorkflowState {
 使用 `FnNode` 将异步闭包包装为节点。每个节点接收当前状态，执行处理逻辑，返回更新后的状态：
 
 ```rust
-use synapse_graph::FnNode;
+use synaptic_graph::FnNode;
 
 // 分类节点：根据消息内容确定请求类别
 let classify_node = FnNode::new(|mut state: WorkflowState| async move {
@@ -119,7 +119,7 @@ let escalate_node = FnNode::new(|mut state: WorkflowState| async move {
 
 ```rust
 use std::collections::HashMap;
-use synapse_graph::{StateGraph, END};
+use synaptic_graph::{StateGraph, END};
 
 let graph = StateGraph::<WorkflowState>::new()
     // 添加节点
@@ -196,7 +196,7 @@ println!("结果: {}", final_state.result);     // "已加急处理"
 使用 `stream()` 观察每个节点的执行过程。每个节点执行完成后会产出一个 `GraphEvent`：
 
 ```rust
-use synapse_graph::StreamMode;
+use synaptic_graph::StreamMode;
 use futures::StreamExt;
 
 let initial_state = WorkflowState {
@@ -292,7 +292,7 @@ compiled.draw_png("workflow.png")?;
 
 ```rust
 use std::sync::Arc;
-use synapse_graph::{MemorySaver, CheckpointConfig};
+use synaptic_graph::{MemorySaver, CheckpointConfig};
 
 // 创建内存检查点存储
 let checkpointer = Arc::new(MemorySaver::new());

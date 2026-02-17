@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synapse_core::{
+use synaptic_core::{
     AIMessageChunk, ChatModel, ChatRequest, ChatResponse, ChatStream, Message, SynapseError,
     TokenUsage, ToolCall, ToolChoice, ToolDefinition,
 };

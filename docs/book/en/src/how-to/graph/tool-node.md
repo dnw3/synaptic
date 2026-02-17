@@ -1,6 +1,6 @@
 # Tool Node
 
-`ToolNode` is a prebuilt graph node that automatically dispatches tool calls found in the last AI message of the state. It bridges the `synapse_tools` crate's execution infrastructure with the graph system, making it straightforward to build tool-calling agent loops.
+`ToolNode` is a prebuilt graph node that automatically dispatches tool calls found in the last AI message of the state. It bridges the `synaptic_tools` crate's execution infrastructure with the graph system, making it straightforward to build tool-calling agent loops.
 
 ## How It Works
 
@@ -19,9 +19,9 @@ If the last message has no tool calls, the node passes the state through unchang
 Create a `ToolNode` by providing a `SerialToolExecutor` with registered tools:
 
 ```rust
-use synapse_graph::ToolNode;
-use synapse_tools::{ToolRegistry, SerialToolExecutor};
-use synapse_core::{Tool, ToolDefinition, SynapseError};
+use synaptic_graph::ToolNode;
+use synaptic_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic_core::{Tool, ToolDefinition, SynapseError};
 use async_trait::async_trait;
 use serde_json::Value;
 use std::sync::Arc;
@@ -64,8 +64,8 @@ let tool_node = ToolNode::new(executor);
 `ToolNode` implements `Node<MessageState>`, so it can be added directly to a `StateGraph`:
 
 ```rust
-use synapse_graph::{StateGraph, FnNode, MessageState, END};
-use synapse_core::{Message, ToolCall};
+use synaptic_graph::{StateGraph, FnNode, MessageState, END};
+use synaptic_core::{Message, ToolCall};
 
 // An agent node that produces tool calls
 let agent = FnNode::new(|mut state: MessageState| async move {
@@ -98,7 +98,7 @@ In a typical ReAct agent, the tool node feeds results back to the agent node, wh
 
 ```rust
 use std::collections::HashMap;
-use synapse_graph::{StateGraph, MessageState, END};
+use synaptic_graph::{StateGraph, MessageState, END};
 
 let graph = StateGraph::new()
     .add_node("agent", agent_node)
@@ -131,7 +131,7 @@ This is exactly the pattern that `create_react_agent()` implements automatically
 For convenience, Synapse provides a factory function that assembles the standard ReAct agent graph:
 
 ```rust
-use synapse_graph::create_react_agent;
+use synaptic_graph::create_react_agent;
 
 let graph = create_react_agent(model, tools);
 ```

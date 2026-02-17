@@ -27,7 +27,7 @@ The `session_id` parameter is central to Synapse's memory design. Two conversati
 The simplest implementation -- a `HashMap<String, Vec<Message>>` wrapped in `Arc<RwLock<_>>`:
 
 ```rust
-use synapse::memory::InMemoryStore;
+use synaptic::memory::InMemoryStore;
 
 let store = InMemoryStore::new();
 store.append("session_1", Message::human("Hello")).await?;
@@ -41,7 +41,7 @@ let history = store.load("session_1").await?;
 A persistent store that writes messages to a JSON file on disk. Each session is stored as a separate file. This is useful for applications that need persistence without a database:
 
 ```rust
-use synapse::memory::FileChatMessageHistory;
+use synaptic::memory::FileChatMessageHistory;
 
 let history = FileChatMessageHistory::new("./chat_history")?;
 ```
@@ -63,7 +63,7 @@ Keeps all messages. The simplest strategy -- everything is sent to the LLM every
 Keeps only the last K message pairs (human + AI). Older messages are dropped:
 
 ```rust
-use synapse::memory::ConversationWindowMemory;
+use synaptic::memory::ConversationWindowMemory;
 
 let memory = ConversationWindowMemory::new(store, 5); // keep last 5 exchanges
 ```
@@ -77,7 +77,7 @@ let memory = ConversationWindowMemory::new(store, 5); // keep last 5 exchanges
 Summarizes older messages using an LLM, keeping only the summary plus recent messages:
 
 ```rust
-use synapse::memory::ConversationSummaryMemory;
+use synaptic::memory::ConversationSummaryMemory;
 
 let memory = ConversationSummaryMemory::new(store, summarizer_model);
 ```
@@ -93,7 +93,7 @@ After each exchange, the strategy uses an LLM to produce a running summary of th
 Keeps as many recent messages as fit within a token budget:
 
 ```rust
-use synapse::memory::ConversationTokenBufferMemory;
+use synaptic::memory::ConversationTokenBufferMemory;
 
 let memory = ConversationTokenBufferMemory::new(store, 4096); // max 4096 tokens
 ```
@@ -109,7 +109,7 @@ Unlike window memory (which counts messages), token buffer memory counts tokens.
 A hybrid: summarizes old messages and keeps recent ones, with a token threshold controlling the boundary:
 
 ```rust
-use synapse::memory::ConversationSummaryBufferMemory;
+use synaptic::memory::ConversationSummaryBufferMemory;
 
 let memory = ConversationSummaryBufferMemory::new(store, model, 2000);
 // Summarize when recent messages exceed 2000 tokens
@@ -136,7 +136,7 @@ When the total token count of recent messages exceeds the threshold, the oldest 
 Rather than manually loading and saving messages around each LLM call, `RunnableWithMessageHistory` wraps any `Runnable` and handles it automatically:
 
 ```rust
-use synapse::memory::RunnableWithMessageHistory;
+use synaptic::memory::RunnableWithMessageHistory;
 
 let chain_with_memory = RunnableWithMessageHistory::new(
     my_chain,

@@ -1,4 +1,4 @@
-use synapse_loaders::{JsonLoader, Loader};
+use synaptic_loaders::{JsonLoader, Loader};
 
 #[tokio::test]
 async fn loads_json_array() {

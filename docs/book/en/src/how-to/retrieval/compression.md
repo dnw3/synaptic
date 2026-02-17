@@ -31,8 +31,8 @@ Filters documents by computing cosine similarity between the query embedding and
 
 ```rust
 use std::sync::Arc;
-use synapse_retrieval::EmbeddingsFilter;
-use synapse_embeddings::FakeEmbeddings;
+use synaptic_retrieval::EmbeddingsFilter;
+use synaptic_embeddings::FakeEmbeddings;
 
 let embeddings = Arc::new(FakeEmbeddings::new(128));
 
@@ -52,12 +52,12 @@ Wraps a base retriever and applies a `DocumentCompressor` to the results:
 
 ```rust
 use std::sync::Arc;
-use synapse_retrieval::{
+use synaptic_retrieval::{
     ContextualCompressionRetriever,
     EmbeddingsFilter,
     Retriever,
 };
-use synapse_embeddings::FakeEmbeddings;
+use synaptic_embeddings::FakeEmbeddings;
 
 let embeddings = Arc::new(FakeEmbeddings::new(128));
 let base_retriever: Arc<dyn Retriever> = Arc::new(/* any retriever */);
@@ -76,14 +76,14 @@ let results = retriever.retrieve("query", 5).await?;
 
 ```rust
 use std::sync::Arc;
-use synapse_retrieval::{
+use synaptic_retrieval::{
     BM25Retriever,
     ContextualCompressionRetriever,
     EmbeddingsFilter,
     Document,
     Retriever,
 };
-use synapse_embeddings::FakeEmbeddings;
+use synaptic_embeddings::FakeEmbeddings;
 
 let docs = vec![
     Document::new("1", "Rust is a systems programming language"),
@@ -117,8 +117,8 @@ You can implement your own `DocumentCompressor` for other filtering strategies -
 
 ```rust
 use async_trait::async_trait;
-use synapse_retrieval::{DocumentCompressor, Document};
-use synapse_core::SynapseError;
+use synaptic_retrieval::{DocumentCompressor, Document};
+use synaptic_core::SynapseError;
 
 struct MyCompressor;
 

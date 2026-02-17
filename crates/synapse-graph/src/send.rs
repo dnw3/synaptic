@@ -13,7 +13,7 @@
 /// # Example (future API)
 ///
 /// ```ignore
-/// use synapse_graph::Send;
+/// use synaptic_graph::Send;
 ///
 /// // In a conditional edge router, return multiple Send instructions
 /// // to fan out to different nodes with different state payloads:

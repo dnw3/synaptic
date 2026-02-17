@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 
 /// Result of a single evaluation.
 #[derive(Debug, Clone, Serialize, Deserialize)]

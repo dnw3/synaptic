@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 
 use crate::Embeddings;
 

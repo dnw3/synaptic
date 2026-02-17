@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde_json::json;
-use synapse::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError, Tool, ToolCall};
-use synapse::graph::{create_react_agent, MessageState};
+use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError, Tool, ToolCall};
+use synaptic::graph::{create_react_agent, MessageState};
 
 struct DemoModel;
 

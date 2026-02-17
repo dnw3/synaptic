@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use synapse_core::SynapseError;
-use synapse_graph::{MessageState, Node, StateGraph, END};
+use synaptic_core::SynapseError;
+use synaptic_graph::{MessageState, Node, StateGraph, END};
 
 /// A simple passthrough node for testing.
 struct PassthroughNode;

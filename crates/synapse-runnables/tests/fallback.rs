@@ -1,5 +1,5 @@
-use synapse_core::{RunnableConfig, SynapseError};
-use synapse_runnables::{Runnable, RunnableLambda, RunnableWithFallbacks};
+use synaptic_core::{RunnableConfig, SynapseError};
+use synaptic_runnables::{Runnable, RunnableLambda, RunnableWithFallbacks};
 
 #[tokio::test]
 async fn primary_succeeds() {

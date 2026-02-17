@@ -44,18 +44,18 @@ This runs unit tests and integration tests across all 17 library crates.
 ### Test a Single Crate
 
 ```bash
-cargo test -p synapse-tools
+cargo test -p synaptic-tools
 ```
 
-Replace `synapse-tools` with any crate name from the workspace.
+Replace `synaptic-tools` with any crate name from the workspace.
 
 ### Run a Specific Test by Name
 
 ```bash
-cargo test -p synapse-core -- chunk
+cargo test -p synaptic-core -- chunk
 ```
 
-This runs only tests whose names contain "chunk" within the `synapse-core` crate.
+This runs only tests whose names contain "chunk" within the `synaptic-core` crate.
 
 ## Run Examples
 

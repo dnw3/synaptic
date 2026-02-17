@@ -16,8 +16,8 @@ Both require a checkpointer to be attached; otherwise the graph cannot persist t
 A common pattern is to interrupt before a tool execution node so a human can review the tool calls the agent proposed:
 
 ```rust
-use synapse_graph::{StateGraph, FnNode, MessageState, MemorySaver, CheckpointConfig, END};
-use synapse_core::Message;
+use synaptic_graph::{StateGraph, FnNode, MessageState, MemorySaver, CheckpointConfig, END};
+use synaptic_core::Message;
 use std::sync::Arc;
 
 let agent_node = FnNode::new(|mut state: MessageState| async move {

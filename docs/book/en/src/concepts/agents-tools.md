@@ -65,7 +65,7 @@ The `id` links the call to its result. When a tool finishes execution, the resul
 The `ToolRegistry` is a thread-safe collection of tools, backed by `Arc<RwLock<HashMap<String, Arc<dyn Tool>>>>`:
 
 ```rust
-use synapse::tools::ToolRegistry;
+use synaptic::tools::ToolRegistry;
 
 let registry = ToolRegistry::new();
 registry.register(Arc::new(WeatherTool))?;
@@ -113,7 +113,7 @@ In the graph system, `ToolNode` is a pre-built graph node that processes AI mess
 ReAct (Reasoning + Acting) is the most common agent pattern. The model alternates between reasoning about what to do and acting by calling tools. Synapse provides a prebuilt ReAct agent via `create_react_agent()`:
 
 ```rust
-use synapse::graph::{create_react_agent, MessageState};
+use synaptic::graph::{create_react_agent, MessageState};
 
 let graph = create_react_agent(model, tools)?;
 let state = MessageState::from_messages(vec![

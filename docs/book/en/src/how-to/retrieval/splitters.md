@@ -4,7 +4,7 @@ This guide shows how to break large documents into smaller chunks using Synapse'
 
 ## Overview
 
-All splitters implement the `TextSplitter` trait from `synapse_splitters`:
+All splitters implement the `TextSplitter` trait from `synaptic_splitters`:
 
 ```rust
 pub trait TextSplitter: Send + Sync {
@@ -21,8 +21,8 @@ pub trait TextSplitter: Send + Sync {
 Splits text on a single separator string, then merges small pieces to stay under `chunk_size`.
 
 ```rust
-use synapse_splitters::CharacterTextSplitter;
-use synapse_splitters::TextSplitter;
+use synaptic_splitters::CharacterTextSplitter;
+use synaptic_splitters::TextSplitter;
 
 // Chunk size in characters, default separator is "\n\n"
 let splitter = CharacterTextSplitter::new(500);
@@ -44,8 +44,8 @@ The most commonly used splitter. Tries a hierarchy of separators in order, split
 Default separators: `["\n\n", "\n", " ", ""]`
 
 ```rust
-use synapse_splitters::RecursiveCharacterTextSplitter;
-use synapse_splitters::TextSplitter;
+use synaptic_splitters::RecursiveCharacterTextSplitter;
+use synaptic_splitters::TextSplitter;
 
 let splitter = RecursiveCharacterTextSplitter::new(1000)
     .with_chunk_overlap(200);
@@ -71,7 +71,7 @@ let splitter = RecursiveCharacterTextSplitter::new(1000)
 Use `from_language()` to get separators tuned for a specific programming language:
 
 ```rust
-use synapse_splitters::{RecursiveCharacterTextSplitter, Language};
+use synaptic_splitters::{RecursiveCharacterTextSplitter, Language};
 
 let splitter = RecursiveCharacterTextSplitter::from_language(
     Language::Rust,
@@ -85,7 +85,7 @@ let splitter = RecursiveCharacterTextSplitter::from_language(
 Splits markdown text by headers, adding the header hierarchy to each chunk's metadata.
 
 ```rust
-use synapse_splitters::{MarkdownHeaderTextSplitter, HeaderType};
+use synaptic_splitters::{MarkdownHeaderTextSplitter, HeaderType};
 
 let splitter = MarkdownHeaderTextSplitter::new(vec![
     HeaderType { level: "#".to_string(), name: "h1".to_string() },
@@ -111,8 +111,8 @@ Note that `MarkdownHeaderTextSplitter` also implements `TextSplitter`, but `spli
 Splits text by estimated token count using a ~4 characters per token heuristic. Splits at word boundaries to keep chunks readable.
 
 ```rust
-use synapse_splitters::TokenTextSplitter;
-use synapse_splitters::TextSplitter;
+use synaptic_splitters::TokenTextSplitter;
+use synaptic_splitters::TextSplitter;
 
 // chunk_size is in estimated tokens (not characters)
 let splitter = TokenTextSplitter::new(500)
@@ -128,8 +128,8 @@ This is consistent with the token estimation used in `ConversationTokenBufferMem
 All splitters can split a `Vec<Document>` into smaller chunks. Each chunk inherits the parent's metadata and gets a `chunk_index` field. The chunk ID is formatted as `"{original_id}-chunk-{index}"`.
 
 ```rust
-use synapse_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
-use synapse_retrieval::Document;
+use synaptic_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
+use synaptic_retrieval::Document;
 
 let splitter = RecursiveCharacterTextSplitter::new(500);
 

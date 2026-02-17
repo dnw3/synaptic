@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde_json::Value;
-use synapse_core::{Message, SynapseError, Tool, ToolCall};
-use synapse_graph::{MessageState, Node, ToolNode};
-use synapse_tools::{SerialToolExecutor, ToolRegistry};
+use synaptic_core::{Message, SynapseError, Tool, ToolCall};
+use synaptic_graph::{MessageState, Node, ToolNode};
+use synaptic_tools::{SerialToolExecutor, ToolRegistry};
 
 struct EchoTool;
 

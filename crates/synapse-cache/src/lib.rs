@@ -7,7 +7,7 @@ pub use in_memory::InMemoryCache;
 pub use semantic::SemanticCache;
 
 use async_trait::async_trait;
-use synapse_core::{ChatResponse, SynapseError};
+use synaptic_core::{ChatResponse, SynapseError};
 
 /// Trait for caching LLM responses.
 #[async_trait]

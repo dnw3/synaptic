@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use synapse_core::{RunnableConfig, SynapseError};
+use synaptic_core::{RunnableConfig, SynapseError};
 
 use crate::runnable::{BoxRunnable, Runnable, RunnableOutputStream};
 

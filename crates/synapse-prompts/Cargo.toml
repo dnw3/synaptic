@@ -1,5 +1,5 @@
 [package]
-name = "synapse-prompts"
+name = "synaptic-prompts"
 description = "Prompt templates: ChatPromptTemplate, FewShotChatMessagePromptTemplate"
 edition.workspace = true
 version.workspace = true
@@ -14,9 +14,9 @@ serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
-synapse-core = { path = "../synapse-core" }
-synapse-embeddings = { path = "../synapse-embeddings" }
-synapse-runnables = { path = "../synapse-runnables" }
+synaptic-core = { version = "0.1.0", path = "../synapse-core" }
+synaptic-embeddings = { version = "0.1.0", path = "../synapse-embeddings" }
+synaptic-runnables = { version = "0.1.0", path = "../synapse-runnables" }
 
 [dev-dependencies]
 tokio.workspace = true

@@ -5,7 +5,7 @@
 ## Usage
 
 ```rust
-use synapse_callbacks::{CompositeCallback, RecordingCallback, TracingCallback};
+use synaptic_callbacks::{CompositeCallback, RecordingCallback, TracingCallback};
 use std::sync::Arc;
 
 let recording = Arc::new(RecordingCallback::new());
@@ -43,8 +43,8 @@ You can mix built-in and custom handlers:
 
 ```rust
 use async_trait::async_trait;
-use synapse_core::{CallbackHandler, RunEvent, SynapseError};
-use synapse_callbacks::{
+use synaptic_core::{CallbackHandler, RunEvent, SynapseError};
+use synaptic_callbacks::{
     CompositeCallback, RecordingCallback, TracingCallback, StdOutCallbackHandler,
 };
 use std::sync::Arc;

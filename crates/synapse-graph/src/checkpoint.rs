@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 use tokio::sync::RwLock;
 
 /// Configuration identifying a checkpoint (thread/conversation).

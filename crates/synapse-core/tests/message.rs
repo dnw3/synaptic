@@ -1,6 +1,6 @@
 use futures::StreamExt;
 use serde_json::json;
-use synapse_core::{
+use synaptic_core::{
     AIMessageChunk, ChatModel, ChatRequest, ChatResponse, Message, SynapseError, TokenUsage,
     ToolCall,
 };

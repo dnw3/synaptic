@@ -1,4 +1,4 @@
-use synapse_splitters::{HtmlHeaderTextSplitter, TextSplitter};
+use synaptic_splitters::{HtmlHeaderTextSplitter, TextSplitter};
 
 #[test]
 fn splits_on_h1_h2_h3() {

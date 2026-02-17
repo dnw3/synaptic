@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use synapse_core::SynapseError;
-use synapse_graph::{CheckpointConfig, MemorySaver, Node, State, StateGraph, END};
+use synaptic_core::SynapseError;
+use synaptic_graph::{CheckpointConfig, MemorySaver, Node, State, StateGraph, END};
 
 /// Test state with a counter and visited log.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]

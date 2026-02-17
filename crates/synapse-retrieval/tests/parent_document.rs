@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use synapse_retrieval::{Document, InMemoryRetriever, ParentDocumentRetriever, Retriever};
+use synaptic_retrieval::{Document, InMemoryRetriever, ParentDocumentRetriever, Retriever};
 
 fn simple_splitter(text: &str) -> Vec<String> {
     text.split(". ")

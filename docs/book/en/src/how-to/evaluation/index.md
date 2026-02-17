@@ -4,7 +4,7 @@ Synapse provides an evaluation framework for measuring the quality of AI outputs
 
 ## The `Evaluator` Trait
 
-All evaluators implement the `Evaluator` trait from `synapse_eval`:
+All evaluators implement the `Evaluator` trait from `synaptic_eval`:
 
 ```rust
 #[async_trait]

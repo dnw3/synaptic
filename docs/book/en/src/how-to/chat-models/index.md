@@ -1,6 +1,6 @@
 # Chat Models
 
-Synapse supports multiple LLM providers through the `ChatModel` trait defined in `synapse_core`. Every provider adapter implements this trait, giving you a uniform interface for sending messages and receiving responses -- whether you are using OpenAI, Anthropic, Gemini, or a local Ollama instance.
+Synapse supports multiple LLM providers through the `ChatModel` trait defined in `synaptic_core`. Every provider adapter implements this trait, giving you a uniform interface for sending messages and receiving responses -- whether you are using OpenAI, Anthropic, Gemini, or a local Ollama instance.
 
 ## Providers
 
@@ -15,7 +15,7 @@ Each provider adapter takes a configuration struct and a `ProviderBackend`:
 
 ```rust
 use std::sync::Arc;
-use synapse_models::{OpenAiChatModel, OpenAiConfig, HttpBackend};
+use synaptic_models::{OpenAiChatModel, OpenAiConfig, HttpBackend};
 
 let config = OpenAiConfig::new("sk-...", "gpt-4o");
 let backend = Arc::new(HttpBackend::new());
@@ -41,7 +41,7 @@ All wrappers implement `ChatModel`, so they can be stacked:
 
 ```rust
 use std::sync::Arc;
-use synapse_models::{RetryChatModel, RetryPolicy, RateLimitedChatModel};
+use synaptic_models::{RetryChatModel, RetryPolicy, RateLimitedChatModel};
 
 let model: Arc<dyn ChatModel> = Arc::new(base_model);
 let with_retry = Arc::new(RetryChatModel::new(model, RetryPolicy::default()));

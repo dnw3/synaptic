@@ -1,14 +1,14 @@
 use std::sync::Arc;
 
 use serde_json::json;
-use synapse::core::{
+use synaptic::core::{
     ChatModel, ChatRequest, ChatResponse, MemoryStore, Message, RunnableConfig, SynapseError,
 };
-use synapse::memory::{
+use synaptic::memory::{
     ConversationBufferMemory, ConversationWindowMemory, InMemoryStore, RunnableWithMessageHistory,
 };
-use synapse::models::ScriptedChatModel;
-use synapse::runnables::{Runnable, RunnableLambda};
+use synaptic::models::ScriptedChatModel;
+use synaptic::runnables::{Runnable, RunnableLambda};
 
 #[tokio::main]
 async fn main() -> Result<(), SynapseError> {

@@ -4,7 +4,7 @@ This guide shows how to convert text into vector representations using Synapse's
 
 ## Overview
 
-All embedding providers implement the `Embeddings` trait from `synapse_embeddings`:
+All embedding providers implement the `Embeddings` trait from `synaptic_embeddings`:
 
 ```rust
 #[async_trait]
@@ -22,8 +22,8 @@ pub trait Embeddings: Send + Sync {
 Generates deterministic vectors based on a simple hash of the input text. Useful for testing and development without API calls.
 
 ```rust
-use synapse_embeddings::FakeEmbeddings;
-use synapse_embeddings::Embeddings;
+use synaptic_embeddings::FakeEmbeddings;
+use synaptic_embeddings::Embeddings;
 
 // Specify the number of dimensions (default is 4)
 let embeddings = FakeEmbeddings::new(4);
@@ -41,9 +41,9 @@ Uses the OpenAI embeddings API. Requires an API key and a `ProviderBackend`.
 
 ```rust
 use std::sync::Arc;
-use synapse_embeddings::{OpenAiEmbeddings, OpenAiEmbeddingsConfig};
-use synapse_embeddings::Embeddings;
-use synapse_models::backend::HttpBackend;
+use synaptic_embeddings::{OpenAiEmbeddings, OpenAiEmbeddingsConfig};
+use synaptic_embeddings::Embeddings;
+use synaptic_models::backend::HttpBackend;
 
 let config = OpenAiEmbeddingsConfig::new("sk-...")
     .with_model("text-embedding-3-small");  // default model
@@ -67,9 +67,9 @@ Uses a local Ollama instance for embedding. No API key required -- just specify 
 
 ```rust
 use std::sync::Arc;
-use synapse_embeddings::{OllamaEmbeddings, OllamaEmbeddingsConfig};
-use synapse_embeddings::Embeddings;
-use synapse_models::backend::HttpBackend;
+use synaptic_embeddings::{OllamaEmbeddings, OllamaEmbeddingsConfig};
+use synaptic_embeddings::Embeddings;
+use synaptic_models::backend::HttpBackend;
 
 let config = OllamaEmbeddingsConfig::new("nomic-embed-text");
 // Default base_url: http://localhost:11434
@@ -93,7 +93,7 @@ Wraps any `Embeddings` provider with an in-memory cache. Previously computed emb
 
 ```rust
 use std::sync::Arc;
-use synapse_embeddings::{CacheBackedEmbeddings, FakeEmbeddings, Embeddings};
+use synaptic_embeddings::{CacheBackedEmbeddings, FakeEmbeddings, Embeddings};
 
 let inner = Arc::new(FakeEmbeddings::new(128));
 let cached = CacheBackedEmbeddings::new(inner);
@@ -114,9 +114,9 @@ This is especially useful when adding documents to a vector store and then query
 Embeddings are passed to vector store methods rather than stored inside the vector store. This lets you swap embedding providers without rebuilding the store.
 
 ```rust
-use synapse_vectorstores::{InMemoryVectorStore, VectorStore};
-use synapse_embeddings::FakeEmbeddings;
-use synapse_retrieval::Document;
+use synaptic_vectorstores::{InMemoryVectorStore, VectorStore};
+use synaptic_embeddings::FakeEmbeddings;
+use synaptic_retrieval::Document;
 
 let embeddings = FakeEmbeddings::new(128);
 let store = InMemoryVectorStore::new();

@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use synapse_core::{ChatResponse, MemoryStore, Message};
-use synapse_memory::{ConversationSummaryBufferMemory, InMemoryStore};
-use synapse_models::ScriptedChatModel;
+use synaptic_core::{ChatResponse, MemoryStore, Message};
+use synaptic_memory::{ConversationSummaryBufferMemory, InMemoryStore};
+use synaptic_models::ScriptedChatModel;
 
 #[tokio::test]
 async fn under_limit_no_summary() {

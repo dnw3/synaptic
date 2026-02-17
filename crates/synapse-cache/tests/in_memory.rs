@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use synapse_cache::{InMemoryCache, LlmCache};
-use synapse_core::{ChatResponse, Message};
+use synaptic_cache::{InMemoryCache, LlmCache};
+use synaptic_core::{ChatResponse, Message};
 
 fn make_response(text: &str) -> ChatResponse {
     ChatResponse {

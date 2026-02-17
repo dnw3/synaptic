@@ -1,5 +1,5 @@
-use synapse_core::{RunnableConfig, SynapseError};
-use synapse_runnables::{Runnable, RunnableBranch, RunnableLambda};
+use synaptic_core::{RunnableConfig, SynapseError};
+use synaptic_runnables::{Runnable, RunnableBranch, RunnableLambda};
 
 #[tokio::test]
 async fn branch_selects_first_match() {

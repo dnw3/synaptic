@@ -1,4 +1,4 @@
-use synapse_parsers::{
+use synaptic_parsers::{
     EnumOutputParser, FormatInstructions, JsonOutputParser, ListOutputParser, ListSeparator,
     StrOutputParser, StructuredOutputParser,
 };

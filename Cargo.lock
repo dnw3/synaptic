@@ -84,7 +84,7 @@ checksum = "1e748733b7cbc798e1434b6ac524f0c1ff2ab456fe201501e6497c8417a4fc33"
 name = "caching"
 version = "0.1.0"
 dependencies = [
- "synapse",
+ "synaptic",
  "tokio",
 ]
 
@@ -92,7 +92,7 @@ dependencies = [
 name = "callbacks_tracing"
 version = "0.1.0"
 dependencies = [
- "synapse",
+ "synaptic",
  "tokio",
  "tracing-subscriber",
 ]
@@ -200,7 +200,7 @@ dependencies = [
 name = "evaluation"
 version = "0.1.0"
 dependencies = [
- "synapse",
+ "synaptic",
  "tokio",
 ]
 
@@ -382,7 +382,7 @@ dependencies = [
  "async-trait",
  "serde",
  "serde_json",
- "synapse",
+ "synaptic",
  "tokio",
 ]
 
@@ -707,7 +707,7 @@ name = "lcel_chain"
 version = "0.1.0"
 dependencies = [
  "serde_json",
- "synapse",
+ "synaptic",
  "tokio",
 ]
 
@@ -751,7 +751,7 @@ checksum = "f8ca58f447f06ed17d5fc4043ce1b10dd205e060fb3ce5b979b8ed8e59ff3f79"
 name = "memory_chat"
 version = "0.1.0"
 dependencies = [
- "synapse",
+ "synaptic",
  "tokio",
 ]
 
@@ -760,7 +760,7 @@ name = "memory_strategy"
 version = "0.1.0"
 dependencies = [
  "serde_json",
- "synapse",
+ "synaptic",
  "tokio",
 ]
 
@@ -930,7 +930,7 @@ name = "prompt_parser_chain"
 version = "0.1.0"
 dependencies = [
  "serde_json",
- "synapse",
+ "synaptic",
  "tokio",
 ]
 
@@ -953,7 +953,7 @@ checksum = "69cdb34c158ceb288df11e18b4bd39de994f6657d83847bdffdbd7f346754b0f"
 name = "rag_pipeline"
 version = "0.1.0"
 dependencies = [
- "synapse",
+ "synaptic",
  "tokio",
 ]
 
@@ -963,7 +963,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "serde_json",
- "synapse",
+ "synaptic",
  "tokio",
 ]
 
@@ -1254,7 +1254,7 @@ dependencies = [
  "async-stream",
  "async-trait",
  "futures",
- "synapse",
+ "synaptic",
  "tokio",
 ]
 
@@ -1264,7 +1264,7 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
- "synapse",
+ "synaptic",
  "tokio",
 ]
 
@@ -1286,53 +1286,53 @@ dependencies = [
 ]
 
 [[package]]
-name = "synapse"
+name = "synaptic"
 version = "0.1.0"
 dependencies = [
- "synapse-cache",
- "synapse-callbacks",
- "synapse-core",
- "synapse-embeddings",
- "synapse-eval",
- "synapse-graph",
- "synapse-loaders",
- "synapse-memory",
- "synapse-models",
- "synapse-parsers",
- "synapse-prompts",
- "synapse-retrieval",
- "synapse-runnables",
- "synapse-splitters",
- "synapse-tools",
- "synapse-vectorstores",
+ "synaptic-cache",
+ "synaptic-callbacks",
+ "synaptic-core",
+ "synaptic-embeddings",
+ "synaptic-eval",
+ "synaptic-graph",
+ "synaptic-loaders",
+ "synaptic-memory",
+ "synaptic-models",
+ "synaptic-parsers",
+ "synaptic-prompts",
+ "synaptic-retrieval",
+ "synaptic-runnables",
+ "synaptic-splitters",
+ "synaptic-tools",
+ "synaptic-vectorstores",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-cache"
+name = "synaptic-cache"
 version = "0.1.0"
 dependencies = [
  "async-trait",
  "serde",
  "serde_json",
- "synapse-core",
- "synapse-embeddings",
- "synapse-models",
+ "synaptic-core",
+ "synaptic-embeddings",
+ "synaptic-models",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-callbacks"
+name = "synaptic-callbacks"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "synapse-core",
+ "synaptic-core",
  "tokio",
  "tracing",
 ]
 
 [[package]]
-name = "synapse-core"
+name = "synaptic-core"
 version = "0.1.0"
 dependencies = [
  "async-stream",
@@ -1345,33 +1345,33 @@ dependencies = [
 ]
 
 [[package]]
-name = "synapse-embeddings"
+name = "synaptic-embeddings"
 version = "0.1.0"
 dependencies = [
  "async-trait",
  "serde",
  "serde_json",
- "synapse-core",
- "synapse-models",
+ "synaptic-core",
+ "synaptic-models",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-eval"
+name = "synaptic-eval"
 version = "0.1.0"
 dependencies = [
  "async-trait",
  "regex",
  "serde",
  "serde_json",
- "synapse-core",
- "synapse-embeddings",
- "synapse-models",
+ "synaptic-core",
+ "synaptic-embeddings",
+ "synaptic-models",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-graph"
+name = "synaptic-graph"
 version = "0.1.0"
 dependencies = [
  "async-stream",
@@ -1381,14 +1381,14 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
- "synapse-core",
- "synapse-models",
- "synapse-tools",
+ "synaptic-core",
+ "synaptic-models",
+ "synaptic-tools",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-loaders"
+name = "synaptic-loaders"
 version = "0.1.0"
 dependencies = [
  "async-stream",
@@ -1397,26 +1397,26 @@ dependencies = [
  "futures",
  "reqwest",
  "serde_json",
- "synapse-core",
- "synapse-retrieval",
+ "synaptic-core",
+ "synaptic-retrieval",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-memory"
+name = "synaptic-memory"
 version = "0.1.0"
 dependencies = [
  "async-trait",
  "serde",
  "serde_json",
- "synapse-core",
- "synapse-models",
- "synapse-runnables",
+ "synaptic-core",
+ "synaptic-models",
+ "synaptic-runnables",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-models"
+name = "synaptic-models"
 version = "0.1.0"
 dependencies = [
  "async-stream",
@@ -1427,92 +1427,92 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
- "synapse-core",
+ "synaptic-core",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-parsers"
+name = "synaptic-parsers"
 version = "0.1.0"
 dependencies = [
  "async-trait",
  "serde",
  "serde_json",
- "synapse-core",
- "synapse-models",
- "synapse-runnables",
+ "synaptic-core",
+ "synaptic-models",
+ "synaptic-runnables",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-prompts"
+name = "synaptic-prompts"
 version = "0.1.0"
 dependencies = [
  "async-trait",
  "serde",
  "serde_json",
- "synapse-core",
- "synapse-embeddings",
- "synapse-runnables",
+ "synaptic-core",
+ "synaptic-embeddings",
+ "synaptic-runnables",
  "thiserror",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-retrieval"
+name = "synaptic-retrieval"
 version = "0.1.0"
 dependencies = [
  "async-trait",
  "serde",
  "serde_json",
- "synapse-core",
- "synapse-embeddings",
- "synapse-models",
+ "synaptic-core",
+ "synaptic-embeddings",
+ "synaptic-models",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-runnables"
+name = "synaptic-runnables"
 version = "0.1.0"
 dependencies = [
  "async-stream",
  "async-trait",
  "futures",
  "serde_json",
- "synapse-core",
+ "synaptic-core",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-splitters"
+name = "synaptic-splitters"
 version = "0.1.0"
 dependencies = [
  "serde_json",
- "synapse-core",
- "synapse-retrieval",
+ "synaptic-core",
+ "synaptic-retrieval",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-tools"
+name = "synaptic-tools"
 version = "0.1.0"
 dependencies = [
  "async-trait",
  "futures",
  "serde_json",
- "synapse-core",
+ "synaptic-core",
  "tokio",
 ]
 
 [[package]]
-name = "synapse-vectorstores"
+name = "synaptic-vectorstores"
 version = "0.1.0"
 dependencies = [
  "async-trait",
  "serde_json",
- "synapse-core",
- "synapse-embeddings",
- "synapse-retrieval",
+ "synaptic-core",
+ "synaptic-embeddings",
+ "synaptic-retrieval",
  "tokio",
 ]
 
@@ -1674,7 +1674,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "serde_json",
- "synapse",
+ "synaptic",
  "tokio",
 ]
 

@@ -1,4 +1,4 @@
-use synapse_splitters::{MarkdownHeaderTextSplitter, TextSplitter};
+use synaptic_splitters::{MarkdownHeaderTextSplitter, TextSplitter};
 
 #[test]
 fn splits_by_headers() {

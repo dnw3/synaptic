@@ -13,8 +13,8 @@ Define your output type as a struct that implements `Deserialize`, then wrap you
 ```rust
 use std::sync::Arc;
 use serde::Deserialize;
-use synapse_core::{ChatModel, ChatRequest, Message};
-use synapse_models::StructuredOutputChatModel;
+use synaptic_core::{ChatModel, ChatRequest, Message};
+use synaptic_models::StructuredOutputChatModel;
 
 #[derive(Debug, Deserialize)]
 struct MovieReview {
@@ -138,7 +138,7 @@ let structured = StructuredOutputChatModel::<AnalysisResult>::new(
 Since `StructuredOutputChatModel<T>` implements `ChatModel`, it composes with other wrappers:
 
 ```rust
-use synapse_models::{RetryChatModel, RetryPolicy};
+use synaptic_models::{RetryChatModel, RetryPolicy};
 
 let base: Arc<dyn ChatModel> = Arc::new(base_model);
 let structured = Arc::new(StructuredOutputChatModel::<MovieReview>::new(

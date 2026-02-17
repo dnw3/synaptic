@@ -7,8 +7,8 @@ Instead of waiting for the entire graph to finish, you can **stream** execution 
 The `stream()` method on `CompiledGraph` returns a `GraphStream` -- a `Pin<Box<dyn Stream>>` that yields `Result<GraphEvent<S>, SynapseError>` values:
 
 ```rust
-use synapse_graph::{StateGraph, FnNode, MessageState, StreamMode, GraphEvent, END};
-use synapse_core::Message;
+use synaptic_graph::{StateGraph, FnNode, MessageState, StreamMode, GraphEvent, END};
+use synaptic_core::Message;
 use futures::StreamExt;
 
 let step_a = FnNode::new(|mut state: MessageState| async move {
@@ -68,7 +68,7 @@ The `StreamMode` enum controls what the `state` field contains:
 You can combine streaming with checkpointing using `stream_with_config()`:
 
 ```rust
-use synapse_graph::{MemorySaver, CheckpointConfig, StreamMode};
+use synaptic_graph::{MemorySaver, CheckpointConfig, StreamMode};
 use std::sync::Arc;
 
 let checkpointer = Arc::new(MemorySaver::new());

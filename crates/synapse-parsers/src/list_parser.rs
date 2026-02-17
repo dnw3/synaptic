@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use synapse_core::{RunnableConfig, SynapseError};
-use synapse_runnables::Runnable;
+use synaptic_core::{RunnableConfig, SynapseError};
+use synaptic_runnables::Runnable;
 
 use crate::FormatInstructions;
 

@@ -3,7 +3,7 @@ use std::{collections::VecDeque, pin::Pin, sync::Arc};
 use async_trait::async_trait;
 use futures::Stream;
 use serde_json::Value;
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 use tokio::sync::Mutex;
 
 #[derive(Debug, Clone)]

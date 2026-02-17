@@ -7,9 +7,9 @@
 Define a struct that derives `Deserialize`, then create a parser for it:
 
 ```rust
-use synapse_parsers::StructuredOutputParser;
-use synapse_runnables::Runnable;
-use synapse_core::RunnableConfig;
+use synaptic_parsers::StructuredOutputParser;
+use synaptic_runnables::Runnable;
+use synaptic_core::RunnableConfig;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -37,9 +37,9 @@ assert_eq!(result.age, 30);
 If the input string is not valid JSON or does not match the struct's schema, the parser returns `Err(SynapseError::Parsing(...))`:
 
 ```rust
-use synapse_parsers::StructuredOutputParser;
-use synapse_runnables::Runnable;
-use synapse_core::RunnableConfig;
+use synaptic_parsers::StructuredOutputParser;
+use synaptic_runnables::Runnable;
+use synaptic_core::RunnableConfig;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -65,7 +65,7 @@ assert!(err.to_string().contains("structured parse error"));
 `StructuredOutputParser<T>` implements the `FormatInstructions` trait. Include the instructions in your prompt to guide the model toward producing correctly-shaped JSON:
 
 ```rust
-use synapse_parsers::{StructuredOutputParser, FormatInstructions};
+use synaptic_parsers::{StructuredOutputParser, FormatInstructions};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -84,9 +84,9 @@ let instructions = parser.get_format_instructions();
 In a chain, `StructuredOutputParser` typically follows a `StrOutputParser` step or receives the string content directly. Here is a complete example:
 
 ```rust
-use synapse_parsers::StructuredOutputParser;
-use synapse_runnables::{Runnable, RunnableLambda};
-use synapse_core::{Message, RunnableConfig};
+use synaptic_parsers::StructuredOutputParser;
+use synaptic_runnables::{Runnable, RunnableLambda};
+use synaptic_core::{Message, RunnableConfig};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]

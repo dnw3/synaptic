@@ -1,4 +1,4 @@
-use synapse_eval::{Evaluator, RegexMatchEvaluator};
+use synaptic_eval::{Evaluator, RegexMatchEvaluator};
 
 #[tokio::test]
 async fn regex_match_passes() {

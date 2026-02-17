@@ -1,4 +1,4 @@
-use synapse_eval::{evaluate, Dataset, ExactMatchEvaluator};
+use synaptic_eval::{evaluate, Dataset, ExactMatchEvaluator};
 
 #[tokio::test]
 async fn evaluate_dataset() {

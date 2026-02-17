@@ -3,8 +3,8 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 use serde_json::Value;
-use synapse_core::SynapseError;
-use synapse_retrieval::Document;
+use synaptic_core::SynapseError;
+use synaptic_retrieval::Document;
 
 use crate::Loader;
 

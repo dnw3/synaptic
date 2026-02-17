@@ -9,7 +9,7 @@
 
 ### 使用 facade crate（推荐）
 
-`synapse` facade crate 重新导出所有子 crate。使用 **feature flags** 控制编译哪些模块。
+`synaptic` facade crate 重新导出所有子 crate。使用 **feature flags** 控制编译哪些模块。
 
 ### Feature Flags
 
@@ -18,22 +18,22 @@ Synapse 提供类似 tokio 的细粒度 feature flags：
 ```toml
 [dependencies]
 # 全量引入（等同之前的默认行为）
-synapse = { version = "0.1", features = ["full"] }
+synaptic = { version = "0.1", features = ["full"] }
 
 # Agent 开发（自动包含 models, tools, graph, memory 等）
-synapse = { version = "0.1", features = ["agent"] }
+synaptic = { version = "0.1", features = ["agent"] }
 
 # RAG 应用（自动包含 retrieval, loaders, splitters, embeddings, vectorstores 等）
-synapse = { version = "0.1", features = ["rag"] }
+synaptic = { version = "0.1", features = ["rag"] }
 
 # Agent + RAG
-synapse = { version = "0.1", features = ["agent", "rag"] }
+synaptic = { version = "0.1", features = ["agent", "rag"] }
 
 # 最小化 — 只要模型调用
-synapse = { version = "0.1", features = ["models"] }
+synaptic = { version = "0.1", features = ["models"] }
 
 # 精细控制
-synapse = { version = "0.1", features = ["models", "graph", "cache"] }
+synaptic = { version = "0.1", features = ["models", "graph", "cache"] }
 ```
 
 | Feature | 说明 |
@@ -50,8 +50,8 @@ synapse = { version = "0.1", features = ["models", "graph", "cache"] }
 然后在代码中使用：
 
 ```rust
-use synapse::core::{ChatModel, Message, ChatRequest};
-use synapse::models::OpenAiChatModel;
+use synaptic::core::{ChatModel, Message, ChatRequest};
+use synaptic::models::OpenAiChatModel;
 ```
 
 ### 按需引入单个 crate
@@ -60,9 +60,9 @@ use synapse::models::OpenAiChatModel;
 
 ```toml
 [dependencies]
-synapse-core = "0.1"
-synapse-models = "0.1"
-synapse-runnables = "0.1"
+synaptic-core = "0.1"
+synaptic-models = "0.1"
+synaptic-runnables = "0.1"
 tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -74,7 +74,7 @@ tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 
 ```toml
 [dependencies]
-synapse = { version = "0.1", features = ["models"] }
+synaptic = { version = "0.1", features = ["models"] }
 tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -82,7 +82,7 @@ tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 
 ```toml
 [dependencies]
-synapse = { version = "0.1", features = ["agent"] }
+synaptic = { version = "0.1", features = ["agent"] }
 tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 async-trait = "0.1"
 ```
@@ -91,7 +91,7 @@ async-trait = "0.1"
 
 ```toml
 [dependencies]
-synapse = { version = "0.1", features = ["rag"] }
+synaptic = { version = "0.1", features = ["rag"] }
 tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 ```
 

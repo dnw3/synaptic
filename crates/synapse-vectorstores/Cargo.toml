@@ -1,5 +1,5 @@
 [package]
-name = "synapse-vectorstores"
+name = "synaptic-vectorstores"
 description = "Vector store trait with in-memory cosine similarity implementation"
 edition.workspace = true
 version.workspace = true
@@ -12,9 +12,9 @@ repository.workspace = true
 async-trait.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
-synapse-core = { path = "../synapse-core" }
-synapse-embeddings = { path = "../synapse-embeddings" }
-synapse-retrieval = { path = "../synapse-retrieval" }
+synaptic-core = { version = "0.1.0", path = "../synapse-core" }
+synaptic-embeddings = { version = "0.1.0", path = "../synapse-embeddings" }
+synaptic-retrieval = { version = "0.1.0", path = "../synapse-retrieval" }
 
 [dev-dependencies]
 tokio.workspace = true

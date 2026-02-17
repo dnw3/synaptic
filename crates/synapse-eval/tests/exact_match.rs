@@ -1,4 +1,4 @@
-use synapse_eval::{Evaluator, ExactMatchEvaluator};
+use synaptic_eval::{Evaluator, ExactMatchEvaluator};
 
 #[tokio::test]
 async fn exact_match_passes() {

@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use serde_json::json;
-use synapse_embeddings::{Embeddings, OllamaEmbeddings, OllamaEmbeddingsConfig};
-use synapse_models::backend::{FakeBackend, ProviderResponse};
+use synaptic_embeddings::{Embeddings, OllamaEmbeddings, OllamaEmbeddingsConfig};
+use synaptic_models::backend::{FakeBackend, ProviderResponse};
 
 #[tokio::test]
 async fn ollama_embed_query() {

@@ -1,6 +1,6 @@
 # Custom Tools
 
-Every tool in Synapse implements the `Tool` trait from `synapse-core`. This page shows how to define your own tools.
+Every tool in Synapse implements the `Tool` trait from `synaptic-core`. This page shows how to define your own tools.
 
 ## The Tool Trait
 
@@ -9,7 +9,7 @@ The `Tool` trait requires three methods:
 ```rust
 use async_trait::async_trait;
 use serde_json::Value;
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 
 #[async_trait]
 pub trait Tool: Send + Sync {
@@ -31,7 +31,7 @@ Here is a complete example of a weather tool:
 ```rust
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synapse_core::{Tool, SynapseError};
+use synaptic_core::{Tool, SynapseError};
 
 struct WeatherTool;
 
@@ -74,7 +74,7 @@ Return `SynapseError::Tool(...)` for tool-specific errors:
 ```rust
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synapse_core::{Tool, SynapseError};
+use synaptic_core::{Tool, SynapseError};
 
 struct DivisionTool;
 
@@ -109,7 +109,7 @@ Once defined, wrap the tool in an `Arc` and register it:
 
 ```rust
 use std::sync::Arc;
-use synapse_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic_tools::{ToolRegistry, SerialToolExecutor};
 use serde_json::json;
 
 let registry = ToolRegistry::new();
@@ -128,7 +128,7 @@ To tell a chat model about available tools, create `ToolDefinition` values and a
 
 ```rust
 use serde_json::json;
-use synapse_core::{ChatRequest, Message, ToolDefinition};
+use synaptic_core::{ChatRequest, Message, ToolDefinition};
 
 let tool_def = ToolDefinition {
     name: "get_weather".to_string(),

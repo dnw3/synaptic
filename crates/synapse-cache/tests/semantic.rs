@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use synapse_cache::{LlmCache, SemanticCache};
-use synapse_core::{ChatResponse, Message};
-use synapse_embeddings::FakeEmbeddings;
+use synaptic_cache::{LlmCache, SemanticCache};
+use synaptic_core::{ChatResponse, Message};
+use synaptic_embeddings::FakeEmbeddings;
 
 fn make_response(text: &str) -> ChatResponse {
     ChatResponse {

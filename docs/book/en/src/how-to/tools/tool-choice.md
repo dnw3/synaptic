@@ -1,6 +1,6 @@
 # Tool Choice
 
-`ToolChoice` controls whether and how a chat model selects tools when responding. It is defined in `synapse-core` and attached to a `ChatRequest` via the `with_tool_choice()` builder method.
+`ToolChoice` controls whether and how a chat model selects tools when responding. It is defined in `synaptic-core` and attached to a `ChatRequest` via the `with_tool_choice()` builder method.
 
 ## ToolChoice Variants
 
@@ -17,7 +17,7 @@ Attach `ToolChoice` to a `ChatRequest` alongside tool definitions:
 
 ```rust
 use serde_json::json;
-use synapse_core::{ChatRequest, Message, ToolChoice, ToolDefinition};
+use synaptic_core::{ChatRequest, Message, ToolChoice, ToolDefinition};
 
 let weather_tool = ToolDefinition {
     name: "get_weather".to_string(),
@@ -46,7 +46,7 @@ let request = ChatRequest::new(vec![
 Let the model decide. This is the best choice for general-purpose agents that should respond with text when no tool is needed:
 
 ```rust
-use synapse_core::{ChatRequest, Message, ToolChoice};
+use synaptic_core::{ChatRequest, Message, ToolChoice};
 
 let request = ChatRequest::new(vec![
     Message::human("Hello, how are you?"),
@@ -60,7 +60,7 @@ let request = ChatRequest::new(vec![
 Force tool usage. Useful in agent loops where the next step must be a tool call, or when you know the user's request requires tool invocation:
 
 ```rust
-use synapse_core::{ChatRequest, Message, ToolChoice};
+use synaptic_core::{ChatRequest, Message, ToolChoice};
 
 let request = ChatRequest::new(vec![
     Message::human("Look up the weather in Paris and Tokyo."),
@@ -75,7 +75,7 @@ let request = ChatRequest::new(vec![
 Suppress tool calls. Useful when you want to temporarily disable tools without removing them from the request, or during a final summarization step:
 
 ```rust
-use synapse_core::{ChatRequest, Message, ToolChoice};
+use synaptic_core::{ChatRequest, Message, ToolChoice};
 
 let request = ChatRequest::new(vec![
     Message::system("Summarize the tool results for the user."),
@@ -92,7 +92,7 @@ let request = ChatRequest::new(vec![
 Force a particular tool. Useful when you know exactly which tool should be called:
 
 ```rust
-use synapse_core::{ChatRequest, Message, ToolChoice};
+use synaptic_core::{ChatRequest, Message, ToolChoice};
 
 let request = ChatRequest::new(vec![
     Message::human("Check the weather in London."),
@@ -110,11 +110,11 @@ Here is a full example that creates tools, forces a specific tool call, and proc
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synapse_core::{
+use synaptic_core::{
     ChatModel, ChatRequest, Message, SynapseError, Tool,
     ToolChoice, ToolDefinition,
 };
-use synapse_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic_tools::{ToolRegistry, SerialToolExecutor};
 
 // Define the tool
 struct CalculatorTool;

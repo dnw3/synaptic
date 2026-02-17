@@ -105,7 +105,7 @@ Not all errors are fatal. Synapse provides several mechanisms for resilience:
 Wraps a `ChatModel` and retries on transient failures:
 
 ```rust
-use synapse::models::RetryChatModel;
+use synaptic::models::RetryChatModel;
 
 let robust_model = RetryChatModel::new(model, max_retries, delay);
 ```
@@ -126,7 +126,7 @@ By throttling before hitting the provider's limit, these wrappers convert potent
 Tries alternative runnables when the primary one fails:
 
 ```rust
-use synapse::runnables::RunnableWithFallbacks;
+use synaptic::runnables::RunnableWithFallbacks;
 
 let chain = RunnableWithFallbacks::new(
     primary.boxed(),
@@ -141,7 +141,7 @@ If `primary` fails, `fallback_1` is tried with the same input. If that also fail
 Retries a runnable with configurable backoff:
 
 ```rust
-use synapse::runnables::{RunnableRetry, RetryPolicy};
+use synaptic::runnables::{RunnableRetry, RetryPolicy};
 
 let retry = RunnableRetry::new(
     flaky_step.boxed(),
@@ -160,7 +160,7 @@ The delay doubles after each attempt (200ms, 400ms, 800ms). This is useful for a
 Wraps a tool so that errors are returned as string results instead of propagating:
 
 ```rust
-use synapse::tools::HandleErrorTool;
+use synaptic::tools::HandleErrorTool;
 
 let safe_tool = HandleErrorTool::new(risky_tool);
 ```

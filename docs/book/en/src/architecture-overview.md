@@ -6,7 +6,7 @@ Synapse is organized as a Cargo workspace with 17 library crates, 1 facade crate
 
 ### Core Layer
 
-**`synapse-core`** defines all shared traits and types. Every other crate depends on it.
+**`synaptic-core`** defines all shared traits and types. Every other crate depends on it.
 
 - Traits: `ChatModel`, `Tool`, `MemoryStore`, `CallbackHandler`
 - Types: `Message`, `ChatRequest`, `ChatResponse`, `ToolCall`, `ToolDefinition`, `ToolChoice`, `AIMessageChunk`, `TokenUsage`, `RunEvent`, `RunnableConfig`
@@ -19,13 +19,13 @@ Each crate implements one core trait or provides a focused capability:
 
 | Crate | Purpose |
 |---|---|
-| `synapse-models` | Provider adapters (OpenAI, Anthropic, Gemini, Ollama) + `ScriptedChatModel` test double + wrappers (retry, rate limit, caching, structured output) |
-| `synapse-tools` | `ToolRegistry` and `SerialToolExecutor` |
-| `synapse-memory` | Memory strategies: buffer, window, summary, token buffer, summary buffer, `RunnableWithMessageHistory` |
-| `synapse-callbacks` | `RecordingCallback`, `TracingCallback`, `CompositeCallback` |
-| `synapse-prompts` | `PromptTemplate`, `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate` |
-| `synapse-parsers` | Output parsers: string, JSON, structured, list, enum, boolean, XML, markdown list, numbered list |
-| `synapse-cache` | `InMemoryCache`, `SemanticCache`, `CachedChatModel` |
+| `synaptic-models` | Provider adapters (OpenAI, Anthropic, Gemini, Ollama) + `ScriptedChatModel` test double + wrappers (retry, rate limit, caching, structured output) |
+| `synaptic-tools` | `ToolRegistry` and `SerialToolExecutor` |
+| `synaptic-memory` | Memory strategies: buffer, window, summary, token buffer, summary buffer, `RunnableWithMessageHistory` |
+| `synaptic-callbacks` | `RecordingCallback`, `TracingCallback`, `CompositeCallback` |
+| `synaptic-prompts` | `PromptTemplate`, `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate` |
+| `synaptic-parsers` | Output parsers: string, JSON, structured, list, enum, boolean, XML, markdown list, numbered list |
+| `synaptic-cache` | `InMemoryCache`, `SemanticCache`, `CachedChatModel` |
 
 ### Composition Crates
 
@@ -33,8 +33,8 @@ These crates provide higher-level orchestration:
 
 | Crate | Purpose |
 |---|---|
-| `synapse-runnables` | `Runnable` trait with `invoke()`/`batch()`/`stream()`, `BoxRunnable` with pipe operator, `RunnableLambda`, `RunnableParallel`, `RunnableBranch`, `RunnableAssign`, `RunnablePick`, `RunnableWithFallbacks` |
-| `synapse-graph` | LangGraph-style state machines: `StateGraph`, `CompiledGraph`, `ToolNode`, `create_react_agent`, `Checkpointer`, `MemorySaver`, graph streaming |
+| `synaptic-runnables` | `Runnable` trait with `invoke()`/`batch()`/`stream()`, `BoxRunnable` with pipe operator, `RunnableLambda`, `RunnableParallel`, `RunnableBranch`, `RunnableAssign`, `RunnablePick`, `RunnableWithFallbacks` |
+| `synaptic-graph` | LangGraph-style state machines: `StateGraph`, `CompiledGraph`, `ToolNode`, `create_react_agent`, `Checkpointer`, `MemorySaver`, graph streaming |
 
 ### Retrieval Pipeline
 
@@ -42,36 +42,36 @@ These crates form the document ingestion and retrieval pipeline:
 
 | Crate | Purpose |
 |---|---|
-| `synapse-loaders` | `TextLoader`, `JsonLoader`, `CsvLoader`, `DirectoryLoader` |
-| `synapse-splitters` | `CharacterTextSplitter`, `RecursiveCharacterTextSplitter`, `MarkdownHeaderTextSplitter`, `TokenTextSplitter` |
-| `synapse-embeddings` | `Embeddings` trait, `OpenAiEmbeddings`, `OllamaEmbeddings`, `FakeEmbeddings` |
-| `synapse-vectorstores` | `VectorStore` trait, `InMemoryVectorStore`, `VectorStoreRetriever` |
-| `synapse-retrieval` | `Retriever` trait, `BM25Retriever`, `MultiQueryRetriever`, `EnsembleRetriever`, `ContextualCompressionRetriever`, `SelfQueryRetriever`, `ParentDocumentRetriever` |
+| `synaptic-loaders` | `TextLoader`, `JsonLoader`, `CsvLoader`, `DirectoryLoader` |
+| `synaptic-splitters` | `CharacterTextSplitter`, `RecursiveCharacterTextSplitter`, `MarkdownHeaderTextSplitter`, `TokenTextSplitter` |
+| `synaptic-embeddings` | `Embeddings` trait, `OpenAiEmbeddings`, `OllamaEmbeddings`, `FakeEmbeddings` |
+| `synaptic-vectorstores` | `VectorStore` trait, `InMemoryVectorStore`, `VectorStoreRetriever` |
+| `synaptic-retrieval` | `Retriever` trait, `BM25Retriever`, `MultiQueryRetriever`, `EnsembleRetriever`, `ContextualCompressionRetriever`, `SelfQueryRetriever`, `ParentDocumentRetriever` |
 
 ### Evaluation
 
 | Crate | Purpose |
 |---|---|
-| `synapse-eval` | `Evaluator` trait, `ExactMatchEvaluator`, `RegexMatchEvaluator`, `JsonValidityEvaluator`, `EmbeddingDistanceEvaluator`, `LLMJudgeEvaluator`, `Dataset`, batch evaluation pipeline |
+| `synaptic-eval` | `Evaluator` trait, `ExactMatchEvaluator`, `RegexMatchEvaluator`, `JsonValidityEvaluator`, `EmbeddingDistanceEvaluator`, `LLMJudgeEvaluator`, `Dataset`, batch evaluation pipeline |
 
 ### Facade
 
-**`synapse`** re-exports all sub-crates for convenient single-import usage:
+**`synaptic`** re-exports all sub-crates for convenient single-import usage:
 
 ```rust
-use synapse::core::{ChatModel, Message, ChatRequest};
-use synapse::models::OpenAiChatModel;
-use synapse::runnables::{Runnable, RunnableLambda};
-use synapse::graph::{StateGraph, create_react_agent};
+use synaptic::core::{ChatModel, Message, ChatRequest};
+use synaptic::models::OpenAiChatModel;
+use synaptic::runnables::{Runnable, RunnableLambda};
+use synaptic::graph::{StateGraph, create_react_agent};
 ```
 
 ## Dependency Diagram
 
-All crates depend on `synapse-core` for shared traits and types. Higher-level crates depend on the layer below:
+All crates depend on `synaptic-core` for shared traits and types. Higher-level crates depend on the layer below:
 
 ```text
                          ┌─────────┐
-                         │ synapse │  (facade: re-exports all)
+                         │synaptic│  (facade: re-exports all)
                          └────┬────┘
                               │
        ┌──────────────────────┼──────────────────────┐
@@ -90,7 +90,7 @@ All crates depend on `synapse-core` for shared traits and types. Higher-level cr
   │  ┌───┼──────┼───────┼───────┼───────┤       │
   │  │   │      │       │       │       │       │
   ┌──┴───┴──────┴───────┴───────┴───────┴───────┴──┐
-  │              synapse-core                       │
+  │             synaptic-core                       │
   │  (ChatModel, Tool, Message, SynapseError, ...) │
   └─────────────────────────────────────────────────┘
 
@@ -98,7 +98,7 @@ All crates depend on `synapse-core` for shared traits and types. Higher-level cr
 
   loaders ──► splitters ──► embeddings ──► vectorstores ──► retrieval
                                                               │
-                                                         synapse-core
+                                                        synaptic-core
 ```
 
 ## Design Principles

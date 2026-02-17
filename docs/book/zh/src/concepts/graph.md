@@ -22,7 +22,7 @@ pub trait State: Clone + Send + Sync + 'static {
 `MessageState` 是最常用的内置状态类型，包含一个消息列表，适用于聊天 Agent 场景：
 
 ```rust
-use synapse_graph::MessageState;
+use synaptic_graph::MessageState;
 
 let state = MessageState::new();
 // 或者带初始消息
@@ -44,7 +44,7 @@ if let Some(last) = state.last_message() {
 
 ```rust
 use serde::{Serialize, Deserialize};
-use synapse_graph::State;
+use synaptic_graph::State;
 
 #[derive(Clone, Serialize, Deserialize)]
 struct MyState {
@@ -78,7 +78,7 @@ pub trait Node<S: State>: Send + Sync {
 使用 `FnNode` 可以将异步闭包包装为节点，无需手动实现 trait：
 
 ```rust
-use synapse_graph::FnNode;
+use synaptic_graph::FnNode;
 
 let greet_node = FnNode::new(|mut state: MessageState| async move {
     state.messages.push(Message::ai("你好！有什么可以帮你的？"));
@@ -102,7 +102,7 @@ Edge 定义节点之间的转换关系。有两种类型：
 使用 `StateGraph` 构建器定义工作流的结构：
 
 ```rust
-use synapse_graph::{StateGraph, MessageState, FnNode, END};
+use synaptic_graph::{StateGraph, MessageState, FnNode, END};
 
 let graph = StateGraph::<MessageState>::new()
     // 添加节点
@@ -159,7 +159,7 @@ println!("{}", final_state.last_message().unwrap().content());
 ### invoke_with_config -- 带检查点配置执行
 
 ```rust
-use synapse_graph::CheckpointConfig;
+use synaptic_graph::CheckpointConfig;
 
 let config = CheckpointConfig {
     thread_id: "thread-1".to_string(),
@@ -170,7 +170,7 @@ let final_state = compiled.invoke_with_config(initial_state, Some(config)).await
 ### stream -- 流式执行
 
 ```rust
-use synapse_graph::StreamMode;
+use synaptic_graph::StreamMode;
 use futures::StreamExt;
 
 let stream = compiled.stream(initial_state, StreamMode::Values);
@@ -217,7 +217,7 @@ for (state, next_node) in &history {
 
 ```rust
 use std::sync::Arc;
-use synapse_graph::MemorySaver;
+use synaptic_graph::MemorySaver;
 
 let checkpointer = Arc::new(MemorySaver::new());
 let compiled = graph.compile()?.with_checkpointer(checkpointer);
@@ -319,7 +319,7 @@ compiled.draw_png("graph.png")?;
 `create_react_agent` 是一个便捷函数，自动构建包含 agent 节点和 tools 节点的 ReAct 循环 Graph：
 
 ```rust
-use synapse_graph::create_react_agent;
+use synaptic_graph::create_react_agent;
 
 let graph = create_react_agent(model, tools)?;
 ```
@@ -345,7 +345,7 @@ let graph = create_react_agent(model, tools)?;
 你也可以使用 `create_react_agent_with_options` 进行更细粒度的配置：
 
 ```rust
-use synapse_graph::{create_react_agent_with_options, ReactAgentOptions};
+use synaptic_graph::{create_react_agent_with_options, ReactAgentOptions};
 
 let options = ReactAgentOptions {
     // 自定义选项...

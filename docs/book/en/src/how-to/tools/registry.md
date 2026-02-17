@@ -1,6 +1,6 @@
 # Tool Registry
 
-`ToolRegistry` is a thread-safe collection of tools, and `SerialToolExecutor` dispatches tool calls through the registry by name. Both are provided by the `synapse-tools` crate.
+`ToolRegistry` is a thread-safe collection of tools, and `SerialToolExecutor` dispatches tool calls through the registry by name. Both are provided by the `synaptic-tools` crate.
 
 ## ToolRegistry
 
@@ -12,8 +12,8 @@
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synapse_core::{Tool, SynapseError};
-use synapse_tools::ToolRegistry;
+use synaptic_core::{Tool, SynapseError};
+use synaptic_tools::ToolRegistry;
 
 struct EchoTool;
 
@@ -53,7 +53,7 @@ assert!(missing.is_none());
 ### Creating and Using
 
 ```rust
-use synapse_tools::SerialToolExecutor;
+use synaptic_tools::SerialToolExecutor;
 use serde_json::json;
 
 let executor = SerialToolExecutor::new(registry);
@@ -74,7 +74,7 @@ If you call `execute()` with a name that is not registered, it returns `SynapseE
 
 ```rust
 let err = executor.execute("nonexistent", json!({})).await.unwrap_err();
-assert!(matches!(err, synapse_core::SynapseError::ToolNotFound(name) if name == "nonexistent"));
+assert!(matches!(err, synaptic_core::SynapseError::ToolNotFound(name) if name == "nonexistent"));
 ```
 
 ## Complete Example
@@ -85,8 +85,8 @@ Here is a full example that registers multiple tools and executes them:
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synapse_core::{Tool, SynapseError};
-use synapse_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic_core::{Tool, SynapseError};
+use synaptic_tools::{ToolRegistry, SerialToolExecutor};
 
 struct AddTool;
 
@@ -137,7 +137,7 @@ async fn main() -> Result<(), SynapseError> {
 In a typical agent workflow, the model's response contains `ToolCall` entries. You dispatch them through the executor and send the results back:
 
 ```rust
-use synapse_core::{Message, ToolCall};
+use synaptic_core::{Message, ToolCall};
 use serde_json::json;
 
 // After model responds with tool calls:

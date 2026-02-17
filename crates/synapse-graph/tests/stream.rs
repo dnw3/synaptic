@@ -3,8 +3,8 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-use synapse_core::SynapseError;
-use synapse_graph::{CheckpointConfig, MemorySaver, Node, State, StateGraph, StreamMode, END};
+use synaptic_core::SynapseError;
+use synaptic_graph::{CheckpointConfig, MemorySaver, Node, State, StateGraph, StreamMode, END};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 struct CounterState {

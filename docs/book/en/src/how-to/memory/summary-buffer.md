@@ -6,8 +6,8 @@
 
 ```rust
 use std::sync::Arc;
-use synapse_memory::{ConversationSummaryBufferMemory, InMemoryStore};
-use synapse_core::{MemoryStore, Message, ChatModel};
+use synaptic_memory::{ConversationSummaryBufferMemory, InMemoryStore};
+use synaptic_core::{MemoryStore, Message, ChatModel};
 
 let model: Arc<dyn ChatModel> = Arc::new(my_model);
 let store = Arc::new(InMemoryStore::new());

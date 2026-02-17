@@ -1,5 +1,5 @@
-use synapse_callbacks::RecordingCallback;
-use synapse_core::{CallbackHandler, RunEvent};
+use synaptic_callbacks::RecordingCallback;
+use synaptic_core::{CallbackHandler, RunEvent};
 
 #[tokio::test]
 async fn records_events_in_order() {

@@ -12,7 +12,7 @@ pub use markdown::{HeaderType, MarkdownHeaderTextSplitter};
 pub use recursive::RecursiveCharacterTextSplitter;
 pub use token::TokenTextSplitter;
 
-use synapse_retrieval::Document;
+use synaptic_retrieval::Document;
 
 /// Trait for splitting text into chunks.
 pub trait TextSplitter: Send + Sync {

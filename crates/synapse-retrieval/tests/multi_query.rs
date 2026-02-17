@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use synapse_core::{ChatResponse, Message, SynapseError};
-use synapse_models::ScriptedChatModel;
-use synapse_retrieval::{Document, InMemoryRetriever, MultiQueryRetriever, Retriever};
+use synaptic_core::{ChatResponse, Message, SynapseError};
+use synaptic_models::ScriptedChatModel;
+use synaptic_retrieval::{Document, InMemoryRetriever, MultiQueryRetriever, Retriever};
 
 #[tokio::test]
 async fn multi_query_deduplicates_results() -> Result<(), SynapseError> {

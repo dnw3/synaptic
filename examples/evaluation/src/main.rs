@@ -1,5 +1,5 @@
-use synapse::core::SynapseError;
-use synapse::eval::{evaluate, Dataset, Evaluator, ExactMatchEvaluator};
+use synaptic::core::SynapseError;
+use synaptic::eval::{evaluate, Dataset, Evaluator, ExactMatchEvaluator};
 
 #[tokio::main]
 async fn main() -> Result<(), SynapseError> {

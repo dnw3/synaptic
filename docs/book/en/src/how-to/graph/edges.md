@@ -7,8 +7,8 @@ Edges define the flow of execution between nodes in a graph. Synapse supports tw
 A fixed edge unconditionally routes execution from one node to another:
 
 ```rust
-use synapse_graph::{StateGraph, FnNode, MessageState, END};
-use synapse_core::Message;
+use synaptic_graph::{StateGraph, FnNode, MessageState, END};
+use synaptic_core::Message;
 
 let node_a = FnNode::new(|mut state: MessageState| async move {
     state.messages.push(Message::ai("Step A"));
@@ -49,8 +49,8 @@ Calling `.compile()` without setting an entry point returns an error.
 Conditional edges route execution based on a function that inspects the current state and returns the name of the next node:
 
 ```rust
-use synapse_graph::{StateGraph, FnNode, MessageState, END};
-use synapse_core::Message;
+use synaptic_graph::{StateGraph, FnNode, MessageState, END};
+use synaptic_core::Message;
 
 let router = FnNode::new(|state: MessageState| async move {
     Ok(state)  // routing logic is in the edge, not the node
@@ -91,7 +91,7 @@ For graph visualization, you can provide a `path_map` that enumerates the possib
 
 ```rust
 use std::collections::HashMap;
-use synapse_graph::{StateGraph, MessageState, END};
+use synaptic_graph::{StateGraph, MessageState, END};
 
 let graph = StateGraph::new()
     .add_node("router", router_node)

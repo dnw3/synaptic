@@ -26,7 +26,7 @@ An enum makes it impossible to construct an invalid message. An AI message alway
 Synapse provides factory methods rather than exposing struct literals. This keeps the API stable even as internal fields are added:
 
 ```rust
-use synapse::core::Message;
+use synaptic::core::Message;
 
 // Basic messages
 let sys = Message::system("You are a helpful assistant.");
@@ -160,7 +160,7 @@ Synapse provides four utility functions for working with message sequences:
 Filter messages by role, name, or ID with include/exclude lists:
 
 ```rust
-use synapse::core::filter_messages;
+use synaptic::core::filter_messages;
 
 let humans_only = filter_messages(
     &messages,
@@ -176,7 +176,7 @@ let humans_only = filter_messages(
 Trim a message sequence to fit within a token budget:
 
 ```rust
-use synapse::core::{trim_messages, TrimStrategy};
+use synaptic::core::{trim_messages, TrimStrategy};
 
 let trimmed = trim_messages(
     messages,
@@ -194,7 +194,7 @@ let trimmed = trim_messages(
 Merge consecutive messages of the same role into a single message:
 
 ```rust
-use synapse::core::merge_message_runs;
+use synaptic::core::merge_message_runs;
 
 let merged = merge_message_runs(vec![
     Message::human("Hello"),
@@ -211,7 +211,7 @@ For AI messages, tool calls and invalid tool calls are also merged.
 Convert a message sequence to a human-readable string:
 
 ```rust
-use synapse::core::get_buffer_string;
+use synaptic::core::get_buffer_string;
 
 let text = get_buffer_string(&messages, "Human", "AI");
 // "System: You are helpful.\nHuman: Hello\nAI: Hi there!"

@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use synapse_core::SynapseError;
-use synapse_embeddings::Embeddings;
+use synaptic_core::SynapseError;
+use synaptic_embeddings::Embeddings;
 use tokio::sync::RwLock;
 
 use crate::FewShotExample;

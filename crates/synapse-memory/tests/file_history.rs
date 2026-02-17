@@ -1,5 +1,5 @@
-use synapse_core::{MemoryStore, Message};
-use synapse_memory::FileChatMessageHistory;
+use synaptic_core::{MemoryStore, Message};
+use synaptic_memory::FileChatMessageHistory;
 
 #[tokio::test]
 async fn load_returns_empty_when_no_file() {

@@ -2,7 +2,7 @@ use std::fmt;
 use std::io::Write;
 use std::path::Path;
 
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 
 use crate::compiled::CompiledGraph;
 use crate::state::State;

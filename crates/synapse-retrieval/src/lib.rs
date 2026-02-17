@@ -17,7 +17,7 @@ use std::collections::{HashMap, HashSet};
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 
 /// A document with content and metadata, used throughout the retrieval pipeline.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

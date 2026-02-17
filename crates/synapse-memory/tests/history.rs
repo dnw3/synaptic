@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use synapse_core::{MemoryStore, Message, RunnableConfig, SynapseError};
-use synapse_memory::{InMemoryStore, RunnableWithMessageHistory};
-use synapse_runnables::Runnable;
+use synaptic_core::{MemoryStore, Message, RunnableConfig, SynapseError};
+use synaptic_memory::{InMemoryStore, RunnableWithMessageHistory};
+use synaptic_runnables::Runnable;
 
 /// A simple runnable that echoes the last human message content.
 struct EchoRunnable;

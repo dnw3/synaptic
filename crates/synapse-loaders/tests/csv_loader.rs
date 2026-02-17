@@ -1,4 +1,4 @@
-use synapse_loaders::{CsvLoader, Loader};
+use synaptic_loaders::{CsvLoader, Loader};
 
 #[tokio::test]
 async fn loads_csv_with_content_column() {

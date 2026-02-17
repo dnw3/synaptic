@@ -1,7 +1,7 @@
 use serde_json::json;
-use synapse_core::RunnableConfig;
-use synapse_parsers::JsonOutputParser;
-use synapse_runnables::Runnable;
+use synaptic_core::RunnableConfig;
+use synaptic_parsers::JsonOutputParser;
+use synaptic_runnables::Runnable;
 
 #[tokio::test]
 async fn parses_valid_json_object() {

@@ -1,6 +1,6 @@
-use synapse_core::RunnableConfig;
-use synapse_parsers::EnumOutputParser;
-use synapse_runnables::Runnable;
+use synaptic_core::RunnableConfig;
+use synaptic_parsers::EnumOutputParser;
+use synaptic_runnables::Runnable;
 
 #[tokio::test]
 async fn accepts_valid_value() {

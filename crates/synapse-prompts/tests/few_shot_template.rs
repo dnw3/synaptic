@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use synapse_core::RunnableConfig;
-use synapse_prompts::{FewShotExample, FewShotPromptTemplate, PromptTemplate};
-use synapse_runnables::Runnable;
+use synaptic_core::RunnableConfig;
+use synaptic_prompts::{FewShotExample, FewShotPromptTemplate, PromptTemplate};
+use synaptic_runnables::Runnable;
 
 #[test]
 fn renders_with_examples() {

@@ -20,8 +20,8 @@ The `merge()` method is called when combining state updates -- for example, when
 For the common case of conversational agents, Synapse provides `MessageState`:
 
 ```rust
-use synapse_graph::MessageState;
-use synapse_core::Message;
+use synaptic_graph::MessageState;
+use synaptic_core::Message;
 
 // Create an empty state
 let state = MessageState::new();
@@ -53,7 +53,7 @@ This append-only behavior is the right default for conversational workflows wher
 You can define your own state type for non-conversational graphs:
 
 ```rust
-use synapse_graph::State;
+use synaptic_graph::State;
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -81,9 +81,9 @@ A node is any type that implements `Node<S>`:
 
 ```rust
 use async_trait::async_trait;
-use synapse_core::SynapseError;
-use synapse_graph::{Node, MessageState};
-use synapse_core::Message;
+use synaptic_core::SynapseError;
+use synaptic_graph::{Node, MessageState};
+use synaptic_core::Message;
 
 struct GreeterNode;
 
@@ -103,8 +103,8 @@ Nodes are `Send + Sync`, so they can safely hold shared references (e.g., `Arc<d
 For simple logic, `FnNode` wraps an async closure as a node without defining a separate struct:
 
 ```rust
-use synapse_graph::{FnNode, MessageState};
-use synapse_core::Message;
+use synaptic_graph::{FnNode, MessageState};
+use synaptic_core::Message;
 
 let greeter = FnNode::new(|mut state: MessageState| async move {
     state.messages.push(Message::ai("Hello from a closure!"));
@@ -119,8 +119,8 @@ let greeter = FnNode::new(|mut state: MessageState| async move {
 Nodes are added to a `StateGraph` with a string name. The name is used to reference the node in edges and conditional routing:
 
 ```rust
-use synapse_graph::{StateGraph, FnNode, MessageState, END};
-use synapse_core::Message;
+use synaptic_graph::{StateGraph, FnNode, MessageState, END};
+use synaptic_core::Message;
 
 let node_a = FnNode::new(|mut state: MessageState| async move {
     state.messages.push(Message::ai("Step A"));

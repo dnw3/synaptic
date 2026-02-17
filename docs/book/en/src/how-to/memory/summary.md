@@ -6,8 +6,8 @@
 
 ```rust
 use std::sync::Arc;
-use synapse_memory::{ConversationSummaryMemory, InMemoryStore};
-use synapse_core::{MemoryStore, Message, ChatModel};
+use synaptic_memory::{ConversationSummaryMemory, InMemoryStore};
+use synaptic_core::{MemoryStore, Message, ChatModel};
 
 // You need a ChatModel to generate summaries
 let model: Arc<dyn ChatModel> = Arc::new(my_model);

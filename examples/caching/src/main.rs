@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use synapse::cache::{CachedChatModel, InMemoryCache, LlmCache};
-use synapse::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
-use synapse::models::ScriptedChatModel;
+use synaptic::cache::{CachedChatModel, InMemoryCache, LlmCache};
+use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
+use synaptic::models::ScriptedChatModel;
 
 #[tokio::main]
 async fn main() -> Result<(), SynapseError> {

@@ -1,17 +1,17 @@
 # Tools
 
-Tools give LLMs the ability to take actions in the world -- calling APIs, querying databases, performing calculations, or any other side effect. Synapse provides a complete tool system built around the `Tool` trait defined in `synapse-core`.
+Tools give LLMs the ability to take actions in the world -- calling APIs, querying databases, performing calculations, or any other side effect. Synapse provides a complete tool system built around the `Tool` trait defined in `synaptic-core`.
 
 ## Key Components
 
 | Component | Crate | Description |
 |-----------|-------|-------------|
-| `Tool` trait | `synapse-core` | The interface every tool must implement: `name()`, `description()`, and `call()` |
-| `ToolRegistry` | `synapse-tools` | Thread-safe collection of registered tools (`Arc<RwLock<HashMap>>`) |
-| `SerialToolExecutor` | `synapse-tools` | Dispatches tool calls by name through the registry |
-| `ToolNode` | `synapse-graph` | Graph node that executes tool calls from AI messages in a state machine workflow |
-| `ToolDefinition` | `synapse-core` | Schema description sent to the model so it knows what tools are available |
-| `ToolChoice` | `synapse-core` | Controls whether and how the model selects tools |
+| `Tool` trait | `synaptic-core` | The interface every tool must implement: `name()`, `description()`, and `call()` |
+| `ToolRegistry` | `synaptic-tools` | Thread-safe collection of registered tools (`Arc<RwLock<HashMap>>`) |
+| `SerialToolExecutor` | `synaptic-tools` | Dispatches tool calls by name through the registry |
+| `ToolNode` | `synaptic-graph` | Graph node that executes tool calls from AI messages in a state machine workflow |
+| `ToolDefinition` | `synaptic-core` | Schema description sent to the model so it knows what tools are available |
+| `ToolChoice` | `synaptic-core` | Controls whether and how the model selects tools |
 
 ## How It Works
 
@@ -27,8 +27,8 @@ Tools give LLMs the ability to take actions in the world -- calling APIs, queryi
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synapse_core::{Tool, SynapseError};
-use synapse_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic_core::{Tool, SynapseError};
+use synaptic_tools::{ToolRegistry, SerialToolExecutor};
 
 struct AddTool;
 

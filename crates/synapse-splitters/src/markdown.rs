@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use serde_json::Value;
-use synapse_retrieval::Document;
+use synaptic_retrieval::Document;
 
 use crate::TextSplitter;
 

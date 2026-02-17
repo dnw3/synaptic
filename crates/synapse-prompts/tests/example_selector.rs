@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use synapse_embeddings::FakeEmbeddings;
-use synapse_prompts::{ExampleSelector, FewShotExample, SemanticSimilarityExampleSelector};
+use synaptic_embeddings::FakeEmbeddings;
+use synaptic_prompts::{ExampleSelector, FewShotExample, SemanticSimilarityExampleSelector};
 
 #[tokio::test]
 async fn select_examples_returns_top_k() {

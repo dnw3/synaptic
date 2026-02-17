@@ -2,7 +2,7 @@ use std::pin::Pin;
 
 use async_trait::async_trait;
 use futures::Stream;
-use synapse_core::{RunnableConfig, SynapseError};
+use synaptic_core::{RunnableConfig, SynapseError};
 
 /// A stream of results from a runnable.
 pub type RunnableOutputStream<'a, O> =

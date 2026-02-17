@@ -25,4 +25,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Vector Stores** — `VectorStore` trait; `InMemoryVectorStore` (cosine similarity); `VectorStoreRetriever`
 - **Caching** — `InMemoryCache` (optional TTL), `SemanticCache`, `CachedChatModel`
 - **Evaluation** — `ExactMatchEvaluator`, `JsonValidityEvaluator`, `RegexMatchEvaluator`, `EmbeddingDistanceEvaluator`, `LLMJudgeEvaluator`; `Dataset` + `evaluate()` batch pipeline
-- **Facade** — Unified `synapse` crate with feature-gated re-exports
+- **Facade** — Unified `synaptic` crate with feature-gated re-exports

@@ -12,12 +12,12 @@ Synapse provides a complete Retrieval-Augmented Generation (RAG) pipeline. The p
 
 | Type | Crate | Purpose |
 |------|-------|---------|
-| `Document` | `synapse_retrieval` | A unit of text with `id`, `content`, and `metadata: HashMap<String, Value>` |
-| `Loader` trait | `synapse_loaders` | Async trait for loading documents from various sources |
-| `TextSplitter` trait | `synapse_splitters` | Splits text into chunks with optional overlap |
-| `Embeddings` trait | `synapse_embeddings` | Converts text into vector representations |
-| `VectorStore` trait | `synapse_vectorstores` | Stores and searches document embeddings |
-| `Retriever` trait | `synapse_retrieval` | Retrieves relevant documents given a query string |
+| `Document` | `synaptic_retrieval` | A unit of text with `id`, `content`, and `metadata: HashMap<String, Value>` |
+| `Loader` trait | `synaptic_loaders` | Async trait for loading documents from various sources |
+| `TextSplitter` trait | `synaptic_splitters` | Splits text into chunks with optional overlap |
+| `Embeddings` trait | `synaptic_embeddings` | Converts text into vector representations |
+| `VectorStore` trait | `synaptic_vectorstores` | Stores and searches document embeddings |
+| `Retriever` trait | `synaptic_retrieval` | Retrieves relevant documents given a query string |
 
 ## Retrievers
 

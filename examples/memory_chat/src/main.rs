@@ -1,5 +1,5 @@
-use synapse::core::{MemoryStore, Message, SynapseError};
-use synapse::memory::InMemoryStore;
+use synaptic::core::{MemoryStore, Message, SynapseError};
+use synaptic::memory::InMemoryStore;
 
 #[tokio::main]
 async fn main() -> Result<(), SynapseError> {

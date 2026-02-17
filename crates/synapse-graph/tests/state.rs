@@ -1,5 +1,5 @@
-use synapse_core::Message;
-use synapse_graph::{MessageState, State};
+use synaptic_core::Message;
+use synaptic_graph::{MessageState, State};
 
 #[test]
 fn message_state_merge() {

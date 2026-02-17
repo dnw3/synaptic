@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 
 use async_trait::async_trait;
 use serde::de::DeserializeOwned;
-use synapse_core::{RunnableConfig, SynapseError};
-use synapse_runnables::Runnable;
+use synaptic_core::{RunnableConfig, SynapseError};
+use synaptic_runnables::Runnable;
 
 use crate::FormatInstructions;
 

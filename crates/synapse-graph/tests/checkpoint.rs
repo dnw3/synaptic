@@ -1,4 +1,4 @@
-use synapse_graph::{Checkpoint, CheckpointConfig, Checkpointer, MemorySaver};
+use synaptic_graph::{Checkpoint, CheckpointConfig, Checkpointer, MemorySaver};
 
 #[tokio::test]
 async fn memory_saver_put_get() {

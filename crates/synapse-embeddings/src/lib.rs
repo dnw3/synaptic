@@ -9,7 +9,7 @@ pub use ollama::{OllamaEmbeddings, OllamaEmbeddingsConfig};
 pub use openai::{OpenAiEmbeddings, OpenAiEmbeddingsConfig};
 
 use async_trait::async_trait;
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 
 /// Trait for embedding text into vectors.
 #[async_trait]

@@ -2,8 +2,8 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use futures::StreamExt;
-use synapse_core::{ChatModel, ChatRequest, ChatResponse, ChatStream, Message, SynapseError};
-use synapse_models::{RetryChatModel, RetryPolicy};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, ChatStream, Message, SynapseError};
+use synaptic_models::{RetryChatModel, RetryPolicy};
 use tokio::sync::Mutex;
 
 struct FailThenSucceedModel {
@@ -111,7 +111,7 @@ impl ChatModel for StreamOnceModel {
 
     fn stream_chat(&self, _request: ChatRequest) -> ChatStream<'_> {
         Box::pin(async_stream::stream! {
-            yield Ok(synapse_core::AIMessageChunk {
+            yield Ok(synaptic_core::AIMessageChunk {
                 content: "chunk".to_string(),
                 ..Default::default()
             });

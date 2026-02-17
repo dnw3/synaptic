@@ -1,6 +1,6 @@
 # Synapse
 
-[![CI](https://github.com/AIMOverse/synapse/actions/workflows/ci.yml/badge.svg)](https://github.com/AIMOverse/synapse/actions/workflows/ci.yml)
+[![CI](https://github.com/dnw3/synaptic/actions/workflows/ci.yml/badge.svg)](https://github.com/dnw3/synaptic/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/synapse.svg)](https://crates.io/crates/synapse)
 [![docs.rs](https://docs.rs/synapse/badge.svg)](https://docs.rs/synapse)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -26,18 +26,18 @@ A Rust agent framework with LangChain-compatible architecture and Rust-native as
 
 ## Installation
 
-Add `synapse` to your `Cargo.toml`:
+Add `synaptic` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synapse = "0.1"
+synaptic = "0.1"
 ```
 
 By default, all features are enabled. You can select specific features:
 
 ```toml
 [dependencies]
-synapse = { version = "0.1", default-features = false, features = ["models", "runnables", "graph"] }
+synaptic = { version = "0.1", default-features = false, features = ["models", "runnables", "graph"] }
 ```
 
 Available features: `models`, `runnables`, `prompts`, `parsers`, `tools`, `memory`, `callbacks`, `graph`, `retrieval`, `loaders`, `splitters`, `embeddings`, `vectorstores`, `cache`, `eval`.
@@ -45,9 +45,9 @@ Available features: `models`, `runnables`, `prompts`, `parsers`, `tools`, `memor
 ## Quick Start
 
 ```rust
-use synapse::core::{ChatModel, Message, ChatRequest, ToolChoice};
-use synapse::runnables::{Runnable, RunnableLambda};
-use synapse::graph::{create_react_agent, MessageState};
+use synaptic::core::{ChatModel, Message, ChatRequest, ToolChoice};
+use synaptic::runnables::{Runnable, RunnableLambda};
+use synaptic::graph::{create_react_agent, MessageState};
 
 // LCEL pipe composition
 let chain = step1.boxed() | step2.boxed() | step3.boxed();
@@ -65,23 +65,23 @@ let result = graph.invoke(state).await?;
 
 | Crate | Description |
 |-------|-------------|
-| `synapse-core` | Shared traits and types: `ChatModel`, `Message`, `ToolChoice`, `SynapseError` |
-| `synapse-models` | LLM provider adapters + retry/rate-limit/structured-output wrappers |
-| `synapse-runnables` | LCEL: `Runnable`, `BoxRunnable`, pipe, Lambda, Parallel, Branch, Assign, Pick, Fallbacks |
-| `synapse-prompts` | `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate` |
-| `synapse-parsers` | Str, Json, Structured, List, Enum output parsers |
-| `synapse-tools` | `ToolRegistry`, `SerialToolExecutor` |
-| `synapse-memory` | Buffer, Window, Summary, SummaryBuffer, TokenBuffer, `RunnableWithMessageHistory` |
-| `synapse-callbacks` | `RecordingCallback`, `TracingCallback`, `CompositeCallback` |
-| `synapse-retrieval` | BM25, MultiQuery, Ensemble, Compression, SelfQuery, ParentDocument retrievers |
-| `synapse-loaders` | Text, JSON, CSV, Directory document loaders |
-| `synapse-splitters` | Character, Recursive, Markdown, Token text splitters |
-| `synapse-embeddings` | `Embeddings` trait, Fake, OpenAI, Ollama providers |
-| `synapse-vectorstores` | `VectorStore` trait, InMemory (cosine), `VectorStoreRetriever` |
-| `synapse-graph` | `StateGraph`, `CompiledGraph` (with stream), `ToolNode`, `create_react_agent` |
-| `synapse-cache` | InMemory, Semantic caches, `CachedChatModel` |
-| `synapse-eval` | `Evaluator` trait, 5 evaluators, `Dataset`, batch `evaluate()` |
-| `synapse` | Unified facade re-exporting all crates |
+| `synaptic-core` | Shared traits and types: `ChatModel`, `Message`, `ToolChoice`, `SynapseError` |
+| `synaptic-models` | LLM provider adapters + retry/rate-limit/structured-output wrappers |
+| `synaptic-runnables` | LCEL: `Runnable`, `BoxRunnable`, pipe, Lambda, Parallel, Branch, Assign, Pick, Fallbacks |
+| `synaptic-prompts` | `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate` |
+| `synaptic-parsers` | Str, Json, Structured, List, Enum output parsers |
+| `synaptic-tools` | `ToolRegistry`, `SerialToolExecutor` |
+| `synaptic-memory` | Buffer, Window, Summary, SummaryBuffer, TokenBuffer, `RunnableWithMessageHistory` |
+| `synaptic-callbacks` | `RecordingCallback`, `TracingCallback`, `CompositeCallback` |
+| `synaptic-retrieval` | BM25, MultiQuery, Ensemble, Compression, SelfQuery, ParentDocument retrievers |
+| `synaptic-loaders` | Text, JSON, CSV, Directory document loaders |
+| `synaptic-splitters` | Character, Recursive, Markdown, Token text splitters |
+| `synaptic-embeddings` | `Embeddings` trait, Fake, OpenAI, Ollama providers |
+| `synaptic-vectorstores` | `VectorStore` trait, InMemory (cosine), `VectorStoreRetriever` |
+| `synaptic-graph` | `StateGraph`, `CompiledGraph` (with stream), `ToolNode`, `create_react_agent` |
+| `synaptic-cache` | InMemory, Semantic caches, `CachedChatModel` |
+| `synaptic-eval` | `Evaluator` trait, 5 evaluators, `Dataset`, batch `evaluate()` |
+| `synaptic` | Unified facade re-exporting all crates |
 
 ## Examples
 
@@ -105,7 +105,7 @@ All examples use `ScriptedChatModel` and `FakeEmbeddings` — no API keys requir
 
 ## Documentation
 
-- **Book**: [aimoverse.github.io/synapse](https://aimoverse.github.io/synapse) — tutorials, how-to guides, concepts
+- **Book**: [dnw3.github.io/synaptic](https://dnw3.github.io/synaptic) — tutorials, how-to guides, concepts
 - **API Reference**: [docs.rs/synapse](https://docs.rs/synapse) — full Rustdoc API documentation
 
 ## Design Principles
@@ -118,7 +118,7 @@ All examples use `ScriptedChatModel` and `FakeEmbeddings` — no API keys requir
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines, or the [full guide](https://aimoverse.github.io/synapse/contributing.html).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines, or the [full guide](https://dnw3.github.io/synaptic/contributing.html).
 
 ## License
 

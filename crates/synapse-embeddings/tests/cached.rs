@@ -2,8 +2,8 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use synapse_core::SynapseError;
-use synapse_embeddings::{CacheBackedEmbeddings, Embeddings, FakeEmbeddings};
+use synaptic_core::SynapseError;
+use synaptic_embeddings::{CacheBackedEmbeddings, Embeddings, FakeEmbeddings};
 
 /// A counting wrapper around FakeEmbeddings to verify cache behavior.
 struct CountingEmbeddings {

@@ -17,7 +17,7 @@ pub use window::ConversationWindowMemory;
 use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
-use synapse_core::{MemoryStore, Message, SynapseError};
+use synaptic_core::{MemoryStore, Message, SynapseError};
 use tokio::sync::RwLock;
 
 /// In-memory implementation of `MemoryStore`, storing messages keyed by session ID.

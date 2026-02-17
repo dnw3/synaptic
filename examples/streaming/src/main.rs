@@ -1,10 +1,10 @@
 use async_trait::async_trait;
 use futures::StreamExt;
-use synapse::core::{
+use synaptic::core::{
     AIMessageChunk, ChatModel, ChatRequest, ChatResponse, ChatStream, Message, RunnableConfig,
     SynapseError,
 };
-use synapse::runnables::{Runnable, RunnableLambda};
+use synaptic::runnables::{Runnable, RunnableLambda};
 
 /// A model that streams its response word by word.
 struct StreamingModel {

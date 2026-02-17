@@ -10,25 +10,25 @@ Synapse 是一个用于构建 AI Agent、链式调用和检索管道的 Rust 框
 
 | LangChain (Python) | Synapse (Rust) | 所在 Crate |
 |---|---|---|
-| `ChatOpenAI` | `OpenAiChatModel` | `synapse-models` |
-| `ChatAnthropic` | `AnthropicChatModel` | `synapse-models` |
-| `ChatGoogleGenerativeAI` | `GeminiChatModel` | `synapse-models` |
-| `HumanMessage` / `AIMessage` | `Message::human()` / `Message::ai()` | `synapse-core` |
-| `RunnableSequence` / LCEL `\|` | `BoxRunnable` / `\|` 管道运算符 | `synapse-runnables` |
-| `RunnableLambda` | `RunnableLambda` | `synapse-runnables` |
-| `RunnableParallel` | `RunnableParallel` | `synapse-runnables` |
-| `RunnableBranch` | `RunnableBranch` | `synapse-runnables` |
-| `RunnablePassthrough.assign()` | `RunnableAssign` | `synapse-runnables` |
-| `ChatPromptTemplate` | `ChatPromptTemplate` | `synapse-prompts` |
-| `ToolNode` | `ToolNode` | `synapse-graph` |
-| `StateGraph` | `StateGraph` | `synapse-graph` |
-| `create_react_agent` | `create_react_agent` | `synapse-graph` |
-| `InMemorySaver` | `MemorySaver` | `synapse-graph` |
-| `StrOutputParser` | `StrOutputParser` | `synapse-parsers` |
-| `JsonOutputParser` | `JsonOutputParser` | `synapse-parsers` |
-| `VectorStoreRetriever` | `VectorStoreRetriever` | `synapse-vectorstores` |
-| `RecursiveCharacterTextSplitter` | `RecursiveCharacterTextSplitter` | `synapse-splitters` |
-| `OpenAIEmbeddings` | `OpenAiEmbeddings` | `synapse-embeddings` |
+| `ChatOpenAI` | `OpenAiChatModel` | `synaptic-models` |
+| `ChatAnthropic` | `AnthropicChatModel` | `synaptic-models` |
+| `ChatGoogleGenerativeAI` | `GeminiChatModel` | `synaptic-models` |
+| `HumanMessage` / `AIMessage` | `Message::human()` / `Message::ai()` | `synaptic-core` |
+| `RunnableSequence` / LCEL `\|` | `BoxRunnable` / `\|` 管道运算符 | `synaptic-runnables` |
+| `RunnableLambda` | `RunnableLambda` | `synaptic-runnables` |
+| `RunnableParallel` | `RunnableParallel` | `synaptic-runnables` |
+| `RunnableBranch` | `RunnableBranch` | `synaptic-runnables` |
+| `RunnablePassthrough.assign()` | `RunnableAssign` | `synaptic-runnables` |
+| `ChatPromptTemplate` | `ChatPromptTemplate` | `synaptic-prompts` |
+| `ToolNode` | `ToolNode` | `synaptic-graph` |
+| `StateGraph` | `StateGraph` | `synaptic-graph` |
+| `create_react_agent` | `create_react_agent` | `synaptic-graph` |
+| `InMemorySaver` | `MemorySaver` | `synaptic-graph` |
+| `StrOutputParser` | `StrOutputParser` | `synaptic-parsers` |
+| `JsonOutputParser` | `JsonOutputParser` | `synaptic-parsers` |
+| `VectorStoreRetriever` | `VectorStoreRetriever` | `synaptic-vectorstores` |
+| `RecursiveCharacterTextSplitter` | `RecursiveCharacterTextSplitter` | `synaptic-splitters` |
+| `OpenAIEmbeddings` | `OpenAiEmbeddings` | `synaptic-embeddings` |
 
 ## 与 LangChain Python 的关键差异
 

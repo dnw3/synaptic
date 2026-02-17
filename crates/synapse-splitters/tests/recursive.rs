@@ -1,4 +1,4 @@
-use synapse_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
+use synaptic_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
 
 #[test]
 fn splits_paragraphs_first() {
@@ -47,7 +47,7 @@ fn small_text_single_chunk() {
 
 #[test]
 fn split_documents_preserves_metadata() {
-    use synapse_retrieval::Document;
+    use synaptic_retrieval::Document;
 
     let splitter = RecursiveCharacterTextSplitter::new(20);
     let doc = Document::new(

@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
-use synapse_core::{ChatModel, ChatRequest, MemoryStore, Message, SynapseError};
+use synaptic_core::{ChatModel, ChatRequest, MemoryStore, Message, SynapseError};
 use tokio::sync::RwLock;
 
 /// A memory strategy that summarizes older messages using a ChatModel.

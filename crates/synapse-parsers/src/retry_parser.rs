@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use synapse_core::{ChatModel, ChatRequest, Message, RunnableConfig, SynapseError};
-use synapse_runnables::Runnable;
+use synaptic_core::{ChatModel, ChatRequest, Message, RunnableConfig, SynapseError};
+use synaptic_runnables::Runnable;
 
 /// A parser that uses an LLM to fix outputs that fail to parse,
 /// including the original prompt context for better correction.

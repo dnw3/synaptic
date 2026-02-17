@@ -4,7 +4,7 @@ Synapse implements LCEL (LangChain Expression Language) through the `Runnable` t
 
 ## The `Runnable` trait
 
-The `Runnable<I, O>` trait is defined in `synapse_core` and provides three core methods:
+The `Runnable<I, O>` trait is defined in `synaptic_core` and provides three core methods:
 
 | Method | Description |
 |--------|-------------|
@@ -15,8 +15,8 @@ The `Runnable<I, O>` trait is defined in `synapse_core` and provides three core 
 Every `Runnable` also has a `boxed()` method that wraps it into a `BoxRunnable<I, O>` -- a type-erased container that enables the `|` pipe operator for composition.
 
 ```rust
-use synapse_runnables::{Runnable, RunnableLambda, BoxRunnable};
-use synapse_core::RunnableConfig;
+use synaptic_runnables::{Runnable, RunnableLambda, BoxRunnable};
+use synaptic_core::RunnableConfig;
 
 let step = RunnableLambda::new(|x: String| async move {
     Ok(x.to_uppercase())

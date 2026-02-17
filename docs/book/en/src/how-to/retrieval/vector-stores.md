@@ -4,7 +4,7 @@ This guide shows how to store and search document embeddings using Synapse's `Ve
 
 ## Overview
 
-The `VectorStore` trait from `synapse_vectorstores` provides methods for adding, searching, and deleting documents:
+The `VectorStore` trait from `synaptic_vectorstores` provides methods for adding, searching, and deleting documents:
 
 ```rust
 #[async_trait]
@@ -38,7 +38,7 @@ An in-memory vector store that uses cosine similarity for search. Backed by a `R
 ### Creating a store
 
 ```rust
-use synapse_vectorstores::InMemoryVectorStore;
+use synaptic_vectorstores::InMemoryVectorStore;
 
 let store = InMemoryVectorStore::new();
 ```
@@ -46,9 +46,9 @@ let store = InMemoryVectorStore::new();
 ### Adding documents
 
 ```rust
-use synapse_vectorstores::{InMemoryVectorStore, VectorStore};
-use synapse_embeddings::FakeEmbeddings;
-use synapse_retrieval::Document;
+use synaptic_vectorstores::{InMemoryVectorStore, VectorStore};
+use synaptic_embeddings::FakeEmbeddings;
+use synaptic_retrieval::Document;
 
 let store = InMemoryVectorStore::new();
 let embeddings = FakeEmbeddings::new(128);
@@ -90,7 +90,7 @@ for (doc, score) in &scored {
 Search using a pre-computed embedding vector instead of a text query:
 
 ```rust
-use synapse_embeddings::Embeddings;
+use synaptic_embeddings::Embeddings;
 
 let query_vec = embeddings.embed_query("systems programming").await?;
 let results = store.similarity_search_by_vector(&query_vec, 3).await?;
@@ -107,8 +107,8 @@ store.delete(&["1", "3"]).await?;
 Create a store pre-populated with documents:
 
 ```rust
-use synapse_vectorstores::InMemoryVectorStore;
-use synapse_embeddings::FakeEmbeddings;
+use synaptic_vectorstores::InMemoryVectorStore;
+use synaptic_embeddings::FakeEmbeddings;
 
 let embeddings = FakeEmbeddings::new(128);
 
@@ -146,9 +146,9 @@ let results = store.max_marginal_relevance_search(
 
 ```rust
 use std::sync::Arc;
-use synapse_vectorstores::{InMemoryVectorStore, VectorStoreRetriever};
-use synapse_embeddings::FakeEmbeddings;
-use synapse_retrieval::Retriever;
+use synaptic_vectorstores::{InMemoryVectorStore, VectorStoreRetriever};
+use synaptic_embeddings::FakeEmbeddings;
+use synaptic_retrieval::Retriever;
 
 let embeddings = Arc::new(FakeEmbeddings::new(128));
 let store = Arc::new(InMemoryVectorStore::new());

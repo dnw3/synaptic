@@ -1,5 +1,5 @@
 [package]
-name = "synapse-embeddings"
+name = "synaptic-embeddings"
 description = "Embeddings trait with Fake, OpenAI, and Ollama providers"
 edition.workspace = true
 version.workspace = true
@@ -13,8 +13,8 @@ async-trait.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
-synapse-core = { path = "../synapse-core" }
-synapse-models = { path = "../synapse-models" }
+synaptic-core = { version = "0.1.0", path = "../synapse-core" }
+synaptic-models = { version = "0.1.0", path = "../synapse-models" }
 
 [dev-dependencies]
 tokio.workspace = true

@@ -18,8 +18,8 @@ use std::pin::Pin;
 
 use async_trait::async_trait;
 use futures::Stream;
-use synapse_core::SynapseError;
-use synapse_retrieval::Document;
+use synaptic_core::SynapseError;
+use synaptic_retrieval::Document;
 
 /// Trait for loading documents from various sources.
 #[async_trait]

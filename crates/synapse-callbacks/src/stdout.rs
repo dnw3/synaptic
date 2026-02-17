@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use synapse_core::{CallbackHandler, RunEvent, SynapseError};
+use synaptic_core::{CallbackHandler, RunEvent, SynapseError};
 
 /// A callback handler that prints events to stdout.
 ///

@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use synapse_core::{ChatResponse, MemoryStore, Message};
-use synapse_memory::{ConversationSummaryMemory, InMemoryStore};
-use synapse_models::ScriptedChatModel;
+use synaptic_core::{ChatResponse, MemoryStore, Message};
+use synaptic_memory::{ConversationSummaryMemory, InMemoryStore};
+use synaptic_models::ScriptedChatModel;
 
 #[tokio::test]
 async fn summary_keeps_recent_messages() {

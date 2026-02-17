@@ -1,5 +1,5 @@
 [package]
-name = "synapse-callbacks"
+name = "synaptic-callbacks"
 description = "Callback handlers: RecordingCallback, TracingCallback, CompositeCallback"
 edition.workspace = true
 version.workspace = true
@@ -12,4 +12,4 @@ repository.workspace = true
 async-trait.workspace = true
 tokio.workspace = true
 tracing.workspace = true
-synapse-core = { path = "../synapse-core" }
+synaptic-core = { version = "0.1.0", path = "../synapse-core" }

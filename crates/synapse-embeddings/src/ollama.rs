@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde_json::json;
-use synapse_core::SynapseError;
-use synapse_models::backend::{ProviderBackend, ProviderRequest};
+use synaptic_core::SynapseError;
+use synaptic_models::backend::{ProviderBackend, ProviderRequest};
 
 use crate::Embeddings;
 

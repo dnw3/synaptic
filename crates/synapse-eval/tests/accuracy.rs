@@ -1,4 +1,4 @@
-use synapse_eval::{EvalCase, EvalReport};
+use synaptic_eval::{EvalCase, EvalReport};
 
 #[test]
 fn computes_accuracy() {

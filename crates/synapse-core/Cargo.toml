@@ -1,5 +1,5 @@
 [package]
-name = "synapse-core"
+name = "synaptic-core"
 description = "Core traits and types for Synapse: ChatModel, Message, Tool, SynapseError"
 edition.workspace = true
 version.workspace = true

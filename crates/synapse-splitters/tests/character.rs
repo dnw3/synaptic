@@ -1,4 +1,4 @@
-use synapse_splitters::{CharacterTextSplitter, TextSplitter};
+use synaptic_splitters::{CharacterTextSplitter, TextSplitter};
 
 #[test]
 fn splits_by_double_newline() {

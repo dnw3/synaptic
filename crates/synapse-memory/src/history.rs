@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use synapse_core::{MemoryStore, Message, RunnableConfig, SynapseError};
-use synapse_runnables::{BoxRunnable, Runnable};
+use synaptic_core::{MemoryStore, Message, RunnableConfig, SynapseError};
+use synaptic_runnables::{BoxRunnable, Runnable};
 
 /// Wraps a `Runnable<Vec<Message>, String>` with automatic message history
 /// load/save from a `MemoryStore`.

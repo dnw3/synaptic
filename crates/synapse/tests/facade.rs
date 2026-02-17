@@ -1,4 +1,4 @@
-use synapse::core::{Message, RunnableConfig, SynapseError};
+use synaptic::core::{Message, RunnableConfig, SynapseError};
 
 #[test]
 fn facade_reexports_core_types() {
@@ -16,7 +16,7 @@ fn facade_reexports_core_types() {
 #[cfg(feature = "retrieval")]
 #[test]
 fn facade_reexports_retrieval_types() {
-    use synapse::retrieval::Document;
+    use synaptic::retrieval::Document;
 
     let doc = Document::new("1", "test content");
     assert_eq!(doc.id, "1");
@@ -26,14 +26,14 @@ fn facade_reexports_retrieval_types() {
 #[test]
 fn facade_reexports_models() {
     // ScriptedChatModel is accessible
-    let _model = synapse::models::ScriptedChatModel::new(vec![]);
+    let _model = synaptic::models::ScriptedChatModel::new(vec![]);
 }
 
 #[cfg(feature = "runnables")]
 #[tokio::test]
 async fn facade_reexports_runnables() {
-    use synapse::core::RunnableConfig;
-    use synapse::runnables::{Runnable, RunnableLambda, RunnablePassthrough};
+    use synaptic::core::RunnableConfig;
+    use synaptic::runnables::{Runnable, RunnableLambda, RunnablePassthrough};
 
     let config = RunnableConfig::default();
     let pass: String = RunnablePassthrough
@@ -50,7 +50,7 @@ async fn facade_reexports_runnables() {
 #[cfg(feature = "prompts")]
 #[test]
 fn facade_reexports_prompts() {
-    use synapse::prompts::{ChatPromptTemplate, MessageTemplate, PromptTemplate};
+    use synaptic::prompts::{ChatPromptTemplate, MessageTemplate, PromptTemplate};
     let _template = ChatPromptTemplate::from_messages(vec![MessageTemplate::Human(
         PromptTemplate::new("{{ input }}"),
     )]);
@@ -59,9 +59,9 @@ fn facade_reexports_prompts() {
 #[cfg(feature = "parsers")]
 #[tokio::test]
 async fn facade_reexports_parsers() {
-    use synapse::core::{Message, RunnableConfig};
-    use synapse::parsers::StrOutputParser;
-    use synapse::runnables::Runnable;
+    use synaptic::core::{Message, RunnableConfig};
+    use synaptic::parsers::StrOutputParser;
+    use synaptic::runnables::Runnable;
 
     let config = RunnableConfig::default();
     let parser = StrOutputParser;
@@ -72,7 +72,7 @@ async fn facade_reexports_parsers() {
 #[cfg(feature = "tools")]
 #[test]
 fn facade_reexports_tools() {
-    use synapse::tools::ToolRegistry;
+    use synaptic::tools::ToolRegistry;
     let registry = ToolRegistry::new();
     assert!(registry.get("nonexistent").is_none());
 }
@@ -80,8 +80,8 @@ fn facade_reexports_tools() {
 #[cfg(feature = "memory")]
 #[tokio::test]
 async fn facade_reexports_memory() {
-    use synapse::core::{MemoryStore, Message};
-    use synapse::memory::InMemoryStore;
+    use synaptic::core::{MemoryStore, Message};
+    use synaptic::memory::InMemoryStore;
 
     let store = InMemoryStore::new();
     store.append("s1", Message::human("hi")).await.unwrap();
@@ -92,8 +92,8 @@ async fn facade_reexports_memory() {
 #[cfg(feature = "callbacks")]
 #[tokio::test]
 async fn facade_reexports_callbacks() {
-    use synapse::callbacks::RecordingCallback;
-    use synapse::core::{CallbackHandler, RunEvent};
+    use synaptic::callbacks::RecordingCallback;
+    use synaptic::core::{CallbackHandler, RunEvent};
 
     let cb = RecordingCallback::new();
     cb.on_event(RunEvent::RunStarted {
@@ -108,7 +108,7 @@ async fn facade_reexports_callbacks() {
 #[cfg(feature = "graph")]
 #[test]
 fn facade_reexports_graph() {
-    use synapse::graph::MessageState;
+    use synaptic::graph::MessageState;
     // Verify types are accessible
     let _state = MessageState { messages: vec![] };
 }
@@ -116,7 +116,7 @@ fn facade_reexports_graph() {
 #[cfg(feature = "cache")]
 #[tokio::test]
 async fn facade_reexports_cache() {
-    use synapse::cache::{InMemoryCache, LlmCache};
+    use synaptic::cache::{InMemoryCache, LlmCache};
 
     let cache = InMemoryCache::new();
     let result = cache.get("nonexistent").await.unwrap();
@@ -126,7 +126,7 @@ async fn facade_reexports_cache() {
 #[cfg(feature = "eval")]
 #[test]
 fn facade_reexports_eval() {
-    use synapse::eval::{Dataset, ExactMatchEvaluator};
+    use synaptic::eval::{Dataset, ExactMatchEvaluator};
     let _eval = ExactMatchEvaluator::new();
     let _ds = Dataset::from_pairs(vec![("a", "b")]);
 }

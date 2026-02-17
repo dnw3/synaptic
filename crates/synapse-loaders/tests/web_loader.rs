@@ -1,4 +1,4 @@
-use synapse_loaders::WebBaseLoader;
+use synaptic_loaders::WebBaseLoader;
 
 // WebBaseLoader requires network access, so we only test construction
 // and basic structure. Integration tests against real URLs are skipped.

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use synapse_core::{MemoryStore, Message};
-use synapse_memory::{ConversationBufferMemory, InMemoryStore};
+use synaptic_core::{MemoryStore, Message};
+use synaptic_memory::{ConversationBufferMemory, InMemoryStore};
 
 #[tokio::test]
 async fn buffer_stores_full_conversation() {

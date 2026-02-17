@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use synapse_cache::{CachedChatModel, InMemoryCache};
-use synapse_core::{ChatModel, ChatRequest, ChatResponse, Message};
-use synapse_models::ScriptedChatModel;
+use synaptic_cache::{CachedChatModel, InMemoryCache};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message};
+use synaptic_models::ScriptedChatModel;
 
 fn make_response(text: &str) -> ChatResponse {
     ChatResponse {
@@ -62,7 +62,7 @@ async fn cached_model_different_requests_not_cached() {
 #[tokio::test]
 async fn cached_model_with_ttl() {
     use std::time::Duration;
-    use synapse_cache::InMemoryCache;
+    use synaptic_cache::InMemoryCache;
 
     let scripted = Arc::new(ScriptedChatModel::new(vec![
         make_response("first"),
@@ -90,7 +90,7 @@ async fn cached_model_with_ttl() {
 
 #[tokio::test]
 async fn cached_model_with_tools_in_request() {
-    use synapse_core::ToolDefinition;
+    use synaptic_core::ToolDefinition;
 
     let scripted = Arc::new(ScriptedChatModel::new(vec![make_response("tool response")]));
     let cache = Arc::new(InMemoryCache::new());

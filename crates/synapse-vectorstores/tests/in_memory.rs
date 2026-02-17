@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
-use synapse_embeddings::{Embeddings, FakeEmbeddings};
-use synapse_retrieval::{Document, Retriever};
-use synapse_vectorstores::{
+use synaptic_embeddings::{Embeddings, FakeEmbeddings};
+use synaptic_retrieval::{Document, Retriever};
+use synaptic_vectorstores::{
     InMemoryVectorStore, MultiVectorRetriever, VectorStore, VectorStoreRetriever,
 };
 
@@ -95,7 +95,7 @@ async fn empty_store_returns_empty() {
 #[tokio::test]
 async fn vector_store_retriever_bridge() {
     let store = Arc::new(InMemoryVectorStore::new());
-    let embeddings: Arc<dyn synapse_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
+    let embeddings: Arc<dyn synaptic_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
 
     store
         .add_documents(
@@ -409,7 +409,7 @@ async fn from_documents_preserves_metadata() {
 #[tokio::test]
 async fn retriever_with_score_threshold() {
     let store = Arc::new(InMemoryVectorStore::new());
-    let embeddings: Arc<dyn synapse_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(32));
+    let embeddings: Arc<dyn synaptic_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(32));
 
     store
         .add_documents(
@@ -460,7 +460,7 @@ async fn retriever_with_score_threshold() {
 #[tokio::test]
 async fn retriever_threshold_zero_returns_all() {
     let store = Arc::new(InMemoryVectorStore::new());
-    let embeddings: Arc<dyn synapse_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
+    let embeddings: Arc<dyn synaptic_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
 
     store
         .add_documents(
@@ -480,7 +480,7 @@ async fn retriever_threshold_zero_returns_all() {
 #[tokio::test]
 async fn multi_vector_retriever_basic() {
     let store = Arc::new(InMemoryVectorStore::new());
-    let embeddings: Arc<dyn synapse_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
+    let embeddings: Arc<dyn synaptic_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
 
     let retriever = MultiVectorRetriever::new(store, embeddings, 5);
 
@@ -533,7 +533,7 @@ async fn multi_vector_retriever_basic() {
 #[tokio::test]
 async fn multi_vector_retriever_deduplication() {
     let store = Arc::new(InMemoryVectorStore::new());
-    let embeddings: Arc<dyn synapse_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
+    let embeddings: Arc<dyn synaptic_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
 
     let retriever = MultiVectorRetriever::new(store, embeddings, 10);
 
@@ -577,7 +577,7 @@ async fn multi_vector_retriever_deduplication() {
 #[tokio::test]
 async fn multi_vector_retriever_custom_id_key() {
     let store = Arc::new(InMemoryVectorStore::new());
-    let embeddings: Arc<dyn synapse_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
+    let embeddings: Arc<dyn synaptic_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
 
     let retriever = MultiVectorRetriever::new(store, embeddings, 5).with_id_key("doc_id");
 
@@ -602,7 +602,7 @@ async fn multi_vector_retriever_custom_id_key() {
 #[tokio::test]
 async fn multi_vector_retriever_empty() {
     let store = Arc::new(InMemoryVectorStore::new());
-    let embeddings: Arc<dyn synapse_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
+    let embeddings: Arc<dyn synaptic_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
 
     let retriever = MultiVectorRetriever::new(store, embeddings, 5);
 
@@ -613,7 +613,7 @@ async fn multi_vector_retriever_empty() {
 #[tokio::test]
 async fn multi_vector_retriever_missing_parent() {
     let store = Arc::new(InMemoryVectorStore::new());
-    let embeddings: Arc<dyn synapse_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
+    let embeddings: Arc<dyn synaptic_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
 
     let retriever = MultiVectorRetriever::new(store, embeddings, 5);
 
@@ -639,7 +639,7 @@ async fn multi_vector_retriever_missing_parent() {
 #[tokio::test]
 async fn multi_vector_retriever_multiple_parents() {
     let store = Arc::new(InMemoryVectorStore::new());
-    let embeddings: Arc<dyn synapse_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
+    let embeddings: Arc<dyn synaptic_embeddings::Embeddings> = Arc::new(FakeEmbeddings::new(4));
 
     let retriever = MultiVectorRetriever::new(store, embeddings, 10);
 

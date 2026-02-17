@@ -7,7 +7,7 @@ The `Dataset` type and `evaluate()` function provide a batch evaluation pipeline
 A `Dataset` is a collection of `DatasetItem` values, each with an `input` and a `reference` (expected answer):
 
 ```rust
-use synapse_eval::{Dataset, DatasetItem};
+use synaptic_eval::{Dataset, DatasetItem};
 
 // From DatasetItem structs
 let dataset = Dataset::new(vec![
@@ -33,7 +33,7 @@ let dataset = Dataset::from_pairs(vec![
 The `evaluate()` function takes an evaluator, a dataset, and a slice of predictions. It evaluates each prediction against the corresponding dataset item and returns an `EvalReport`:
 
 ```rust
-use synapse_eval::{evaluate, Dataset, ExactMatchEvaluator};
+use synaptic_eval::{evaluate, Dataset, ExactMatchEvaluator};
 
 let dataset = Dataset::from_pairs(vec![
     ("What is 2+2?", "4"),
@@ -92,7 +92,7 @@ A typical evaluation workflow:
 4. Inspect the report.
 
 ```rust
-use synapse_eval::{evaluate, Dataset, ExactMatchEvaluator};
+use synaptic_eval::{evaluate, Dataset, ExactMatchEvaluator};
 
 // 1. Dataset
 let dataset = Dataset::from_pairs(vec![
@@ -128,7 +128,7 @@ println!("Accuracy: {:.0}% ({}/{})",
 The `evaluate()` function works with any `Evaluator`. Swap in a different evaluator to change the scoring criteria without modifying the dataset or prediction pipeline:
 
 ```rust
-use synapse_eval::{evaluate, RegexMatchEvaluator};
+use synaptic_eval::{evaluate, RegexMatchEvaluator};
 
 // Check that predictions contain a date
 let evaluator = RegexMatchEvaluator::new(r"\d{4}-\d{2}-\d{2}")?;

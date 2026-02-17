@@ -1,5 +1,5 @@
-use synapse_core::SynapseError;
-use synapse_retrieval::{Document, InMemoryRetriever, Retriever};
+use synaptic_core::SynapseError;
+use synaptic_retrieval::{Document, InMemoryRetriever, Retriever};
 
 #[tokio::test]
 async fn retrieves_best_match() -> Result<(), SynapseError> {

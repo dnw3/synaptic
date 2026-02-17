@@ -1,5 +1,5 @@
-use synapse_callbacks::StdOutCallbackHandler;
-use synapse_core::{CallbackHandler, RunEvent};
+use synaptic_callbacks::StdOutCallbackHandler;
+use synaptic_core::{CallbackHandler, RunEvent};
 
 #[tokio::test]
 async fn stdout_handler_processes_all_event_types() {

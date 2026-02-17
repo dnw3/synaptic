@@ -2,10 +2,10 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use futures::StreamExt;
-use synapse_core::{
+use synaptic_core::{
     AIMessageChunk, ChatModel, ChatRequest, ChatResponse, ChatStream, Message, SynapseError,
 };
-use synapse_models::RateLimitedChatModel;
+use synaptic_models::RateLimitedChatModel;
 use tokio::sync::Mutex;
 
 struct SlowModel {

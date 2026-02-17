@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use synapse_core::{CallbackHandler, RunEvent, SynapseError};
+use synaptic_core::{CallbackHandler, RunEvent, SynapseError};
 
 pub struct CompositeCallback {
     handlers: Vec<Arc<dyn CallbackHandler>>,

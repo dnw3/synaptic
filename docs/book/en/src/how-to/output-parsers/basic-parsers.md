@@ -9,9 +9,9 @@ Extracts the text content from a `Message`. This is the most commonly used parse
 **Signature:** `Runnable<Message, String>`
 
 ```rust
-use synapse_parsers::StrOutputParser;
-use synapse_runnables::Runnable;
-use synapse_core::{Message, RunnableConfig};
+use synaptic_parsers::StrOutputParser;
+use synaptic_runnables::Runnable;
+use synaptic_core::{Message, RunnableConfig};
 
 let parser = StrOutputParser;
 let config = RunnableConfig::default();
@@ -29,9 +29,9 @@ Parses a JSON string into a `serde_json::Value`. Useful when you need to work wi
 **Signature:** `Runnable<String, serde_json::Value>`
 
 ```rust
-use synapse_parsers::JsonOutputParser;
-use synapse_runnables::Runnable;
-use synapse_core::RunnableConfig;
+use synaptic_parsers::JsonOutputParser;
+use synaptic_runnables::Runnable;
+use synaptic_core::RunnableConfig;
 
 let parser = JsonOutputParser;
 let config = RunnableConfig::default();
@@ -54,9 +54,9 @@ Splits a string into a `Vec<String>` using a configurable separator. Useful when
 **Signature:** `Runnable<String, Vec<String>>`
 
 ```rust
-use synapse_parsers::{ListOutputParser, ListSeparator};
-use synapse_runnables::Runnable;
-use synapse_core::RunnableConfig;
+use synaptic_parsers::{ListOutputParser, ListSeparator};
+use synaptic_runnables::Runnable;
+use synaptic_core::RunnableConfig;
 
 let config = RunnableConfig::default();
 
@@ -83,7 +83,7 @@ Each item is trimmed of leading and trailing whitespace. Empty items after trimm
 All parsers implement the `FormatInstructions` trait. You can include the instructions in your prompt to guide the model:
 
 ```rust
-use synapse_parsers::{JsonOutputParser, ListOutputParser, FormatInstructions};
+use synaptic_parsers::{JsonOutputParser, ListOutputParser, FormatInstructions};
 
 let json_parser = JsonOutputParser;
 println!("{}", json_parser.get_format_instructions());
@@ -101,11 +101,11 @@ A typical chain pipes a prompt template through a model and into a parser:
 ```rust
 use std::collections::HashMap;
 use serde_json::json;
-use synapse_core::{ChatResponse, Message, RunnableConfig};
-use synapse_models::ScriptedChatModel;
-use synapse_prompts::{ChatPromptTemplate, MessageTemplate};
-use synapse_parsers::StrOutputParser;
-use synapse_runnables::Runnable;
+use synaptic_core::{ChatResponse, Message, RunnableConfig};
+use synaptic_models::ScriptedChatModel;
+use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic_parsers::StrOutputParser;
+use synaptic_runnables::Runnable;
 
 let model = ScriptedChatModel::new(vec![
     ChatResponse {

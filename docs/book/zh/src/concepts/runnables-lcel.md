@@ -39,7 +39,7 @@ where
 `BoxRunnable` 是类型擦除的 `Runnable` 包装器。它的核心价值在于支持 `|` 管道运算符（通过 `BitOr` trait 实现），让你可以将多个步骤串联为一个链：
 
 ```rust
-use synapse_runnables::{BoxRunnable, Runnable};
+use synaptic_runnables::{BoxRunnable, Runnable};
 
 // prompt 产出 Vec<Message>，model 接受并返回 String，parser 提取最终结果
 let chain = prompt.boxed() | model.boxed() | parser.boxed();
@@ -67,7 +67,7 @@ Synapse 提供了丰富的 `Runnable` 实现类型，覆盖常见的组合模式
 不修改输入，直接传递。常用于 `RunnableParallel` 中保留原始输入：
 
 ```rust
-use synapse_runnables::RunnablePassthrough;
+use synaptic_runnables::RunnablePassthrough;
 
 let passthrough = RunnablePassthrough;
 let result = passthrough.invoke("hello".to_string(), &config).await?;
@@ -79,7 +79,7 @@ assert_eq!(result, "hello");
 将异步闭包包装为 `Runnable`。这是最简单的创建自定义步骤的方式：
 
 ```rust
-use synapse_runnables::RunnableLambda;
+use synaptic_runnables::RunnableLambda;
 
 let double = RunnableLambda::new(|x: i64| async move {
     Ok(x * 2)
@@ -97,7 +97,7 @@ let result = double.invoke(21, &config).await?; // 42
 并行执行多个命名分支，将结果合并为 `serde_json::Value`（JSON 对象）：
 
 ```rust
-use synapse_runnables::RunnableParallel;
+use synaptic_runnables::RunnableParallel;
 
 let parallel = RunnableParallel::new()
     .branch("translation", translator.boxed())
@@ -114,7 +114,7 @@ let result = parallel.invoke(input, &config).await?;
 根据条件路由到不同的分支。按顺序检查条件，第一个匹配的分支被执行。如果没有条件匹配，则执行默认分支：
 
 ```rust
-use synapse_runnables::RunnableBranch;
+use synaptic_runnables::RunnableBranch;
 
 let branch = RunnableBranch::new(
     vec![
@@ -130,7 +130,7 @@ let branch = RunnableBranch::new(
 主链失败时自动尝试回退链。适合实现模型降级策略：
 
 ```rust
-use synapse_runnables::RunnableWithFallbacks;
+use synaptic_runnables::RunnableWithFallbacks;
 
 let with_fallbacks = RunnableWithFallbacks::new(
     primary_model.boxed(),
@@ -144,7 +144,7 @@ let with_fallbacks = RunnableWithFallbacks::new(
 将并行分支的结果合并到原始输入的 JSON 对象中。输入必须是 `serde_json::Value`：
 
 ```rust
-use synapse_runnables::{RunnableAssign, RunnableParallel};
+use synaptic_runnables::{RunnableAssign, RunnableParallel};
 
 // 在原始 JSON 输入的基础上，添加 "enriched" 字段
 let assign = RunnableAssign::new(
@@ -158,7 +158,7 @@ let assign = RunnableAssign::new(
 从 JSON 值中提取指定的 key，丢弃其他字段：
 
 ```rust
-use synapse_runnables::RunnablePick;
+use synaptic_runnables::RunnablePick;
 
 let pick = RunnablePick::new(vec!["name".to_string(), "age".to_string()]);
 // 从 { "name": "Alice", "age": 30, "email": "..." } 中只保留 name 和 age
@@ -169,7 +169,7 @@ let pick = RunnablePick::new(vec!["name".to_string(), "age".to_string()]);
 对输入列表中的每个元素分别调用内部 `Runnable`，将结果收集为列表：
 
 ```rust
-use synapse_runnables::BoxRunnable;
+use synaptic_runnables::BoxRunnable;
 
 let each = BoxRunnable::map_each(single_item_processor);
 // Vec<I> -> Vec<O>，对每个元素调用 single_item_processor
@@ -180,7 +180,7 @@ let each = BoxRunnable::map_each(single_item_processor);
 在失败时自动重试内部 `Runnable`，可配置重试策略：
 
 ```rust
-use synapse_runnables::{RunnableRetry, RetryPolicy};
+use synaptic_runnables::{RunnableRetry, RetryPolicy};
 
 let retry = RunnableRetry::new(
     flaky_step.boxed(),

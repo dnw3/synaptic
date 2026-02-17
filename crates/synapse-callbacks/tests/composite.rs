@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use synapse_callbacks::{CompositeCallback, RecordingCallback};
-use synapse_core::{CallbackHandler, RunEvent};
+use synaptic_callbacks::{CompositeCallback, RecordingCallback};
+use synaptic_core::{CallbackHandler, RunEvent};
 
 #[tokio::test]
 async fn composite_dispatches_to_all_handlers() {
@@ -35,8 +35,8 @@ struct FailingCallback;
 
 #[async_trait::async_trait]
 impl CallbackHandler for FailingCallback {
-    async fn on_event(&self, _event: RunEvent) -> Result<(), synapse_core::SynapseError> {
-        Err(synapse_core::SynapseError::Callback(
+    async fn on_event(&self, _event: RunEvent) -> Result<(), synaptic_core::SynapseError> {
+        Err(synaptic_core::SynapseError::Callback(
             "forced failure".to_string(),
         ))
     }

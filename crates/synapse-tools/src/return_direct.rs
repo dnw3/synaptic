@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde_json::Value;
-use synapse_core::{SynapseError, Tool};
+use synaptic_core::{SynapseError, Tool};
 
 /// A tool wrapper that signals the agent should return the tool's output directly
 /// to the user without further LLM processing.

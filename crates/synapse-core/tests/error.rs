@@ -1,4 +1,4 @@
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 
 #[test]
 fn new_error_variants_exist() {

@@ -8,11 +8,11 @@ Add the required Synapse crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synapse-core = { path = "../crates/synapse-core" }
-synapse-models = { path = "../crates/synapse-models" }
-synapse-prompts = { path = "../crates/synapse-prompts" }
-synapse-parsers = { path = "../crates/synapse-parsers" }
-synapse-runnables = { path = "../crates/synapse-runnables" }
+synaptic-core = { path = "../crates/synaptic-core" }
+synaptic-models = { path = "../crates/synaptic-models" }
+synaptic-prompts = { path = "../crates/synaptic-prompts" }
+synaptic-parsers = { path = "../crates/synaptic-parsers" }
+synaptic-runnables = { path = "../crates/synaptic-runnables" }
 serde_json = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
@@ -22,8 +22,8 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 Every LLM interaction in Synapse goes through a type that implements the `ChatModel` trait. For production use you would reach for `OpenAiChatModel`, `AnthropicChatModel`, or one of the other provider adapters. For this tutorial we use `ScriptedChatModel`, which returns pre-configured responses -- perfect for offline development and testing.
 
 ```rust
-use synapse_core::{ChatModel, ChatRequest, ChatResponse, Message};
-use synapse_models::ScriptedChatModel;
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message};
+use synaptic_models::ScriptedChatModel;
 
 let model = ScriptedChatModel::new(vec![
     ChatResponse {
@@ -40,8 +40,8 @@ let model = ScriptedChatModel::new(vec![
 A `ChatRequest` holds the conversation messages (and optionally tool definitions). Build one with `ChatRequest::new()` and pass a vector of messages:
 
 ```rust
-use synapse_core::{ChatModel, ChatRequest, ChatResponse, Message};
-use synapse_models::ScriptedChatModel;
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message};
+use synaptic_models::ScriptedChatModel;
 
 #[tokio::main]
 async fn main() {
@@ -74,7 +74,7 @@ Key points:
 Hard-coding message strings works for one-off calls, but real applications need parameterized prompts. `ChatPromptTemplate` lets you define message templates with `{{ variable }}` placeholders that are filled in at runtime.
 
 ```rust
-use synapse_prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
 
 let template = ChatPromptTemplate::from_messages(vec![
     MessageTemplate::system("You are a helpful assistant that speaks {{ language }}."),
@@ -87,7 +87,7 @@ To render the template, call `format()` with a map of variable values:
 ```rust
 use std::collections::HashMap;
 use serde_json::Value;
-use synapse_prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
 
 let template = ChatPromptTemplate::from_messages(vec![
     MessageTemplate::system("You are a helpful assistant that speaks {{ language }}."),
@@ -113,11 +113,11 @@ Here is a complete example that templates a prompt and extracts the response tex
 
 ```rust
 use std::collections::HashMap;
-use synapse_core::{ChatModel, ChatRequest, ChatResponse, Message, RunnableConfig};
-use synapse_models::ScriptedChatModel;
-use synapse_prompts::{ChatPromptTemplate, MessageTemplate};
-use synapse_parsers::StrOutputParser;
-use synapse_runnables::Runnable;
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, RunnableConfig};
+use synaptic_models::ScriptedChatModel;
+use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic_parsers::StrOutputParser;
+use synaptic_runnables::Runnable;
 
 #[tokio::main]
 async fn main() {

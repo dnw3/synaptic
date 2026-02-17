@@ -1,5 +1,5 @@
 [package]
-name = "synapse-eval"
+name = "synaptic-eval"
 description = "Evaluation: ExactMatch, JsonValidity, Regex, EmbeddingDistance, LLMJudge evaluators"
 edition.workspace = true
 version.workspace = true
@@ -12,10 +12,10 @@ repository.workspace = true
 async-trait.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-synapse-core = { path = "../synapse-core" }
-synapse-embeddings = { path = "../synapse-embeddings" }
+synaptic-core = { version = "0.1.0", path = "../synapse-core" }
+synaptic-embeddings = { version = "0.1.0", path = "../synapse-embeddings" }
 regex.workspace = true
 
 [dev-dependencies]
 tokio.workspace = true
-synapse-models = { path = "../synapse-models" }
+synaptic-models = { version = "0.1.0", path = "../synapse-models" }

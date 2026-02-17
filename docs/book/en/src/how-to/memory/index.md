@@ -26,8 +26,8 @@ Every operation is keyed by a `session_id` string, which isolates conversations 
 The simplest `MemoryStore` implementation is `InMemoryStore`, which stores messages in a `HashMap` protected by an `Arc<RwLock<_>>`:
 
 ```rust
-use synapse_memory::InMemoryStore;
-use synapse_core::{MemoryStore, Message};
+use synaptic_memory::InMemoryStore;
+use synaptic_core::{MemoryStore, Message};
 
 let store = InMemoryStore::new();
 

@@ -1,6 +1,6 @@
 use serde_json::{json, Value};
-use synapse_core::{RunnableConfig, SynapseError};
-use synapse_runnables::{Runnable, RunnableLambda, RunnableParallel};
+use synaptic_core::{RunnableConfig, SynapseError};
+use synaptic_runnables::{Runnable, RunnableLambda, RunnableParallel};
 
 #[tokio::test]
 async fn parallel_runs_branches_and_merges() {

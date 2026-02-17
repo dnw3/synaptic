@@ -15,8 +15,8 @@ cd synapse-quickstart
 
 ```toml
 [dependencies]
-synapse-core = "0.1"
-synapse-models = "0.1"
+synaptic-core = "0.1"
+synaptic-models = "0.1"
 tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -25,8 +25,8 @@ tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 将 `src/main.rs` 替换为以下内容：
 
 ```rust
-use synapse_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
-use synapse_models::ScriptedChatModel;
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
+use synaptic_models::ScriptedChatModel;
 
 #[tokio::main]
 async fn main() -> Result<(), SynapseError> {
@@ -85,7 +85,7 @@ cargo run
 要连接 OpenAI 等真实 LLM 提供商，只需替换模型实例：
 
 ```rust
-use synapse_models::OpenAiChatModel;
+use synaptic_models::OpenAiChatModel;
 
 let model = OpenAiChatModel::new("gpt-4o");
 ```

@@ -1,5 +1,5 @@
 [package]
-name = "synapse-graph"
+name = "synaptic-graph"
 description = "LangGraph-style state machine: StateGraph, CompiledGraph, ReAct agent, checkpointing"
 edition.workspace = true
 version.workspace = true
@@ -17,9 +17,9 @@ reqwest.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
-synapse-core = { path = "../synapse-core" }
-synapse-tools = { path = "../synapse-tools" }
+synaptic-core = { version = "0.1.0", path = "../synapse-core" }
+synaptic-tools = { version = "0.1.0", path = "../synapse-tools" }
 
 [dev-dependencies]
 tokio.workspace = true
-synapse-models = { path = "../synapse-models" }
+synaptic-models = { version = "0.1.0", path = "../synapse-models" }

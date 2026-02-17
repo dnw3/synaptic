@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use synapse_core::{ChatModel, ChatRequest, Message, SynapseError};
+use synaptic_core::{ChatModel, ChatRequest, Message, SynapseError};
 
 use crate::evaluator::{EvalResult, Evaluator};
 

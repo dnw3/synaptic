@@ -9,7 +9,7 @@ Some LLM providers require alternating message roles (human, assistant, human, a
 ## Basic usage
 
 ```rust
-use synapse_core::{merge_message_runs, Message};
+use synaptic_core::{merge_message_runs, Message};
 
 let messages = vec![
     Message::human("Hello"),
@@ -38,7 +38,7 @@ When two consecutive messages share the same role:
 Tool calls from consecutive AI messages are combined:
 
 ```rust
-use synapse_core::{merge_message_runs, Message, ToolCall};
+use synaptic_core::{merge_message_runs, Message, ToolCall};
 use serde_json::json;
 
 let messages = vec![
@@ -70,7 +70,7 @@ assert_eq!(merged[0].tool_calls().len(), 2);
 Messages with different roles are never merged, even if they appear to be related:
 
 ```rust
-use synapse_core::{merge_message_runs, Message};
+use synaptic_core::{merge_message_runs, Message};
 
 let messages = vec![
     Message::system("Be helpful."),
@@ -88,7 +88,7 @@ assert_eq!(merged.len(), 4);  // No change -- all roles are different
 Some providers reject requests with consecutive same-role messages. Use `merge_message_runs` to clean up before sending:
 
 ```rust
-use synapse_core::{merge_message_runs, ChatRequest, Message};
+use synaptic_core::{merge_message_runs, ChatRequest, Message};
 
 let conversation = vec![
     Message::system("You are a translator."),
@@ -107,7 +107,7 @@ let request = ChatRequest::new(cleaned);
 `merge_message_runs` returns an empty vector when given an empty input:
 
 ```rust
-use synapse_core::merge_message_runs;
+use synaptic_core::merge_message_runs;
 
 let result = merge_message_runs(vec![]);
 assert!(result.is_empty());

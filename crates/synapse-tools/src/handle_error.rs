@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synapse_core::{SynapseError, Tool};
+use synaptic_core::{SynapseError, Tool};
 
 /// A tool wrapper that catches errors and returns them as string values
 /// instead of propagating them.

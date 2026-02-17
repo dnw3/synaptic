@@ -1,6 +1,6 @@
 use serde_json::{json, Value};
-use synapse::core::{RunnableConfig, SynapseError};
-use synapse::runnables::{
+use synaptic::core::{RunnableConfig, SynapseError};
+use synaptic::runnables::{
     BoxRunnable, Runnable, RunnableLambda, RunnableParallel, RunnablePassthrough,
 };
 

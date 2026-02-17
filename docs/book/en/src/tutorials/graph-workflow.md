@@ -8,8 +8,8 @@ Add the required Synapse crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synapse-core = { path = "../crates/synapse-core" }
-synapse-graph = { path = "../crates/synapse-graph" }
+synaptic-core = { path = "../crates/synaptic-core" }
+synaptic-graph = { path = "../crates/synaptic-graph" }
 async-trait = "0.1"
 futures = "0.3"
 serde = { version = "1", features = ["derive"] }
@@ -41,8 +41,8 @@ Each node receives the state, processes it, and passes the updated state to the 
 The simplest built-in state is `MessageState`, which holds a `Vec<Message>`. It is suitable for most agent and chatbot workflows:
 
 ```rust
-use synapse_graph::MessageState;
-use synapse_core::Message;
+use synaptic_graph::MessageState;
+use synaptic_core::Message;
 
 let state = MessageState::with_messages(vec![
     Message::human("Hi"),
@@ -55,7 +55,7 @@ For custom workflows, you can implement `State` on your own types. The trait req
 
 ```rust
 use serde::{Serialize, Deserialize};
-use synapse_graph::State;
+use synaptic_graph::State;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct MyState {
@@ -77,8 +77,8 @@ A node is any type that implements the `Node<S>` trait. The trait has a single a
 
 ```rust
 use async_trait::async_trait;
-use synapse_core::{Message, SynapseError};
-use synapse_graph::{MessageState, Node};
+use synaptic_core::{Message, SynapseError};
+use synaptic_graph::{MessageState, Node};
 
 struct GreetNode;
 
@@ -114,7 +114,7 @@ impl Node<MessageState> for FinalizeNode {
 For simpler cases, you can use `FnNode` to wrap an async closure without defining a separate struct:
 
 ```rust
-use synapse_graph::FnNode;
+use synaptic_graph::FnNode;
 
 let greet = FnNode::new(|mut state: MessageState| async move {
     state.messages.push(Message::ai("Hello!"));
@@ -127,7 +127,7 @@ let greet = FnNode::new(|mut state: MessageState| async move {
 Use `StateGraph` to wire nodes and edges into a workflow, then call `compile()` to produce an executable `CompiledGraph`:
 
 ```rust
-use synapse_graph::{StateGraph, END};
+use synaptic_graph::{StateGraph, END};
 
 let graph = StateGraph::new()
     .add_node("greet", GreetNode)
@@ -152,8 +152,8 @@ The builder methods are chainable:
 Call `invoke()` with an initial state. The graph executes each node in sequence according to the edges, and returns the final state:
 
 ```rust
-use synapse_core::Message;
-use synapse_graph::MessageState;
+use synaptic_core::Message;
+use synaptic_graph::MessageState;
 
 let state = MessageState::with_messages(vec![Message::human("Hi")]);
 let result = graph.invoke(state).await?;
@@ -178,7 +178,7 @@ For real-time feedback, use `stream()` to receive a `GraphEvent` after each node
 
 ```rust
 use futures::StreamExt;
-use synapse_graph::StreamMode;
+use synaptic_graph::StreamMode;
 
 let state = MessageState::with_messages(vec![Message::human("Hi")]);
 let mut stream = graph.stream(state, StreamMode::Values);
@@ -209,7 +209,7 @@ Real workflows often need branching logic. Use `add_conditional_edges` with a ro
 
 ```rust
 use std::collections::HashMap;
-use synapse_graph::{StateGraph, END};
+use synaptic_graph::{StateGraph, END};
 
 let graph = StateGraph::new()
     .add_node("greet", GreetNode)
@@ -305,8 +305,8 @@ Here is the full program combining all the concepts:
 use std::collections::HashMap;
 use async_trait::async_trait;
 use futures::StreamExt;
-use synapse_core::{Message, SynapseError};
-use synapse_graph::{MessageState, Node, StateGraph, StreamMode, END};
+use synaptic_core::{Message, SynapseError};
+use synaptic_graph::{MessageState, Node, StateGraph, StreamMode, END};
 
 struct GreetNode;
 

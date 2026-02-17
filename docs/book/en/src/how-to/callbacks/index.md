@@ -4,7 +4,7 @@ Synapse provides an event-driven callback system for observing agent execution. 
 
 ## The `CallbackHandler` Trait
 
-The trait is defined in `synapse_core`:
+The trait is defined in `synaptic_core`:
 
 ```rust
 #[async_trait]
@@ -47,7 +47,7 @@ You can implement `CallbackHandler` to add your own observability:
 
 ```rust
 use async_trait::async_trait;
-use synapse_core::{CallbackHandler, RunEvent, SynapseError};
+use synaptic_core::{CallbackHandler, RunEvent, SynapseError};
 
 struct MetricsCallback;
 

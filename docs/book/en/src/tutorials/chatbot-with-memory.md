@@ -8,8 +8,8 @@ Add the required Synapse crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synapse-core = { path = "../crates/synapse-core" }
-synapse-memory = { path = "../crates/synapse-memory" }
+synaptic-core = { path = "../crates/synaptic-core" }
+synaptic-memory = { path = "../crates/synaptic-memory" }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -18,8 +18,8 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 Every chatbot needs to remember what was said. Synapse provides the `MemoryStore` trait for this purpose, and `InMemoryStore` as a simple in-process implementation backed by a `HashMap`.
 
 ```rust
-use synapse_core::{MemoryStore, Message, SynapseError};
-use synapse_memory::InMemoryStore;
+use synaptic_core::{MemoryStore, Message, SynapseError};
+use synaptic_memory::InMemoryStore;
 
 #[tokio::main]
 async fn main() -> Result<(), SynapseError> {
@@ -64,8 +64,8 @@ The `MemoryStore` trait defines three methods:
 Each session ID maps to an independent conversation history. This is how you keep multiple users or threads separate:
 
 ```rust
-use synapse_core::{MemoryStore, Message, SynapseError};
-use synapse_memory::InMemoryStore;
+use synaptic_core::{MemoryStore, Message, SynapseError};
+use synaptic_memory::InMemoryStore;
 
 #[tokio::main]
 async fn main() -> Result<(), SynapseError> {
@@ -104,8 +104,8 @@ Keeps all messages. This is the simplest strategy -- a passthrough wrapper that 
 
 ```rust
 use std::sync::Arc;
-use synapse_core::MemoryStore;
-use synapse_memory::{InMemoryStore, ConversationBufferMemory};
+use synaptic_core::MemoryStore;
+use synaptic_memory::{InMemoryStore, ConversationBufferMemory};
 
 let store = Arc::new(InMemoryStore::new());
 let memory = ConversationBufferMemory::new(store);
@@ -120,8 +120,8 @@ Keeps only the last **K** messages. Older messages are still stored but are not 
 
 ```rust
 use std::sync::Arc;
-use synapse_core::MemoryStore;
-use synapse_memory::{InMemoryStore, ConversationWindowMemory};
+use synaptic_core::MemoryStore;
+use synaptic_memory::{InMemoryStore, ConversationWindowMemory};
 
 let store = Arc::new(InMemoryStore::new());
 let memory = ConversationWindowMemory::new(store, 10); // keep last 10 messages
@@ -136,8 +136,8 @@ Uses an LLM to summarize older messages. When the stored message count exceeds `
 
 ```rust
 use std::sync::Arc;
-use synapse_core::{ChatModel, MemoryStore};
-use synapse_memory::{InMemoryStore, ConversationSummaryMemory};
+use synaptic_core::{ChatModel, MemoryStore};
+use synaptic_memory::{InMemoryStore, ConversationSummaryMemory};
 
 let store = Arc::new(InMemoryStore::new());
 let model: Arc<dyn ChatModel> = /* your chat model */;
@@ -154,8 +154,8 @@ Keeps messages within a **token budget**. Uses a configurable token estimator to
 
 ```rust
 use std::sync::Arc;
-use synapse_core::MemoryStore;
-use synapse_memory::{InMemoryStore, ConversationTokenBufferMemory};
+use synaptic_core::MemoryStore;
+use synaptic_memory::{InMemoryStore, ConversationTokenBufferMemory};
 
 let store = Arc::new(InMemoryStore::new());
 let memory = ConversationTokenBufferMemory::new(store, 4000); // 4000 token budget
@@ -170,8 +170,8 @@ A hybrid of summary and buffer strategies. Keeps the most recent messages verbat
 
 ```rust
 use std::sync::Arc;
-use synapse_core::{ChatModel, MemoryStore};
-use synapse_memory::{InMemoryStore, ConversationSummaryBufferMemory};
+use synaptic_core::{ChatModel, MemoryStore};
+use synaptic_memory::{InMemoryStore, ConversationSummaryBufferMemory};
 
 let store = Arc::new(InMemoryStore::new());
 let model: Arc<dyn ChatModel> = /* your chat model */;
@@ -194,9 +194,9 @@ In a real chatbot, you want the history load/save to happen automatically on eac
 ```rust
 use std::sync::Arc;
 use std::collections::HashMap;
-use synapse_core::{MemoryStore, RunnableConfig};
-use synapse_memory::{InMemoryStore, RunnableWithMessageHistory};
-use synapse_runnables::Runnable;
+use synaptic_core::{MemoryStore, RunnableConfig};
+use synaptic_memory::{InMemoryStore, RunnableWithMessageHistory};
+use synaptic_runnables::Runnable;
 
 // Wrap a model chain with automatic history management
 let memory = Arc::new(InMemoryStore::new());

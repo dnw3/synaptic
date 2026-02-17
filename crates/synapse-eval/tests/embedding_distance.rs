@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use synapse_embeddings::FakeEmbeddings;
-use synapse_eval::{EmbeddingDistanceEvaluator, Evaluator};
+use synaptic_embeddings::FakeEmbeddings;
+use synaptic_eval::{EmbeddingDistanceEvaluator, Evaluator};
 
 #[tokio::test]
 async fn similar_texts_pass() {

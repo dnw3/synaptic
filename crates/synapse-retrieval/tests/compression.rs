@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use synapse_core::SynapseError;
-use synapse_embeddings::FakeEmbeddings;
-use synapse_retrieval::{
+use synaptic_core::SynapseError;
+use synaptic_embeddings::FakeEmbeddings;
+use synaptic_retrieval::{
     ContextualCompressionRetriever, Document, DocumentCompressor, EmbeddingsFilter,
     InMemoryRetriever, Retriever,
 };

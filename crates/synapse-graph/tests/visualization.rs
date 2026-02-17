@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use async_trait::async_trait;
-use synapse_core::SynapseError;
-use synapse_graph::{MessageState, Node, StateGraph, END};
+use synaptic_core::SynapseError;
+use synaptic_graph::{MessageState, Node, StateGraph, END};
 
 /// A simple passthrough node for testing.
 struct PassthroughNode;
@@ -14,7 +14,7 @@ impl Node<MessageState> for PassthroughNode {
     }
 }
 
-fn build_linear_graph() -> synapse_graph::CompiledGraph<MessageState> {
+fn build_linear_graph() -> synaptic_graph::CompiledGraph<MessageState> {
     StateGraph::new()
         .add_node("a", PassthroughNode)
         .add_node("b", PassthroughNode)
@@ -25,7 +25,7 @@ fn build_linear_graph() -> synapse_graph::CompiledGraph<MessageState> {
         .unwrap()
 }
 
-fn build_conditional_graph_with_path_map() -> synapse_graph::CompiledGraph<MessageState> {
+fn build_conditional_graph_with_path_map() -> synaptic_graph::CompiledGraph<MessageState> {
     StateGraph::new()
         .add_node("agent", PassthroughNode)
         .add_node("tools", PassthroughNode)
@@ -43,7 +43,7 @@ fn build_conditional_graph_with_path_map() -> synapse_graph::CompiledGraph<Messa
         .unwrap()
 }
 
-fn build_conditional_graph_without_path_map() -> synapse_graph::CompiledGraph<MessageState> {
+fn build_conditional_graph_without_path_map() -> synaptic_graph::CompiledGraph<MessageState> {
     StateGraph::new()
         .add_node("agent", PassthroughNode)
         .add_node("tools", PassthroughNode)

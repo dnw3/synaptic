@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use synapse_core::{ChatModel, ChatRequest, ChatResponse, ChatStream, SynapseError};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, ChatStream, SynapseError};
 
 #[derive(Debug, Clone)]
 pub struct RetryPolicy {

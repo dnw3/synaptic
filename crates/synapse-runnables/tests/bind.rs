@@ -1,6 +1,6 @@
 use serde_json::json;
-use synapse_core::RunnableConfig;
-use synapse_runnables::{Runnable, RunnableLambda};
+use synaptic_core::RunnableConfig;
+use synaptic_runnables::{Runnable, RunnableLambda};
 
 #[tokio::test]
 async fn bind_transforms_config() {

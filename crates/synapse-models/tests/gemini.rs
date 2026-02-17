@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use futures::StreamExt;
 use serde_json::json;
-use synapse_core::{ChatModel, ChatRequest, Message, ToolDefinition};
-use synapse_models::{FakeBackend, GeminiChatModel, GeminiConfig, ProviderResponse};
+use synaptic_core::{ChatModel, ChatRequest, Message, ToolDefinition};
+use synaptic_models::{FakeBackend, GeminiChatModel, GeminiConfig, ProviderResponse};
 
 fn setup(backend: Arc<FakeBackend>) -> GeminiChatModel {
     let config = GeminiConfig::new("test-key", "gemini-2.0-flash");

@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use serde_json::json;
-use synapse_core::{ChatResponse, Message};
-use synapse_models::ScriptedChatModel;
-use synapse_retrieval::{
+use synaptic_core::{ChatResponse, Message};
+use synaptic_models::ScriptedChatModel;
+use synaptic_retrieval::{
     Document, InMemoryRetriever, MetadataFieldInfo, Retriever, SelfQueryRetriever,
 };
 

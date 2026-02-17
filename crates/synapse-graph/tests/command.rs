@@ -3,8 +3,8 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-use synapse_core::SynapseError;
-use synapse_graph::{GraphCommand, GraphContext, Node, State, StateGraph, StreamMode, END};
+use synaptic_core::SynapseError;
+use synaptic_graph::{GraphCommand, GraphContext, Node, State, StateGraph, StreamMode, END};
 use tokio::sync::Mutex;
 
 /// Test state with a counter and log of visited nodes.

@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use synapse_core::{ChatResponse, Message};
-use synapse_eval::{Evaluator, LLMJudgeEvaluator};
-use synapse_models::ScriptedChatModel;
+use synaptic_core::{ChatResponse, Message};
+use synaptic_eval::{Evaluator, LLMJudgeEvaluator};
+use synaptic_models::ScriptedChatModel;
 
 #[tokio::test]
 async fn llm_judge_high_score() {

@@ -27,7 +27,7 @@ pub struct Checkpoint {
 `MemorySaver` is the built-in in-memory checkpointer. It stores checkpoints in a `HashMap` keyed by thread ID:
 
 ```rust
-use synapse_graph::MemorySaver;
+use synaptic_graph::MemorySaver;
 use std::sync::Arc;
 
 let checkpointer = Arc::new(MemorySaver::new());
@@ -40,8 +40,8 @@ For production use, you would implement `Checkpointer` with a persistent backend
 After compiling a graph, attach a checkpointer with `.with_checkpointer()`:
 
 ```rust
-use synapse_graph::{StateGraph, FnNode, MessageState, MemorySaver, END};
-use synapse_core::Message;
+use synaptic_graph::{StateGraph, FnNode, MessageState, MemorySaver, END};
+use synaptic_core::Message;
 use std::sync::Arc;
 
 let node = FnNode::new(|mut state: MessageState| async move {
@@ -62,7 +62,7 @@ let graph = StateGraph::new()
 A `CheckpointConfig` identifies a thread (conversation) for checkpointing:
 
 ```rust
-use synapse_graph::CheckpointConfig;
+use synaptic_graph::CheckpointConfig;
 
 let config = CheckpointConfig::new("thread-1");
 ```
@@ -109,7 +109,7 @@ Checkpointing requires your state type to implement `Serialize` and `Deserialize
 
 ```rust
 use serde::{Serialize, Deserialize};
-use synapse_graph::State;
+use synaptic_graph::State;
 
 #[derive(Clone, Serialize, Deserialize)]
 struct MyState {

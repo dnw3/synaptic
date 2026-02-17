@@ -9,7 +9,7 @@ pub use tracing_cb::TracingCallback;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use synapse_core::{CallbackHandler, RunEvent, SynapseError};
+use synaptic_core::{CallbackHandler, RunEvent, SynapseError};
 use tokio::sync::RwLock;
 
 /// A callback handler that records all received events for later inspection, useful for testing.

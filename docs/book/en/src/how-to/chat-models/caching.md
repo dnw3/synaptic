@@ -17,8 +17,8 @@ The simplest cache stores responses keyed by the exact request content:
 
 ```rust
 use std::sync::Arc;
-use synapse_core::ChatModel;
-use synapse_cache::{InMemoryCache, CachedChatModel};
+use synaptic_core::ChatModel;
+use synaptic_cache::{InMemoryCache, CachedChatModel};
 
 let base_model: Arc<dyn ChatModel> = Arc::new(model);
 let cache = Arc::new(InMemoryCache::new());
@@ -38,7 +38,7 @@ Set a time-to-live so entries expire automatically:
 ```rust
 use std::time::Duration;
 use std::sync::Arc;
-use synapse_cache::InMemoryCache;
+use synaptic_cache::InMemoryCache;
 
 // Entries expire after 1 hour
 let cache = Arc::new(InMemoryCache::with_ttl(Duration::from_secs(3600)));
@@ -55,10 +55,10 @@ Semantic caching uses embeddings to find similar queries, even when the exact wo
 
 ```rust
 use std::sync::Arc;
-use synapse_cache::{SemanticCache, CachedChatModel};
-use synapse_embeddings::OpenAiEmbeddings;
+use synaptic_cache::{SemanticCache, CachedChatModel};
+use synaptic_embeddings::OpenAiEmbeddings;
 
-let embeddings: Arc<dyn synapse_embeddings::Embeddings> = Arc::new(embeddings_provider);
+let embeddings: Arc<dyn synaptic_embeddings::Embeddings> = Arc::new(embeddings_provider);
 
 // Similarity threshold of 0.95 means only very similar queries match
 let cache = Arc::new(SemanticCache::new(embeddings, 0.95));
@@ -98,7 +98,7 @@ You can implement this trait for custom cache backends (Redis, SQLite, etc.).
 Both cache implementations support clearing all entries:
 
 ```rust
-use synapse_cache::LlmCache;
+use synaptic_cache::LlmCache;
 
 // cache implements LlmCache
 // cache.clear().await?;
@@ -110,9 +110,9 @@ Since `CachedChatModel` implements `ChatModel`, it composes with retry, rate lim
 
 ```rust
 use std::sync::Arc;
-use synapse_core::ChatModel;
-use synapse_cache::{InMemoryCache, CachedChatModel};
-use synapse_models::{RetryChatModel, RetryPolicy};
+use synaptic_core::ChatModel;
+use synaptic_cache::{InMemoryCache, CachedChatModel};
+use synaptic_models::{RetryChatModel, RetryPolicy};
 
 let base_model: Arc<dyn ChatModel> = Arc::new(model);
 

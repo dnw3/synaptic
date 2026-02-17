@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use synapse_core::Message;
+use synaptic_core::Message;
 
 /// Trait for graph state. Types implementing this can be used as graph state.
 pub trait State: Clone + Send + Sync + 'static {

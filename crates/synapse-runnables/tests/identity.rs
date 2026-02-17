@@ -1,5 +1,5 @@
-use synapse_core::{RunnableConfig, SynapseError};
-use synapse_runnables::{Runnable, RunnablePassthrough};
+use synaptic_core::{RunnableConfig, SynapseError};
+use synaptic_runnables::{Runnable, RunnablePassthrough};
 
 #[tokio::test]
 async fn passthrough_returns_same_value() -> Result<(), SynapseError> {

@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use synapse_core::{ChatResponse, Message, RunnableConfig};
-use synapse_models::ScriptedChatModel;
-use synapse_parsers::{JsonOutputParser, OutputFixingParser};
-use synapse_runnables::Runnable;
+use synaptic_core::{ChatResponse, Message, RunnableConfig};
+use synaptic_models::ScriptedChatModel;
+use synaptic_parsers::{JsonOutputParser, OutputFixingParser};
+use synaptic_runnables::Runnable;
 
 #[tokio::test]
 async fn succeeds_on_first_attempt() {

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use synapse_core::{MemoryStore, Message, SynapseError};
+use synaptic_core::{MemoryStore, Message, SynapseError};
 
 /// A memory strategy that keeps only the last `window_size` messages.
 ///

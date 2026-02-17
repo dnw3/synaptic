@@ -1,7 +1,7 @@
 use serde::Deserialize;
-use synapse_core::RunnableConfig;
-use synapse_parsers::StructuredOutputParser;
-use synapse_runnables::Runnable;
+use synaptic_core::RunnableConfig;
+use synaptic_parsers::StructuredOutputParser;
+use synaptic_runnables::Runnable;
 
 #[derive(Debug, Deserialize, PartialEq)]
 struct Person {

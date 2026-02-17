@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use async_trait::async_trait;
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 
 use crate::{tokenize_to_vec, Document, Retriever};
 

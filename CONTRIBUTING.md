@@ -17,7 +17,7 @@ Thank you for your interest in contributing!
 
 ## Full Guide
 
-For detailed contributing guidelines, code standards, and project structure, see the [Contributing Guide](https://aimoverse.github.io/synapse/contributing.html).
+For detailed contributing guidelines, code standards, and project structure, see the [Contributing Guide](https://dnw3.github.io/synaptic/contributing.html).
 
 ## Questions?
 

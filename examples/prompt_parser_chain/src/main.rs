@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
 use serde_json::Value;
-use synapse::core::{ChatResponse, Message, RunnableConfig, SynapseError};
-use synapse::models::ScriptedChatModel;
-use synapse::parsers::StrOutputParser;
-use synapse::prompts::{ChatPromptTemplate, MessageTemplate, PromptTemplate};
-use synapse::runnables::{Runnable, RunnableLambda};
+use synaptic::core::{ChatResponse, Message, RunnableConfig, SynapseError};
+use synaptic::models::ScriptedChatModel;
+use synaptic::parsers::StrOutputParser;
+use synaptic::prompts::{ChatPromptTemplate, MessageTemplate, PromptTemplate};
+use synaptic::runnables::{Runnable, RunnableLambda};
 
 #[tokio::main]
 async fn main() -> Result<(), SynapseError> {
@@ -46,7 +46,7 @@ async fn main() -> Result<(), SynapseError> {
     let model_step = RunnableLambda::new(move |messages: Vec<Message>| {
         let m = model_clone.clone();
         async move {
-            use synapse::core::{ChatModel, ChatRequest};
+            use synaptic::core::{ChatModel, ChatRequest};
             let request = ChatRequest::new(messages);
             let response = m.chat(request).await?;
             Ok(response.message)

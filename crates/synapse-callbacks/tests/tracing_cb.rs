@@ -1,5 +1,5 @@
-use synapse_callbacks::TracingCallback;
-use synapse_core::{CallbackHandler, RunEvent};
+use synaptic_callbacks::TracingCallback;
+use synaptic_core::{CallbackHandler, RunEvent};
 
 #[tokio::test]
 async fn tracing_callback_handles_all_events() {

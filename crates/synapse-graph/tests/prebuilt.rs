@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde_json::Value;
-use synapse_core::{ChatResponse, Message, SynapseError, Tool, ToolCall};
-use synapse_graph::{create_react_agent, MessageState};
-use synapse_models::ScriptedChatModel;
+use synaptic_core::{ChatResponse, Message, SynapseError, Tool, ToolCall};
+use synaptic_graph::{create_react_agent, MessageState};
+use synaptic_models::ScriptedChatModel;
 
 struct EchoTool;
 

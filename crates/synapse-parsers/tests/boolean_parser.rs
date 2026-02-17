@@ -1,6 +1,6 @@
-use synapse_core::RunnableConfig;
-use synapse_parsers::BooleanOutputParser;
-use synapse_runnables::Runnable;
+use synaptic_core::RunnableConfig;
+use synaptic_parsers::BooleanOutputParser;
+use synaptic_runnables::Runnable;
 
 #[tokio::test]
 async fn parses_true() {

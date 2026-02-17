@@ -1,4 +1,4 @@
-use synapse_core::{ChatRequest, Message, ToolChoice, ToolDefinition};
+use synaptic_core::{ChatRequest, Message, ToolChoice, ToolDefinition};
 
 #[test]
 fn tool_choice_serde_roundtrip_auto() {

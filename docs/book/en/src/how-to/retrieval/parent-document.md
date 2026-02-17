@@ -22,8 +22,8 @@ The `ParentDocumentRetriever` solves this by maintaining both: it splits parent 
 
 ```rust
 use std::sync::Arc;
-use synapse_retrieval::{ParentDocumentRetriever, Document, Retriever};
-use synapse_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
+use synaptic_retrieval::{ParentDocumentRetriever, Document, Retriever};
+use synaptic_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
 
 // Create a child retriever (any Retriever implementation)
 let child_retriever: Arc<dyn Retriever> = Arc::new(/* vector store retriever */);
@@ -75,10 +75,10 @@ The retriever fetches `top_k * 3` child results internally to ensure enough pare
 
 ```rust
 use std::sync::Arc;
-use synapse_retrieval::{ParentDocumentRetriever, Document, Retriever};
-use synapse_vectorstores::{InMemoryVectorStore, VectorStoreRetriever, VectorStore};
-use synapse_embeddings::FakeEmbeddings;
-use synapse_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
+use synaptic_retrieval::{ParentDocumentRetriever, Document, Retriever};
+use synaptic_vectorstores::{InMemoryVectorStore, VectorStoreRetriever, VectorStore};
+use synaptic_embeddings::FakeEmbeddings;
+use synaptic_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
 
 // Set up embeddings and vector store for child chunks
 let embeddings = Arc::new(FakeEmbeddings::new(128));

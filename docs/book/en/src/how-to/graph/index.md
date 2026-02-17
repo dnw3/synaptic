@@ -1,6 +1,6 @@
 # Graph
 
-Synapse provides LangGraph-style graph orchestration through the `synapse_graph` crate. A `StateGraph` is a state machine where **nodes** process state and **edges** control the flow between nodes. This architecture supports fixed routing, conditional branching, checkpointing for persistence, human-in-the-loop interrupts, and streaming execution.
+Synapse provides LangGraph-style graph orchestration through the `synaptic_graph` crate. A `StateGraph` is a state machine where **nodes** process state and **edges** control the flow between nodes. This architecture supports fixed routing, conditional branching, checkpointing for persistence, human-in-the-loop interrupts, and streaming execution.
 
 ## Core Concepts
 
@@ -22,8 +22,8 @@ Synapse provides LangGraph-style graph orchestration through the `synapse_graph`
 5. Run the graph with `invoke()` for a single result or `stream()` for per-node events.
 
 ```rust
-use synapse_graph::{StateGraph, MessageState, FnNode, END};
-use synapse_core::Message;
+use synaptic_graph::{StateGraph, MessageState, FnNode, END};
+use synaptic_core::Message;
 
 let greet = FnNode::new(|mut state: MessageState| async move {
     state.messages.push(Message::ai("Hello from the graph!"));

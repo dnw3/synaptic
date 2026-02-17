@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use synapse_core::{Message, SynapseError};
-use synapse_tools::SerialToolExecutor;
+use synaptic_core::{Message, SynapseError};
+use synaptic_tools::SerialToolExecutor;
 
 use crate::node::Node;
 use crate::state::MessageState;

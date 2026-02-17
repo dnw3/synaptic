@@ -5,9 +5,9 @@ pub use in_memory::{InMemoryVectorStore, VectorStoreRetriever};
 pub use multi_vector::MultiVectorRetriever;
 
 use async_trait::async_trait;
-use synapse_core::SynapseError;
-use synapse_embeddings::Embeddings;
-use synapse_retrieval::Document;
+use synaptic_core::SynapseError;
+use synaptic_embeddings::Embeddings;
+use synaptic_retrieval::Document;
 
 /// Trait for vector storage backends.
 #[async_trait]

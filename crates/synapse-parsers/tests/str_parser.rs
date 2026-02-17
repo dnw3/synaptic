@@ -1,6 +1,6 @@
-use synapse_core::{Message, RunnableConfig};
-use synapse_parsers::StrOutputParser;
-use synapse_runnables::Runnable;
+use synaptic_core::{Message, RunnableConfig};
+use synaptic_parsers::StrOutputParser;
+use synaptic_runnables::Runnable;
 
 #[tokio::test]
 async fn extracts_content_from_ai_message() {

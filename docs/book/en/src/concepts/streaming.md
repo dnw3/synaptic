@@ -115,7 +115,7 @@ This is useful when you need to inject a streaming source into an LCEL chain tha
 Graph execution can also stream, yielding events after each node completes:
 
 ```rust
-use synapse::graph::StreamMode;
+use synaptic::graph::StreamMode;
 
 let mut stream = graph.stream(initial_state, StreamMode::Values);
 

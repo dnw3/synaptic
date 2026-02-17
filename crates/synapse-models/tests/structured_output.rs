@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use serde::Deserialize;
-use synapse_core::{ChatRequest, ChatResponse, Message};
-use synapse_models::{ScriptedChatModel, StructuredOutputChatModel};
+use synaptic_core::{ChatRequest, ChatResponse, Message};
+use synaptic_models::{ScriptedChatModel, StructuredOutputChatModel};
 
 #[derive(Debug, Deserialize, PartialEq)]
 struct Person {
@@ -78,7 +78,7 @@ async fn structured_output_returns_parsing_error() {
 #[tokio::test]
 async fn structured_output_injects_system_message() {
     // Use ChatModel::chat directly (which injects the system message)
-    use synapse_core::ChatModel;
+    use synaptic_core::ChatModel;
 
     let model = ScriptedChatModel::new(vec![ChatResponse {
         message: Message::ai(r#"{"name": "Test", "age": 1}"#),

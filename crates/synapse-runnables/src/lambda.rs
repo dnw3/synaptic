@@ -2,7 +2,7 @@ use std::future::Future;
 use std::pin::Pin;
 
 use async_trait::async_trait;
-use synapse_core::{RunnableConfig, SynapseError};
+use synaptic_core::{RunnableConfig, SynapseError};
 
 use crate::Runnable;
 

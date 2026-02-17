@@ -1,5 +1,5 @@
-use synapse_core::{RunnableConfig, SynapseError};
-use synapse_runnables::{Runnable, RunnableLambda};
+use synaptic_core::{RunnableConfig, SynapseError};
+use synaptic_runnables::{Runnable, RunnableLambda};
 
 #[tokio::test]
 async fn pipe_two_steps() {

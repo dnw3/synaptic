@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use synapse_core::{MemoryStore, Message};
-use synapse_memory::{ConversationTokenBufferMemory, InMemoryStore};
+use synaptic_core::{MemoryStore, Message};
+use synaptic_memory::{ConversationTokenBufferMemory, InMemoryStore};
 
 #[tokio::test]
 async fn token_buffer_trims_old_messages() {

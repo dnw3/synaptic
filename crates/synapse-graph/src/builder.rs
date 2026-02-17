@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 
 use crate::command::GraphContext;
 use crate::compiled::CompiledGraph;

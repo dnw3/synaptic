@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use synapse::callbacks::{CompositeCallback, RecordingCallback, TracingCallback};
-use synapse::core::{CallbackHandler, RunEvent, SynapseError};
+use synaptic::callbacks::{CompositeCallback, RecordingCallback, TracingCallback};
+use synaptic::core::{CallbackHandler, RunEvent, SynapseError};
 
 #[tokio::main]
 async fn main() -> Result<(), SynapseError> {

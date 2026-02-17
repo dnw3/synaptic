@@ -1,5 +1,5 @@
 use serde_json::Value;
-use synapse_core::SynapseError;
+use synaptic_core::SynapseError;
 
 use crate::ToolRegistry;
 

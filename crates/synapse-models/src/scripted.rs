@@ -1,7 +1,7 @@
 use std::{collections::VecDeque, sync::Arc};
 
 use async_trait::async_trait;
-use synapse_core::{ChatModel, ChatRequest, ChatResponse, SynapseError};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, SynapseError};
 use tokio::sync::Mutex;
 
 #[derive(Clone)]

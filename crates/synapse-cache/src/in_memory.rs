@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 use async_trait::async_trait;
-use synapse_core::{ChatResponse, SynapseError};
+use synaptic_core::{ChatResponse, SynapseError};
 use tokio::sync::RwLock;
 
 use crate::LlmCache;

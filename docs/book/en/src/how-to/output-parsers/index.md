@@ -21,9 +21,9 @@ All parsers also implement the `FormatInstructions` trait, which provides a `get
 ## Quick Example
 
 ```rust
-use synapse_parsers::StrOutputParser;
-use synapse_runnables::Runnable;
-use synapse_core::{Message, RunnableConfig};
+use synaptic_parsers::StrOutputParser;
+use synaptic_runnables::Runnable;
+use synaptic_core::{Message, RunnableConfig};
 
 let parser = StrOutputParser;
 let config = RunnableConfig::default();

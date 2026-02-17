@@ -1,4 +1,4 @@
-use synapse_embeddings::{Embeddings, FakeEmbeddings};
+use synaptic_embeddings::{Embeddings, FakeEmbeddings};
 
 #[tokio::test]
 async fn fake_embeddings_returns_correct_dimensions() {

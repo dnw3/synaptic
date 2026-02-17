@@ -1,6 +1,6 @@
-use synapse_core::RunnableConfig;
-use synapse_parsers::ListOutputParser;
-use synapse_runnables::Runnable;
+use synaptic_core::RunnableConfig;
+use synaptic_parsers::ListOutputParser;
+use synaptic_runnables::Runnable;
 
 #[tokio::test]
 async fn splits_by_newline() {

@@ -8,7 +8,7 @@
 
 ## Adding Synapse to Your Project
 
-The `synapse` facade crate re-exports all sub-crates. Use **feature flags** to control which modules are compiled.
+The `synaptic` facade crate re-exports all sub-crates. Use **feature flags** to control which modules are compiled.
 
 ### Feature Flags
 
@@ -17,22 +17,22 @@ Synapse provides fine-grained feature flags, similar to tokio:
 ```toml
 [dependencies]
 # Full — everything enabled (equivalent to previous default)
-synapse = { version = "0.1", features = ["full"] }
+synaptic = { version = "0.1", features = ["full"] }
 
 # Agent development (models, tools, graph, memory, etc.)
-synapse = { version = "0.1", features = ["agent"] }
+synaptic = { version = "0.1", features = ["agent"] }
 
 # RAG applications (retrieval, loaders, splitters, embeddings, vectorstores, etc.)
-synapse = { version = "0.1", features = ["rag"] }
+synaptic = { version = "0.1", features = ["rag"] }
 
 # Agent + RAG
-synapse = { version = "0.1", features = ["agent", "rag"] }
+synaptic = { version = "0.1", features = ["agent", "rag"] }
 
 # Minimal — just model calls
-synapse = { version = "0.1", features = ["models"] }
+synaptic = { version = "0.1", features = ["models"] }
 
 # Fine-grained control
-synapse = { version = "0.1", features = ["models", "graph", "cache"] }
+synaptic = { version = "0.1", features = ["models", "graph", "cache"] }
 ```
 
 | Feature | Description |
@@ -52,7 +52,7 @@ The `core` module (traits and types) is always available regardless of feature s
 
 ```toml
 [dependencies]
-synapse = { path = "path/to/synapse/crates/synapse", features = ["agent"] }
+synaptic = { path = "path/to/synapse/crates/synapse", features = ["agent"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -60,7 +60,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 ```toml
 [dependencies]
-synapse = { version = "0.1", features = ["agent"] }
+synaptic = { version = "0.1", features = ["agent"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -69,25 +69,25 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 The facade crate provides namespaced re-exports for all sub-crates. You access types through their module path:
 
 ```rust
-use synapse::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
-use synapse::models::{OpenAiChatModel, ScriptedChatModel};
-use synapse::runnables::{Runnable, BoxRunnable, RunnableLambda};
-use synapse::prompts::ChatPromptTemplate;
-use synapse::parsers::StrOutputParser;
-use synapse::tools::ToolRegistry;
-use synapse::memory::InMemoryStore;
-use synapse::graph::{StateGraph, create_react_agent};
-use synapse::retrieval::Retriever;
-use synapse::embeddings::OpenAiEmbeddings;
-use synapse::vectorstores::InMemoryVectorStore;
+use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapseError};
+use synaptic::models::{OpenAiChatModel, ScriptedChatModel};
+use synaptic::runnables::{Runnable, BoxRunnable, RunnableLambda};
+use synaptic::prompts::ChatPromptTemplate;
+use synaptic::parsers::StrOutputParser;
+use synaptic::tools::ToolRegistry;
+use synaptic::memory::InMemoryStore;
+use synaptic::graph::{StateGraph, create_react_agent};
+use synaptic::retrieval::Retriever;
+use synaptic::embeddings::OpenAiEmbeddings;
+use synaptic::vectorstores::InMemoryVectorStore;
 ```
 
 Alternatively, you can depend on individual crates directly if you want to minimize compile times:
 
 ```toml
 [dependencies]
-synapse-core = { path = "path/to/synapse/crates/synapse-core" }
-synapse-models = { path = "path/to/synapse/crates/synapse-models" }
+synaptic-core = { path = "path/to/synapse/crates/synapse-core" }
+synaptic-models = { path = "path/to/synapse/crates/synapse-models" }
 ```
 
 ## Provider API Keys
@@ -123,10 +123,10 @@ cargo build --workspace
 cargo test --workspace
 
 # Test a single crate
-cargo test -p synapse-models
+cargo test -p synaptic-models
 
 # Run a specific test by name
-cargo test -p synapse-core -- trim_messages
+cargo test -p synaptic-core -- trim_messages
 
 # Check formatting
 cargo fmt --all -- --check

@@ -2,7 +2,7 @@ use std::pin::Pin;
 
 use async_trait::async_trait;
 use futures::{Stream, StreamExt};
-use synapse_core::{RunnableConfig, SynapseError};
+use synaptic_core::{RunnableConfig, SynapseError};
 
 use crate::runnable::{Runnable, RunnableOutputStream};
 
