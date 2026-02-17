@@ -2,3 +2,9 @@ log/
 target/
 .claude/
 CLAUDE.md
+docs/dist/
+docs/plans/
+.env
+.env.*
+.DS_Store
+*.png

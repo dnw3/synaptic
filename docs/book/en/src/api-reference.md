@@ -1,0 +1,61 @@
+# API Reference
+
+Synapse is organized as a workspace of focused crates. Each crate has its own API documentation generated from doc comments in the source code.
+
+## Crate Reference
+
+| Crate | Description | Docs |
+|-------|-------------|------|
+| `synapse-core` | Shared traits and types (`ChatModel`, `Tool`, `Message`, `SynapseError`, etc.) | [docs.rs](https://docs.rs/synapse-core) |
+| `synapse-models` | LLM provider adapters (OpenAI, Anthropic, Gemini, Ollama) plus retry, rate limiting, and structured output wrappers | [docs.rs](https://docs.rs/synapse-models) |
+| `synapse-runnables` | LCEL composition (`Runnable` trait, `BoxRunnable`, pipe operator, parallel, branch, fallbacks, assign, pick) | [docs.rs](https://docs.rs/synapse-runnables) |
+| `synapse-prompts` | Prompt templates (`PromptTemplate`, `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate`) | [docs.rs](https://docs.rs/synapse-prompts) |
+| `synapse-parsers` | Output parsers (string, JSON, structured, list, enum, boolean, XML, fixing, retry) | [docs.rs](https://docs.rs/synapse-parsers) |
+| `synapse-tools` | Tool system (`ToolRegistry`, `SerialToolExecutor`, `ParallelToolExecutor`) | [docs.rs](https://docs.rs/synapse-tools) |
+| `synapse-memory` | Memory strategies (buffer, window, summary, token buffer, summary buffer, `RunnableWithMessageHistory`) | [docs.rs](https://docs.rs/synapse-memory) |
+| `synapse-callbacks` | Callback handlers (`RecordingCallback`, `TracingCallback`, `CompositeCallback`) | [docs.rs](https://docs.rs/synapse-callbacks) |
+| `synapse-retrieval` | Retriever implementations (in-memory, BM25, multi-query, ensemble, contextual compression, self-query, parent document) | [docs.rs](https://docs.rs/synapse-retrieval) |
+| `synapse-loaders` | Document loaders (text, JSON, CSV, directory, file, markdown, web) | [docs.rs](https://docs.rs/synapse-loaders) |
+| `synapse-splitters` | Text splitters (character, recursive character, markdown header, token, HTML header, language) | [docs.rs](https://docs.rs/synapse-splitters) |
+| `synapse-embeddings` | Embedding providers (`OpenAiEmbeddings`, `OllamaEmbeddings`, `FakeEmbeddings`, `CachedEmbeddings`) | [docs.rs](https://docs.rs/synapse-embeddings) |
+| `synapse-vectorstores` | Vector store implementations (`InMemoryVectorStore`, `VectorStoreRetriever`, `MultiVectorRetriever`) | [docs.rs](https://docs.rs/synapse-vectorstores) |
+| `synapse-graph` | Graph orchestration (`StateGraph`, `CompiledGraph`, `ToolNode`, `create_react_agent`, checkpointing, streaming) | [docs.rs](https://docs.rs/synapse-graph) |
+| `synapse-cache` | LLM caching (`InMemoryCache`, `SemanticCache`, `CachedChatModel`) | [docs.rs](https://docs.rs/synapse-cache) |
+| `synapse-eval` | Evaluation framework (exact match, regex, JSON validity, embedding distance, LLM judge evaluators; `Dataset` and `evaluate()`) | [docs.rs](https://docs.rs/synapse-eval) |
+| `synapse` | Unified facade crate that re-exports all sub-crates under a single namespace | [docs.rs](https://docs.rs/synapse) |
+
+> **Note:** The docs.rs links above will become active once the crates are published to crates.io. In the meantime, generate local documentation as described below.
+
+## Local API Documentation
+
+You can generate and browse the full API documentation locally with:
+
+```bash
+cargo doc --workspace --open
+```
+
+This builds rustdoc for every crate in the workspace and opens the result in your browser. The generated documentation includes all public types, traits, functions, and their doc comments.
+
+To generate docs without opening the browser (useful in CI):
+
+```bash
+cargo doc --workspace --no-deps
+```
+
+## Using the Facade Crate
+
+If you prefer a single dependency instead of listing individual crates, use the `synapse` facade:
+
+```toml
+[dependencies]
+synapse = { path = "crates/synapse" }
+```
+
+Then import through the unified namespace:
+
+```rust
+use synapse::core::Message;
+use synapse::models::OpenAiChatModel;
+use synapse::graph::create_react_agent;
+use synapse::runnables::Runnable;
+```

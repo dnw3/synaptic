@@ -1,0 +1,50 @@
+name: Deploy Documentation
+on:
+  push:
+    branches: [main]
+    paths: ['docs/book/**', '.github/workflows/docs.yml']
+  pull_request:
+    branches: [main]
+    paths: ['docs/book/**']
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install mdBook
+        run: cargo install mdbook --version "^0.4" --locked
+      - name: Build English book
+        run: mdbook build docs/book/en
+      - name: Build Chinese book
+        run: mdbook build docs/book/zh
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp -r docs/dist/en/. _site/
+          mkdir -p _site/zh
+          cp -r docs/dist/zh/. _site/zh/
+      - name: Upload Pages artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

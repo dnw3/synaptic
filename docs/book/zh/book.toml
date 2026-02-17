@@ -1,0 +1,22 @@
+[book]
+title = "Synapse"
+description = "Rust AI Agent 框架，兼容 LangChain 架构"
+authors = ["Synapse Contributors"]
+language = "zh"
+src = "src"
+
+[build]
+build-dir = "../../dist/zh"
+create-missing = false
+
+[output.html]
+default-theme = "navy"
+preferred-dark-theme = "ayu"
+git-repository-url = "https://github.com/AIMOverse/synapse"
+git-repository-icon = "fa-github"
+additional-css = ["../theme/custom.css"]
+additional-js = ["../theme/lang-switcher.js"]
+
+[output.html.fold]
+enable = true
+level = 1

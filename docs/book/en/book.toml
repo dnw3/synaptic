@@ -1,0 +1,27 @@
+[book]
+title = "Synapse"
+description = "A Rust agent framework with LangChain-compatible architecture"
+authors = ["Synapse Contributors"]
+language = "en"
+src = "src"
+
+[build]
+build-dir = "../../dist/en"
+create-missing = false
+
+[output.html]
+default-theme = "navy"
+preferred-dark-theme = "ayu"
+git-repository-url = "https://github.com/AIMOverse/synapse"
+git-repository-icon = "fa-github"
+edit-url-template = "https://github.com/AIMOverse/synapse/edit/main/docs/book/en/src/{path}"
+additional-css = ["../theme/custom.css"]
+additional-js = ["../theme/lang-switcher.js"]
+
+[output.html.fold]
+enable = true
+level = 1
+
+[output.html.search]
+enable = true
+limit-results = 20
