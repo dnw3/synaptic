@@ -1,8 +1,8 @@
 # Synapse
 
 [![CI](https://github.com/dnw3/synaptic/actions/workflows/ci.yml/badge.svg)](https://github.com/dnw3/synaptic/actions/workflows/ci.yml)
-[![Crates.io](https://img.shields.io/crates/v/synapse.svg)](https://crates.io/crates/synapse)
-[![docs.rs](https://docs.rs/synapse/badge.svg)](https://docs.rs/synapse)
+[![Crates.io](https://img.shields.io/crates/v/synaptic.svg)](https://crates.io/crates/synaptic)
+[![docs.rs](https://docs.rs/synaptic/badge.svg)](https://docs.rs/synaptic)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![MSRV](https://img.shields.io/badge/MSRV-1.78-orange.svg)](https://blog.rust-lang.org/2024/05/02/Rust-1.78.0.html)
 
@@ -106,7 +106,7 @@ All examples use `ScriptedChatModel` and `FakeEmbeddings` — no API keys requir
 ## Documentation
 
 - **Book**: [dnw3.github.io/synaptic](https://dnw3.github.io/synaptic) — tutorials, how-to guides, concepts
-- **API Reference**: [docs.rs/synapse](https://docs.rs/synapse) — full Rustdoc API documentation
+- **API Reference**: [docs.rs/synaptic](https://docs.rs/synaptic) — full Rustdoc API documentation
 
 ## Design Principles
 
