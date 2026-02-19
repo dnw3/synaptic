@@ -14,7 +14,7 @@ use crate::state::MessageState;
 /// Wraps a `SerialToolExecutor` into a `ToolCaller` for the middleware chain.
 struct BaseToolCaller {
     executor: SerialToolExecutor,
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     tool_context: ToolContext,
 }
 

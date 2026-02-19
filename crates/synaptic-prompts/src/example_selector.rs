@@ -19,7 +19,7 @@ pub trait ExampleSelector: Send + Sync {
 
 /// Selects examples based on semantic similarity using embeddings.
 pub struct SemanticSimilarityExampleSelector {
-    #[allow(clippy::type_complexity)]
+    #[expect(clippy::type_complexity)]
     examples: Arc<RwLock<Vec<(FewShotExample, Vec<f32>)>>>,
     embeddings: Arc<dyn Embeddings>,
     k: usize,

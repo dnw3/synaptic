@@ -61,7 +61,7 @@ struct McpTool {
     tool_name: &'static str,
     tool_description: &'static str,
     tool_parameters: Value,
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     server_name: String,
     connection: McpConnection,
     client: reqwest::Client,

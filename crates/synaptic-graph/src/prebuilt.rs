@@ -575,14 +575,13 @@ pub fn create_swarm(
     builder = builder.set_entry_point(&entry_agent);
 
     for agent_name in &agent_names {
-        let end_str = END.to_string();
-        builder = builder.add_conditional_edges(agent_name, move |state: &MessageState| {
+        builder = builder.add_conditional_edges(agent_name, |state: &MessageState| {
             if let Some(last) = state.last_message() {
                 if !last.tool_calls().is_empty() {
                     return "tools".to_string();
                 }
             }
-            end_str.clone()
+            END.to_string()
         });
     }
 

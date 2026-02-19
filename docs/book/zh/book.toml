@@ -14,8 +14,8 @@ default-theme = "navy"
 preferred-dark-theme = "ayu"
 git-repository-url = "https://github.com/dnw3/synaptic"
 git-repository-icon = "fa-github"
-additional-css = ["../theme/custom.css"]
-additional-js = ["../theme/lang-switcher.js"]
+additional-css = ["custom.css"]
+additional-js = ["lang-switcher.js"]
 
 [output.html.fold]
 enable = true
