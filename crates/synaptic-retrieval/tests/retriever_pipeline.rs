@@ -16,7 +16,10 @@ async fn bm25_single_term_query_ranks_match_first() {
     let retriever = BM25Retriever::new(docs);
     let results = retriever.retrieve("rust", 2).await.unwrap();
     assert!(!results.is_empty());
-    assert_eq!(results[0].id, "1", "document containing 'rust' should rank first");
+    assert_eq!(
+        results[0].id, "1",
+        "document containing 'rust' should rank first"
+    );
 }
 
 #[tokio::test]
@@ -59,8 +62,7 @@ async fn compression_with_low_threshold_passes_base_results() {
     let base: Arc<dyn Retriever> = Arc::new(BM25Retriever::new(docs));
     let embeddings = Arc::new(FakeEmbeddings::default());
     // Very low threshold so almost everything passes
-    let compressor: Arc<dyn DocumentCompressor> =
-        Arc::new(EmbeddingsFilter::new(embeddings, 0.01));
+    let compressor: Arc<dyn DocumentCompressor> = Arc::new(EmbeddingsFilter::new(embeddings, 0.01));
 
     let retriever = ContextualCompressionRetriever::new(base, compressor);
     let results = retriever.retrieve("rust", 5).await.unwrap();
@@ -78,7 +80,10 @@ async fn bm25_respects_top_k_limit() {
         .collect();
     let retriever = BM25Retriever::new(docs);
     let results = retriever.retrieve("document topic", 5).await.unwrap();
-    assert!(results.len() <= 5, "should not return more than k=5 results");
+    assert!(
+        results.len() <= 5,
+        "should not return more than k=5 results"
+    );
 }
 
 #[tokio::test]

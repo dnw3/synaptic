@@ -173,7 +173,10 @@ async fn concat_strings(
 #[tokio::test]
 async fn concat_returns_json_string() {
     let tool = concat_strings();
-    let result = tool.call(json!({"a": "hello", "b": " world"})).await.unwrap();
+    let result = tool
+        .call(json!({"a": "hello", "b": " world"}))
+        .await
+        .unwrap();
     assert_eq!(result, json!("hello world"));
 }
 
@@ -223,7 +226,7 @@ async fn fancy_greet(
 ) -> Result<String, SynapticError> {
     let prefix = title.map(|t| format!("{} ", t)).unwrap_or_default();
     let bangs = "!".repeat(exclaim as usize);
-    Ok(format!("Hello, {}{}{}",  prefix, name, bangs))
+    Ok(format!("Hello, {}{}{}", prefix, name, bangs))
 }
 
 #[tokio::test]

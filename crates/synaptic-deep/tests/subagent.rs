@@ -40,7 +40,10 @@ async fn task_tool_spawns_subagent() {
         .await
         .unwrap();
 
-    assert!(result.as_str().unwrap().contains("Task completed successfully"));
+    assert!(result
+        .as_str()
+        .unwrap()
+        .contains("Task completed successfully"));
 }
 
 #[tokio::test]

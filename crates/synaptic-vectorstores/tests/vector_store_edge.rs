@@ -23,7 +23,10 @@ async fn add_and_delete_then_search_empty() {
         .similarity_search("hello", 5, &embeddings)
         .await
         .unwrap();
-    assert!(results.is_empty(), "store should be empty after deleting all documents");
+    assert!(
+        results.is_empty(),
+        "store should be empty after deleting all documents"
+    );
 }
 
 #[tokio::test]
@@ -52,7 +55,11 @@ async fn similarity_search_returns_at_most_k_results() {
         .similarity_search("document", 3, &embeddings)
         .await
         .unwrap();
-    assert_eq!(results.len(), 3, "should return exactly k=3 results when store has more");
+    assert_eq!(
+        results.len(),
+        3,
+        "should return exactly k=3 results when store has more"
+    );
 }
 
 #[tokio::test]
@@ -140,5 +147,9 @@ async fn concurrent_add_documents() {
         .similarity_search("text", 10, embeddings.as_ref())
         .await
         .unwrap();
-    assert_eq!(results.len(), 5, "all 5 concurrently added documents should be present");
+    assert_eq!(
+        results.len(),
+        5,
+        "all 5 concurrently added documents should be present"
+    );
 }

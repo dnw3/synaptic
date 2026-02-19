@@ -32,10 +32,7 @@ async fn cache_miss() {
 #[tokio::test]
 async fn ttl_expired() {
     let cache = InMemoryCache::with_ttl(Duration::from_millis(50));
-    cache
-        .put("key", &make_response("expiring"))
-        .await
-        .unwrap();
+    cache.put("key", &make_response("expiring")).await.unwrap();
 
     // Should be cached
     let result = cache.get("key").await.unwrap();

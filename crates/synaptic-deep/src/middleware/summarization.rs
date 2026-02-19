@@ -85,8 +85,7 @@ impl AgentMiddleware for DeepSummarizationMiddleware {
         let summary = summary_response.message.content().to_string();
 
         // Replace old messages with summary + recent messages
-        let recent: Vec<Message> =
-            request.messages[request.messages.len() - keep_count..].to_vec();
+        let recent: Vec<Message> = request.messages[request.messages.len() - keep_count..].to_vec();
         request.messages = vec![Message::system(format!(
             "[Conversation summary (full history saved to {})]\n{}",
             history_path, summary

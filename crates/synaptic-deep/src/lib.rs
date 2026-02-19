@@ -24,9 +24,7 @@ pub mod tools;
 use std::sync::Arc;
 
 use synaptic_core::{ChatModel, Store, SynapticError, Tool};
-use synaptic_graph::{
-    create_agent, AgentOptions, Checkpointer, CompiledGraph, MessageState,
-};
+use synaptic_graph::{create_agent, AgentOptions, Checkpointer, CompiledGraph, MessageState};
 use synaptic_macros::traceable;
 use synaptic_middleware::AgentMiddleware;
 

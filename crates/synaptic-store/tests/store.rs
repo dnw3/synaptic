@@ -35,7 +35,10 @@ async fn get_nonexistent_key_returns_none() {
 #[tokio::test]
 async fn get_from_nonexistent_namespace_returns_none() {
     let store = InMemoryStore::new();
-    let result = store.get(&["no", "such", "namespace"], "key").await.unwrap();
+    let result = store
+        .get(&["no", "such", "namespace"], "key")
+        .await
+        .unwrap();
     assert!(result.is_none());
 }
 
@@ -71,7 +74,10 @@ async fn upsert_updates_value_and_preserves_created_at() {
     let second = store.get(&["ns"], "k").await.unwrap().unwrap();
 
     assert_eq!(second.value, json!("v2"));
-    assert_eq!(first.created_at, second.created_at, "created_at should be preserved on upsert");
+    assert_eq!(
+        first.created_at, second.created_at,
+        "created_at should be preserved on upsert"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -92,12 +98,18 @@ async fn search_without_query_returns_all_items() {
 #[tokio::test]
 async fn search_with_query_filters_by_substring() {
     let store = InMemoryStore::new();
-    store.put(&["items"], "a", json!("apple pie")).await.unwrap();
+    store
+        .put(&["items"], "a", json!("apple pie"))
+        .await
+        .unwrap();
     store
         .put(&["items"], "b", json!("banana split"))
         .await
         .unwrap();
-    store.put(&["items"], "c", json!("cherry tart")).await.unwrap();
+    store
+        .put(&["items"], "c", json!("cherry tart"))
+        .await
+        .unwrap();
 
     let results = store.search(&["items"], Some("apple"), 10).await.unwrap();
     assert_eq!(results.len(), 1);
@@ -149,7 +161,10 @@ async fn list_namespaces_with_prefix_filters() {
     let store = InMemoryStore::new();
     store.put(&["app", "users"], "k1", json!(1)).await.unwrap();
     store.put(&["app", "config"], "k2", json!(2)).await.unwrap();
-    store.put(&["system", "logs"], "k3", json!(3)).await.unwrap();
+    store
+        .put(&["system", "logs"], "k3", json!(3))
+        .await
+        .unwrap();
 
     let filtered = store.list_namespaces(&["app"]).await.unwrap();
     assert_eq!(filtered.len(), 2);

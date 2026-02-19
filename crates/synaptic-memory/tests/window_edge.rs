@@ -61,8 +61,14 @@ async fn multiple_sessions_isolated() {
     let store = Arc::new(InMemoryStore::new());
     let window = ConversationWindowMemory::new(store, 5);
 
-    window.append("s1", Message::human("hello from s1")).await.unwrap();
-    window.append("s2", Message::human("hello from s2")).await.unwrap();
+    window
+        .append("s1", Message::human("hello from s1"))
+        .await
+        .unwrap();
+    window
+        .append("s2", Message::human("hello from s2"))
+        .await
+        .unwrap();
 
     let s1 = window.load("s1").await.unwrap();
     let s2 = window.load("s2").await.unwrap();

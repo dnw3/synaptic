@@ -339,16 +339,14 @@ async fn multi_field_setup(
 
 #[tokio::test]
 async fn test_multiple_fields() {
-    let mw: Arc<dyn AgentMiddleware> =
-        multi_field_setup("SYS".to_string(), 5);
+    let mw: Arc<dyn AgentMiddleware> = multi_field_setup("SYS".to_string(), 5);
     let mut messages = vec![Message::human("hello")];
     mw.before_agent(&mut messages).await.unwrap();
     assert_eq!(messages.len(), 2);
     assert_eq!(messages[1].content(), "SYS: initialized");
 
     // With max_messages = 1, no message should be added
-    let mw2: Arc<dyn AgentMiddleware> =
-        multi_field_setup("SYS".to_string(), 1);
+    let mw2: Arc<dyn AgentMiddleware> = multi_field_setup("SYS".to_string(), 1);
     let mut messages2 = vec![Message::human("hello")];
     mw2.before_agent(&mut messages2).await.unwrap();
     assert_eq!(messages2.len(), 1); // not added because len() >= max_messages

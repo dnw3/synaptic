@@ -59,7 +59,9 @@ struct FailingCallback;
 #[async_trait]
 impl ApprovalCallback for FailingCallback {
     async fn approve(&self, _tool_name: &str, _arguments: &Value) -> Result<bool, SynapticError> {
-        Err(SynapticError::Callback("approval system unavailable".into()))
+        Err(SynapticError::Callback(
+            "approval system unavailable".into(),
+        ))
     }
 }
 

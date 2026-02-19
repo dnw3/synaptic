@@ -2,9 +2,7 @@ use std::sync::Arc;
 
 use serde_json::{json, Value};
 use synaptic_core::{ChatResponse, Message, SynapticError, Tool, ToolCall};
-use synaptic_graph::{
-    create_react_agent, create_supervisor, MessageState, SupervisorOptions,
-};
+use synaptic_graph::{create_react_agent, create_supervisor, MessageState, SupervisorOptions};
 use synaptic_macros::tool;
 use synaptic_models::ScriptedChatModel;
 
@@ -13,7 +11,6 @@ use synaptic_models::ScriptedChatModel;
 async fn echo(#[args] args: Value) -> Result<Value, SynapticError> {
     Ok(args)
 }
-
 
 fn make_sub_agent(
     name: &str,

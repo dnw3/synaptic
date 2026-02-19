@@ -144,10 +144,7 @@ async fn test_typed_chain_value_output() {
     // `uppercase()` returns BoxRunnable<Value, Value> — unchanged behavior
     let runnable = uppercase();
     let config = RunnableConfig::default();
-    let result: Value = runnable
-        .invoke(json!("test"), &config)
-        .await
-        .unwrap();
+    let result: Value = runnable.invoke(json!("test"), &config).await.unwrap();
     assert_eq!(result, json!("TEST"));
 }
 
@@ -164,10 +161,7 @@ async fn exclaim(s: String) -> Result<String, SynapticError> {
 async fn test_typed_chain_pipe_composition() {
     let pipeline = to_upper() | exclaim();
     let config = RunnableConfig::default();
-    let result: String = pipeline
-        .invoke("hello".to_string(), &config)
-        .await
-        .unwrap();
+    let result: String = pipeline.invoke("hello".to_string(), &config).await.unwrap();
     assert_eq!(result, "HELLO!");
 }
 
@@ -191,9 +185,12 @@ async fn analyze(s: String) -> Result<TextInfo, SynapticError> {
 async fn test_typed_chain_custom_type() {
     let runnable = analyze();
     let config = RunnableConfig::default();
-    let result: TextInfo = runnable
-        .invoke("hello".to_string(), &config)
-        .await
-        .unwrap();
-    assert_eq!(result, TextInfo { text: "hello".to_string(), length: 5 });
+    let result: TextInfo = runnable.invoke("hello".to_string(), &config).await.unwrap();
+    assert_eq!(
+        result,
+        TextInfo {
+            text: "hello".to_string(),
+            length: 5
+        }
+    );
 }

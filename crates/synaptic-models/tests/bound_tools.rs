@@ -2,9 +2,7 @@ use std::sync::Arc;
 
 use futures::StreamExt;
 use serde_json::json;
-use synaptic_core::{
-    ChatModel, ChatRequest, ChatResponse, Message, ToolCall, ToolDefinition,
-};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, ToolCall, ToolDefinition};
 use synaptic_models::{BoundToolsChatModel, ScriptedChatModel};
 
 fn make_tool_def(name: &str) -> ToolDefinition {
@@ -42,8 +40,8 @@ async fn bound_tools_merges_without_duplicates() {
     let bound = BoundToolsChatModel::new(inner, bound_tools);
 
     // Request already has "search" → should not duplicate, but add "calc"
-    let request = ChatRequest::new(vec![Message::human("hi")])
-        .with_tools(vec![make_tool_def("search")]);
+    let request =
+        ChatRequest::new(vec![Message::human("hi")]).with_tools(vec![make_tool_def("search")]);
     let resp = bound.chat(request).await.unwrap();
     assert_eq!(resp.message.content(), "merged");
 }
@@ -55,8 +53,8 @@ async fn bound_tools_no_duplicate_by_name() {
     let bound = BoundToolsChatModel::new(inner, bound_tools);
 
     // Verify inject_tools logic: both request and bound have "search"
-    let request = ChatRequest::new(vec![Message::human("test")])
-        .with_tools(vec![make_tool_def("search")]);
+    let request =
+        ChatRequest::new(vec![Message::human("test")]).with_tools(vec![make_tool_def("search")]);
 
     // The only way to verify tool merging is through the model response
     // (BoundToolsChatModel delegates to inner after injecting).

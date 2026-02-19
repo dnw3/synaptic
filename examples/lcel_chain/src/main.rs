@@ -69,9 +69,7 @@ async fn main() -> Result<(), SynapticError> {
     // --- Typed #[chain] pipe composition (String -> String) ---
     println!("\n=== Typed #[chain] Pipe ===");
     let typed_pipeline = to_upper() | exclaim();
-    let result = typed_pipeline
-        .invoke("hello".to_string(), &config)
-        .await?;
+    let result = typed_pipeline.invoke("hello".to_string(), &config).await?;
     println!("to_upper | exclaim: {result}");
 
     // --- RunnableParallel (using #[chain] macro functions with Value output) ---

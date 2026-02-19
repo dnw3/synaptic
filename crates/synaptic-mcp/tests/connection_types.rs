@@ -3,7 +3,9 @@
 use std::collections::HashMap;
 
 use serde_json::json;
-use synaptic_mcp::{HttpConnection, McpConnection, MultiServerMcpClient, SseConnection, StdioConnection};
+use synaptic_mcp::{
+    HttpConnection, McpConnection, MultiServerMcpClient, SseConnection, StdioConnection,
+};
 
 // ---------------------------------------------------------------------------
 // Stdio connection serde

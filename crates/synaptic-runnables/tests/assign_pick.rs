@@ -56,8 +56,7 @@ async fn assign_preserves_input_keys() {
 
 #[tokio::test]
 async fn passthrough_assign_factory() {
-    let assign =
-        RunnablePassthrough::assign(vec![("doubled".to_string(), double_n())]);
+    let assign = RunnablePassthrough::assign(vec![("doubled".to_string(), double_n())]);
     let config = RunnableConfig::default();
     let result = assign.invoke(json!({"n": 5}), &config).await.unwrap();
     assert_eq!(result["n"], 5);

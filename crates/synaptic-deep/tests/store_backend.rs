@@ -20,10 +20,7 @@ async fn edit_file_replaces_text() {
     let store = Arc::new(InMemoryStore::new());
     let backend = StoreBackend::new(store, vec!["ws".to_string()]);
 
-    backend
-        .write_file("test.txt", "Hello World")
-        .await
-        .unwrap();
+    backend.write_file("test.txt", "Hello World").await.unwrap();
     backend
         .edit_file("test.txt", "World", "Rust", false)
         .await
@@ -37,10 +34,7 @@ async fn edit_file_replace_all() {
     let store = Arc::new(InMemoryStore::new());
     let backend = StoreBackend::new(store, vec!["ws".to_string()]);
 
-    backend
-        .write_file("dup.txt", "aaa bbb aaa")
-        .await
-        .unwrap();
+    backend.write_file("dup.txt", "aaa bbb aaa").await.unwrap();
     backend
         .edit_file("dup.txt", "aaa", "ccc", true)
         .await
@@ -108,10 +102,7 @@ async fn edit_file_old_text_not_found_errors() {
     let store = Arc::new(InMemoryStore::new());
     let backend = StoreBackend::new(store, vec!["ws".to_string()]);
 
-    backend
-        .write_file("f.txt", "some content")
-        .await
-        .unwrap();
+    backend.write_file("f.txt", "some content").await.unwrap();
     let result = backend
         .edit_file("f.txt", "nonexistent text", "replacement", false)
         .await;
@@ -131,10 +122,7 @@ async fn glob_pattern_matching() {
         .write_file("src/lib.rs", "pub mod lib;")
         .await
         .unwrap();
-    backend
-        .write_file("README.md", "# Hello")
-        .await
-        .unwrap();
+    backend.write_file("README.md", "# Hello").await.unwrap();
 
     let matches = backend.glob("*.rs", "src").await.unwrap();
     assert_eq!(matches.len(), 2);
@@ -177,18 +165,9 @@ async fn grep_files_with_matches_mode() {
     let store = Arc::new(InMemoryStore::new());
     let backend = StoreBackend::new(store, vec!["ws".to_string()]);
 
-    backend
-        .write_file("a.txt", "hello world")
-        .await
-        .unwrap();
-    backend
-        .write_file("b.txt", "goodbye world")
-        .await
-        .unwrap();
-    backend
-        .write_file("c.txt", "no match here")
-        .await
-        .unwrap();
+    backend.write_file("a.txt", "hello world").await.unwrap();
+    backend.write_file("b.txt", "goodbye world").await.unwrap();
+    backend.write_file("c.txt", "no match here").await.unwrap();
 
     let result = backend
         .grep("world", None, None, GrepOutputMode::FilesWithMatches)
@@ -205,10 +184,7 @@ async fn grep_count_mode() {
     let store = Arc::new(InMemoryStore::new());
     let backend = StoreBackend::new(store, vec!["ws".to_string()]);
 
-    backend
-        .write_file("f.txt", "aaa\nbbb\naaa")
-        .await
-        .unwrap();
+    backend.write_file("f.txt", "aaa\nbbb\naaa").await.unwrap();
 
     let result = backend
         .grep("aaa", None, None, GrepOutputMode::Count)

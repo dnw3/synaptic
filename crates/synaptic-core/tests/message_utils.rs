@@ -15,7 +15,15 @@ fn filter_messages_include_types() {
         Message::ai("hello"),
         Message::tool("result", "c1"),
     ];
-    let filtered = filter_messages(&msgs, Some(&["human", "assistant"]), None, None, None, None, None);
+    let filtered = filter_messages(
+        &msgs,
+        Some(&["human", "assistant"]),
+        None,
+        None,
+        None,
+        None,
+        None,
+    );
     assert_eq!(filtered.len(), 2);
     assert!(filtered[0].is_human());
     assert!(filtered[1].is_ai());
@@ -108,9 +116,9 @@ fn char_counter(msg: &Message) -> usize {
 #[test]
 fn trim_messages_first_strategy() {
     let msgs = vec![
-        Message::human("hello"),     // 5
-        Message::ai("world"),        // 5
-        Message::human("goodbye"),   // 7
+        Message::human("hello"),   // 5
+        Message::ai("world"),      // 5
+        Message::human("goodbye"), // 7
     ];
     let trimmed = trim_messages(msgs, 10, char_counter, TrimStrategy::First, false);
     assert_eq!(trimmed.len(), 2);
@@ -121,9 +129,9 @@ fn trim_messages_first_strategy() {
 #[test]
 fn trim_messages_last_strategy() {
     let msgs = vec![
-        Message::human("hello"),     // 5
-        Message::ai("world"),        // 5
-        Message::human("goodbye"),   // 7
+        Message::human("hello"),   // 5
+        Message::ai("world"),      // 5
+        Message::human("goodbye"), // 7
     ];
     let trimmed = trim_messages(msgs, 12, char_counter, TrimStrategy::Last, false);
     assert_eq!(trimmed.len(), 2);
@@ -134,10 +142,10 @@ fn trim_messages_last_strategy() {
 #[test]
 fn trim_messages_last_with_system() {
     let msgs = vec![
-        Message::system("sys"),      // 3
-        Message::human("hello"),     // 5
-        Message::ai("world"),        // 5
-        Message::human("goodbye"),   // 7
+        Message::system("sys"),    // 3
+        Message::human("hello"),   // 5
+        Message::ai("world"),      // 5
+        Message::human("goodbye"), // 7
     ];
     // Budget: 15, system takes 3, leaving 12 for rest → world(5) + goodbye(7) = 12
     let trimmed = trim_messages(msgs, 15, char_counter, TrimStrategy::Last, true);
@@ -150,8 +158,8 @@ fn trim_messages_last_with_system() {
 #[test]
 fn trim_messages_exact_budget() {
     let msgs = vec![
-        Message::human("hi"),  // 2
-        Message::ai("ok"),     // 2
+        Message::human("hi"), // 2
+        Message::ai("ok"),    // 2
     ];
     let trimmed = trim_messages(msgs.clone(), 4, char_counter, TrimStrategy::First, false);
     assert_eq!(trimmed.len(), 2);
@@ -176,10 +184,7 @@ fn trim_messages_zero_budget() {
 
 #[test]
 fn merge_message_runs_consecutive_human() {
-    let msgs = vec![
-        Message::human("hello"),
-        Message::human("world"),
-    ];
+    let msgs = vec![Message::human("hello"), Message::human("world")];
     let merged = merge_message_runs(msgs);
     assert_eq!(merged.len(), 1);
     assert_eq!(merged[0].content(), "hello\nworld");
@@ -188,10 +193,7 @@ fn merge_message_runs_consecutive_human() {
 
 #[test]
 fn merge_message_runs_consecutive_ai() {
-    let msgs = vec![
-        Message::ai("part 1"),
-        Message::ai("part 2"),
-    ];
+    let msgs = vec![Message::ai("part 1"), Message::ai("part 2")];
     let merged = merge_message_runs(msgs);
     assert_eq!(merged.len(), 1);
     assert_eq!(merged[0].content(), "part 1\npart 2");
@@ -243,10 +245,7 @@ fn merge_message_runs_empty() {
 
 #[test]
 fn merge_message_runs_remove_not_merged() {
-    let msgs = vec![
-        Message::remove("msg-1"),
-        Message::remove("msg-2"),
-    ];
+    let msgs = vec![Message::remove("msg-1"), Message::remove("msg-2")];
     // Remove messages have role "remove" and are equal, but the impl
     // doesn't mutate Remove content — they should still merge by role matching.
     // Let's just verify no panic occurs.
@@ -267,15 +266,15 @@ fn get_buffer_string_default_prefixes() {
         Message::ai("Hi there"),
     ];
     let buffer = get_buffer_string(&msgs, "Human", "AI");
-    assert_eq!(buffer, "System: You are helpful\nHuman: Hello\nAI: Hi there");
+    assert_eq!(
+        buffer,
+        "System: You are helpful\nHuman: Hello\nAI: Hi there"
+    );
 }
 
 #[test]
 fn get_buffer_string_custom_prefixes() {
-    let msgs = vec![
-        Message::human("Hello"),
-        Message::ai("Hi"),
-    ];
+    let msgs = vec![Message::human("Hello"), Message::ai("Hi")];
     let buffer = get_buffer_string(&msgs, "User", "Assistant");
     assert_eq!(buffer, "User: Hello\nAssistant: Hi");
 }
@@ -288,9 +287,7 @@ fn get_buffer_string_empty() {
 
 #[test]
 fn get_buffer_string_tool_messages() {
-    let msgs = vec![
-        Message::tool("result", "c1"),
-    ];
+    let msgs = vec![Message::tool("result", "c1")];
     let buffer = get_buffer_string(&msgs, "Human", "AI");
     assert_eq!(buffer, "Tool: result");
 }

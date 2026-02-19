@@ -76,8 +76,11 @@ fn recursive_splitter_hierarchical_fallback() {
 
 #[test]
 fn recursive_splitter_custom_separators() {
-    let splitter = RecursiveCharacterTextSplitter::new(15)
-        .with_separators(vec![";".to_string(), ",".to_string(), "".to_string()]);
+    let splitter = RecursiveCharacterTextSplitter::new(15).with_separators(vec![
+        ";".to_string(),
+        ",".to_string(),
+        "".to_string(),
+    ]);
     let text = "alpha;beta,gamma;delta";
     let result = splitter.split_text(text);
     assert!(result.len() > 1);
@@ -130,9 +133,7 @@ fn token_splitter_with_overlap() {
         let words_a: Vec<&str> = window[0].split_whitespace().collect();
         let words_b: Vec<&str> = window[1].split_whitespace().collect();
         // With overlap, the last word(s) of chunk A should appear in chunk B
-        let has_overlap = words_a
-            .iter()
-            .any(|w| words_b.contains(w));
+        let has_overlap = words_a.iter().any(|w| words_b.contains(w));
         assert!(
             has_overlap,
             "expected overlap between consecutive chunks: '{}' and '{}'",

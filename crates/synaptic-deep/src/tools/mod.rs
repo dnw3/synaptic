@@ -33,8 +33,7 @@ async fn ls(
     path: String,
 ) -> Result<Value, SynapticError> {
     let entries = backend.ls(&path).await?;
-    serde_json::to_value(entries)
-        .map_err(|e| SynapticError::Tool(format!("serialization: {}", e)))
+    serde_json::to_value(entries).map_err(|e| SynapticError::Tool(format!("serialization: {}", e)))
 }
 
 /// Read file contents with optional line-based pagination

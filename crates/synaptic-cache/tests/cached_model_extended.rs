@@ -61,7 +61,9 @@ async fn error_not_cached() {
 
 #[tokio::test]
 async fn cache_with_multiple_messages_in_request() {
-    let scripted = Arc::new(ScriptedChatModel::new(vec![make_response("context answer")]));
+    let scripted = Arc::new(ScriptedChatModel::new(vec![make_response(
+        "context answer",
+    )]));
     let cache = Arc::new(InMemoryCache::new());
     let model = CachedChatModel::new(scripted, cache);
 

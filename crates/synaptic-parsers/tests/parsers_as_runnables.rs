@@ -78,10 +78,7 @@ async fn json_parser_invalid_returns_error() {
 async fn json_parser_empty_string_error() {
     let parser = JsonOutputParser;
     let config = RunnableConfig::default();
-    let err = parser
-        .invoke("".to_string(), &config)
-        .await
-        .unwrap_err();
+    let err = parser.invoke("".to_string(), &config).await.unwrap_err();
     assert!(err.to_string().contains("invalid JSON"));
 }
 
@@ -167,10 +164,7 @@ async fn enum_parser_valid_value() {
 async fn enum_parser_invalid_value_error() {
     let parser = EnumOutputParser::new(vec!["a".to_string(), "b".to_string()]);
     let config = RunnableConfig::default();
-    let err = parser
-        .invoke("c".to_string(), &config)
-        .await
-        .unwrap_err();
+    let err = parser.invoke("c".to_string(), &config).await.unwrap_err();
     assert!(err.to_string().contains("expected one of"));
 }
 
@@ -179,9 +173,6 @@ async fn enum_parser_case_sensitive() {
     let parser = EnumOutputParser::new(vec!["Yes".to_string(), "No".to_string()]);
     let config = RunnableConfig::default();
     // Lowercase "yes" should fail because EnumOutputParser is case-sensitive
-    let err = parser
-        .invoke("yes".to_string(), &config)
-        .await
-        .unwrap_err();
+    let err = parser.invoke("yes".to_string(), &config).await.unwrap_err();
     assert!(err.to_string().contains("expected one of"));
 }

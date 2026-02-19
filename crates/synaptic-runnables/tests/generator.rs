@@ -50,10 +50,7 @@ async fn generator_empty_stream() {
         }
     });
 
-    let result = gen
-        .invoke("empty".into(), &default_config())
-        .await
-        .unwrap();
+    let result = gen.invoke("empty".into(), &default_config()).await.unwrap();
     assert!(result.is_empty());
 }
 

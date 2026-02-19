@@ -31,7 +31,10 @@ async fn tools_count() {
 #[tokio::test]
 async fn ls_tool() {
     let (backend, tools) = setup();
-    backend.write_file("src/main.rs", "fn main() {}").await.unwrap();
+    backend
+        .write_file("src/main.rs", "fn main() {}")
+        .await
+        .unwrap();
 
     let ls = find_tool(&tools, "ls");
     let result = ls.call(json!({"path": "."})).await.unwrap();
@@ -47,7 +50,10 @@ async fn write_and_read_tool() {
     let write = find_tool(&tools, "write_file");
     let read = find_tool(&tools, "read_file");
 
-    let result = write.call(json!({"path": "test.txt", "content": "hello world"})).await.unwrap();
+    let result = write
+        .call(json!({"path": "test.txt", "content": "hello world"}))
+        .await
+        .unwrap();
     assert!(result.as_str().unwrap().contains("wrote"));
 
     let content = read.call(json!({"path": "test.txt"})).await.unwrap();
@@ -57,10 +63,16 @@ async fn write_and_read_tool() {
 #[tokio::test]
 async fn read_with_pagination() {
     let (backend, tools) = setup();
-    backend.write_file("lines.txt", "a\nb\nc\nd\ne").await.unwrap();
+    backend
+        .write_file("lines.txt", "a\nb\nc\nd\ne")
+        .await
+        .unwrap();
 
     let read = find_tool(&tools, "read_file");
-    let content = read.call(json!({"path": "lines.txt", "offset": 1, "limit": 2})).await.unwrap();
+    let content = read
+        .call(json!({"path": "lines.txt", "offset": 1, "limit": 2}))
+        .await
+        .unwrap();
     assert_eq!(content.as_str().unwrap(), "b\nc");
 }
 
@@ -74,7 +86,9 @@ async fn edit_tool() {
         "path": "f.txt",
         "old_string": "hello",
         "new_string": "goodbye"
-    })).await.unwrap();
+    }))
+    .await
+    .unwrap();
 
     let read = find_tool(&tools, "read_file");
     let content = read.call(json!({"path": "f.txt"})).await.unwrap();
@@ -88,14 +102,20 @@ async fn glob_tool() {
     backend.write_file("src/b.txt", "").await.unwrap();
 
     let glob = find_tool(&tools, "glob");
-    let result = glob.call(json!({"pattern": "*.rs", "path": "src"})).await.unwrap();
+    let result = glob
+        .call(json!({"pattern": "*.rs", "path": "src"}))
+        .await
+        .unwrap();
     assert_eq!(result.as_str().unwrap(), "src/a.rs");
 }
 
 #[tokio::test]
 async fn grep_tool() {
     let (backend, tools) = setup();
-    backend.write_file("a.txt", "hello world\ngoodbye").await.unwrap();
+    backend
+        .write_file("a.txt", "hello world\ngoodbye")
+        .await
+        .unwrap();
     backend.write_file("b.txt", "no match").await.unwrap();
 
     let grep = find_tool(&tools, "grep");
@@ -109,7 +129,10 @@ async fn grep_tool_content_mode() {
     backend.write_file("f.txt", "aaa\nbbb\nccc").await.unwrap();
 
     let grep = find_tool(&tools, "grep");
-    let result = grep.call(json!({"pattern": "bbb", "output_mode": "content"})).await.unwrap();
+    let result = grep
+        .call(json!({"pattern": "bbb", "output_mode": "content"}))
+        .await
+        .unwrap();
     assert_eq!(result.as_str().unwrap(), "f.txt:2:bbb");
 }
 
@@ -133,6 +156,10 @@ async fn write_missing_content_param() {
 async fn all_tools_have_parameters() {
     let (_, tools) = setup();
     for tool in &tools {
-        assert!(tool.parameters().is_some(), "tool {} missing parameters", tool.name());
+        assert!(
+            tool.parameters().is_some(),
+            "tool {} missing parameters",
+            tool.name()
+        );
     }
 }

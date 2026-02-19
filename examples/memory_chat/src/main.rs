@@ -40,9 +40,7 @@ async fn main() -> Result<(), SynapticError> {
     memory
         .append(session_a, Message::human("I'm Alice"))
         .await?;
-    memory
-        .append(session_b, Message::human("I'm Bob"))
-        .await?;
+    memory.append(session_b, Message::human("I'm Bob")).await?;
 
     let alice_msgs = memory.load(session_a).await?;
     let bob_msgs = memory.load(session_b).await?;
@@ -77,10 +75,7 @@ async fn main() -> Result<(), SynapticError> {
 
     // Bob's session is still intact
     let bob_after = memory.load(session_b).await?;
-    println!(
-        "  Bob's session still has: {} message(s)",
-        bob_after.len()
-    );
+    println!("  Bob's session still has: {} message(s)", bob_after.len());
 
     Ok(())
 }

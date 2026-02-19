@@ -25,9 +25,8 @@ fn placeholder_with_empty_array() {
 
 #[test]
 fn placeholder_with_multiple_message_types() {
-    let prompt = ChatPromptTemplate::from_messages(vec![
-        MessageTemplate::Placeholder("msgs".to_string()),
-    ]);
+    let prompt =
+        ChatPromptTemplate::from_messages(vec![MessageTemplate::Placeholder("msgs".to_string())]);
 
     let values: HashMap<String, Value> = HashMap::from([(
         "msgs".to_string(),
@@ -56,8 +55,14 @@ fn multiple_placeholders_in_sequence() {
     ]);
 
     let values: HashMap<String, Value> = HashMap::from([
-        ("context".to_string(), json!([{"role": "system", "content": "Context here"}])),
-        ("history".to_string(), json!([{"role": "human", "content": "Previous q"}])),
+        (
+            "context".to_string(),
+            json!([{"role": "system", "content": "Context here"}]),
+        ),
+        (
+            "history".to_string(),
+            json!([{"role": "human", "content": "Previous q"}]),
+        ),
         ("question".to_string(), json!("New question")),
     ]);
 
@@ -70,9 +75,9 @@ fn multiple_placeholders_in_sequence() {
 
 #[test]
 fn placeholder_missing_key_returns_error() {
-    let prompt = ChatPromptTemplate::from_messages(vec![
-        MessageTemplate::Placeholder("missing_key".to_string()),
-    ]);
+    let prompt = ChatPromptTemplate::from_messages(vec![MessageTemplate::Placeholder(
+        "missing_key".to_string(),
+    )]);
 
     let values: HashMap<String, Value> = HashMap::new();
     let err = prompt.format(&values).unwrap_err();

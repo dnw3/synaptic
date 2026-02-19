@@ -46,7 +46,9 @@ async fn main() -> Result<(), SynapticError> {
         .await?;
     println!("echo result: {echo_result}");
 
-    let add_result = executor.execute("add", json!({ "a": 3.0, "b": 4.5 })).await?;
+    let add_result = executor
+        .execute("add", json!({ "a": 3.0, "b": 4.5 }))
+        .await?;
     println!("add result:  {add_result}");
 
     let rev_result = executor

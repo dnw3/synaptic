@@ -3,7 +3,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use synaptic_core::{RunnableConfig, SynapticError};
-use synaptic_runnables::{Runnable, RunnableLambda, RunnableRetry, RetryPolicy};
+use synaptic_runnables::{RetryPolicy, Runnable, RunnableLambda, RunnableRetry};
 
 fn default_config() -> RunnableConfig {
     RunnableConfig::default()

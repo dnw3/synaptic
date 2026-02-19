@@ -1,8 +1,8 @@
 use std::sync::Arc;
+use synaptic_core::Message;
 use synaptic_deep::backend::{Backend, StateBackend};
 use synaptic_deep::middleware::memory::DeepMemoryMiddleware;
 use synaptic_middleware::{AgentMiddleware, ModelRequest};
-use synaptic_core::Message;
 
 fn empty_request() -> ModelRequest {
     ModelRequest {
@@ -43,7 +43,10 @@ async fn missing_memory_file_no_error() {
 #[tokio::test]
 async fn appends_to_existing_prompt() {
     let backend = Arc::new(StateBackend::new());
-    backend.write_file("mem.md", "Remember this.").await.unwrap();
+    backend
+        .write_file("mem.md", "Remember this.")
+        .await
+        .unwrap();
 
     let mw = DeepMemoryMiddleware::new(backend, "mem.md".to_string());
     let mut request = empty_request();

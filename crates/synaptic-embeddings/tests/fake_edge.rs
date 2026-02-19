@@ -4,7 +4,11 @@ use synaptic_embeddings::{Embeddings, FakeEmbeddings};
 async fn fake_default_dimensions() {
     let emb = FakeEmbeddings::default();
     let vec = emb.embed_query("test").await.unwrap();
-    assert_eq!(vec.len(), 4, "default FakeEmbeddings should produce 4-dimensional vectors");
+    assert_eq!(
+        vec.len(),
+        4,
+        "default FakeEmbeddings should produce 4-dimensional vectors"
+    );
 }
 
 #[tokio::test]
@@ -19,7 +23,10 @@ async fn fake_deterministic_same_input() {
     let emb = FakeEmbeddings::default();
     let v1 = emb.embed_query("hello").await.unwrap();
     let v2 = emb.embed_query("hello").await.unwrap();
-    assert_eq!(v1, v2, "same input text should always produce the same embedding");
+    assert_eq!(
+        v1, v2,
+        "same input text should always produce the same embedding"
+    );
 }
 
 #[tokio::test]
@@ -27,14 +34,21 @@ async fn fake_different_texts_produce_different_vectors() {
     let emb = FakeEmbeddings::default();
     let v1 = emb.embed_query("hello").await.unwrap();
     let v2 = emb.embed_query("world").await.unwrap();
-    assert_ne!(v1, v2, "different texts should produce different embeddings");
+    assert_ne!(
+        v1, v2,
+        "different texts should produce different embeddings"
+    );
 }
 
 #[tokio::test]
 async fn fake_batch_embed_documents() {
     let emb = FakeEmbeddings::default();
     let vecs = emb.embed_documents(&["a", "b", "c"]).await.unwrap();
-    assert_eq!(vecs.len(), 3, "batch should return one vector per input text");
+    assert_eq!(
+        vecs.len(),
+        3,
+        "batch should return one vector per input text"
+    );
     for v in &vecs {
         assert_eq!(v.len(), 4, "each vector should have default 4 dimensions");
     }

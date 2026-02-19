@@ -133,8 +133,7 @@ impl TaskTool {
         let custom = self.custom_agents.iter().find(|a| a.name == agent_type);
 
         let mut options = crate::DeepAgentOptions::new(self.backend.clone());
-        options.enable_subagents =
-            self.current_depth.load(Ordering::Relaxed) < self.max_depth;
+        options.enable_subagents = self.current_depth.load(Ordering::Relaxed) < self.max_depth;
         options.max_subagent_depth = self.max_depth;
 
         if let Some(def) = custom {

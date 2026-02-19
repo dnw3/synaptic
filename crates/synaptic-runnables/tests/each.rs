@@ -22,10 +22,7 @@ async fn each_empty_input() {
     let inner = RunnableLambda::new(|x: i32| async move { Ok(x) });
     let each = RunnableEach::new(inner.boxed());
 
-    let result = each
-        .invoke(vec![], &default_config())
-        .await
-        .unwrap();
+    let result = each.invoke(vec![], &default_config()).await.unwrap();
     assert!(result.is_empty());
 }
 
@@ -53,10 +50,7 @@ async fn each_with_string_transform() {
     let each = RunnableEach::new(inner.boxed());
 
     let result = each
-        .invoke(
-            vec!["hello".into(), "world".into()],
-            &default_config(),
-        )
+        .invoke(vec!["hello".into(), "world".into()], &default_config())
         .await
         .unwrap();
     assert_eq!(result, vec!["HELLO", "WORLD"]);

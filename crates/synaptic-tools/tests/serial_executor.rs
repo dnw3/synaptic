@@ -51,13 +51,9 @@ async fn get_returns_none_for_unregistered() {
 #[tokio::test]
 async fn duplicate_register_overwrites() {
     let registry = ToolRegistry::new();
-    registry
-        .register(echo())
-        .expect("first register");
+    registry.register(echo()).expect("first register");
     // Registering again should succeed (overwrite)
-    registry
-        .register(echo())
-        .expect("second register");
+    registry.register(echo()).expect("second register");
     // Only one tool with name "echo" should exist
     assert!(registry.get("echo").is_some());
 }

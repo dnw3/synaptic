@@ -85,14 +85,8 @@ fn options_default_values() {
     assert!((options.summarization_threshold - 0.85).abs() < 0.01);
     assert_eq!(options.eviction_threshold, 20_000);
     assert_eq!(options.max_subagent_depth, 3);
-    assert_eq!(
-        options.skills_dir,
-        Some(".skills".to_string())
-    );
-    assert_eq!(
-        options.memory_file,
-        Some("AGENTS.md".to_string())
-    );
+    assert_eq!(options.skills_dir, Some(".skills".to_string()));
+    assert_eq!(options.memory_file, Some("AGENTS.md".to_string()));
     assert!(options.subagents.is_empty());
     assert!(options.checkpointer.is_none());
     assert!(options.store.is_none());

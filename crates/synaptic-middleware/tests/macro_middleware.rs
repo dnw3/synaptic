@@ -11,8 +11,8 @@ use serde_json::{json, Value};
 use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
 use synaptic_macros::{wrap_model_call, wrap_tool_call};
 use synaptic_middleware::{
-    AgentMiddleware, BaseChatModelCaller, MiddlewareChain, ModelCaller, ModelRequest, ModelResponse,
-    ToolCallRequest, ToolCaller,
+    AgentMiddleware, BaseChatModelCaller, MiddlewareChain, ModelCaller, ModelRequest,
+    ModelResponse, ToolCallRequest, ToolCaller,
 };
 
 // ===========================================================================
@@ -176,9 +176,7 @@ async fn test_tool_retry_exhausts_retries() {
     let caller = AlwaysFailToolCaller;
 
     let chain = MiddlewareChain::new(vec![mw]);
-    let result = chain
-        .call_tool(make_tool_request("test"), &caller)
-        .await;
+    let result = chain.call_tool(make_tool_request("test"), &caller).await;
 
     assert!(result.is_err());
     assert!(result.unwrap_err().to_string().contains("always fail"));

@@ -1,7 +1,5 @@
 use std::sync::Arc;
-use synaptic_core::{
-    ChatModel, ChatRequest, ChatResponse, Message, SynapticError, ToolCall,
-};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError, ToolCall};
 use synaptic_deep::backend::{Backend, StateBackend};
 use synaptic_deep::{create_deep_agent, DeepAgentOptions};
 use synaptic_graph::MessageState;

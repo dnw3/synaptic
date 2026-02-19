@@ -3,7 +3,10 @@ use synaptic_deep::backend::{Backend, GrepOutputMode, StateBackend};
 #[tokio::test]
 async fn write_and_read_file() {
     let backend = StateBackend::new();
-    backend.write_file("hello.txt", "line1\nline2\nline3").await.unwrap();
+    backend
+        .write_file("hello.txt", "line1\nline2\nline3")
+        .await
+        .unwrap();
     let content = backend.read_file("hello.txt", 0, 2000).await.unwrap();
     assert_eq!(content, "line1\nline2\nline3");
 }
@@ -18,7 +21,10 @@ async fn read_file_not_found() {
 #[tokio::test]
 async fn read_file_with_offset_and_limit() {
     let backend = StateBackend::new();
-    backend.write_file("nums.txt", "a\nb\nc\nd\ne").await.unwrap();
+    backend
+        .write_file("nums.txt", "a\nb\nc\nd\ne")
+        .await
+        .unwrap();
 
     let content = backend.read_file("nums.txt", 1, 2).await.unwrap();
     assert_eq!(content, "b\nc");
@@ -33,8 +39,14 @@ async fn read_file_with_offset_and_limit() {
 #[tokio::test]
 async fn edit_file_single_replacement() {
     let backend = StateBackend::new();
-    backend.write_file("f.txt", "hello world hello").await.unwrap();
-    backend.edit_file("f.txt", "hello", "hi", false).await.unwrap();
+    backend
+        .write_file("f.txt", "hello world hello")
+        .await
+        .unwrap();
+    backend
+        .edit_file("f.txt", "hello", "hi", false)
+        .await
+        .unwrap();
     let content = backend.read_file("f.txt", 0, 100).await.unwrap();
     assert_eq!(content, "hi world hello");
 }
@@ -43,7 +55,10 @@ async fn edit_file_single_replacement() {
 async fn edit_file_replace_all() {
     let backend = StateBackend::new();
     backend.write_file("f.txt", "aaa bbb aaa").await.unwrap();
-    backend.edit_file("f.txt", "aaa", "ccc", true).await.unwrap();
+    backend
+        .edit_file("f.txt", "aaa", "ccc", true)
+        .await
+        .unwrap();
     let content = backend.read_file("f.txt", 0, 100).await.unwrap();
     assert_eq!(content, "ccc bbb ccc");
 }
@@ -74,7 +89,10 @@ async fn ls_root() {
 #[tokio::test]
 async fn ls_subdirectory() {
     let backend = StateBackend::new();
-    backend.write_file("src/main.rs", "fn main() {}").await.unwrap();
+    backend
+        .write_file("src/main.rs", "fn main() {}")
+        .await
+        .unwrap();
     backend.write_file("src/lib.rs", "").await.unwrap();
     backend.write_file("src/utils/helper.rs", "").await.unwrap();
 
@@ -132,7 +150,10 @@ async fn grep_files_with_matches() {
 #[tokio::test]
 async fn grep_content_mode() {
     let backend = StateBackend::new();
-    backend.write_file("f.txt", "line1\nfoo bar\nline3").await.unwrap();
+    backend
+        .write_file("f.txt", "line1\nfoo bar\nline3")
+        .await
+        .unwrap();
 
     let result = backend
         .grep("foo", None, None, GrepOutputMode::Content)

@@ -73,8 +73,14 @@ async fn multiple_sessions_isolated() {
     let store = Arc::new(InMemoryStore::new());
     let memory = ConversationSummaryBufferMemory::new(store, model, 10_000);
 
-    memory.append("s1", Message::human("session 1")).await.unwrap();
-    memory.append("s2", Message::human("session 2")).await.unwrap();
+    memory
+        .append("s1", Message::human("session 1"))
+        .await
+        .unwrap();
+    memory
+        .append("s2", Message::human("session 2"))
+        .await
+        .unwrap();
 
     let s1 = memory.load("s1").await.unwrap();
     let s2 = memory.load("s2").await.unwrap();
@@ -90,7 +96,10 @@ async fn single_message_no_crash() {
     let store = Arc::new(InMemoryStore::new());
     let memory = ConversationSummaryBufferMemory::new(store, model, 10_000);
 
-    memory.append("s1", Message::human("only one")).await.unwrap();
+    memory
+        .append("s1", Message::human("only one"))
+        .await
+        .unwrap();
 
     let loaded = memory.load("s1").await.unwrap();
     assert_eq!(loaded.len(), 1);

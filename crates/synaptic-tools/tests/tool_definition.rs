@@ -21,7 +21,10 @@ impl Tool for SimpleTool {
             "required": ["input"]
         }))
     }
-    async fn call(&self, _args: serde_json::Value) -> Result<serde_json::Value, synaptic_core::SynapticError> {
+    async fn call(
+        &self,
+        _args: serde_json::Value,
+    ) -> Result<serde_json::Value, synaptic_core::SynapticError> {
         Ok(json!("ok"))
     }
 }
@@ -36,7 +39,10 @@ impl Tool for NoParamsTool {
     fn description(&self) -> &'static str {
         "Tool with no parameters"
     }
-    async fn call(&self, _args: serde_json::Value) -> Result<serde_json::Value, synaptic_core::SynapticError> {
+    async fn call(
+        &self,
+        _args: serde_json::Value,
+    ) -> Result<serde_json::Value, synaptic_core::SynapticError> {
         Ok(json!("done"))
     }
 }
@@ -53,7 +59,10 @@ fn tool_definition_extras_field() {
         extras: Some(extras),
     };
 
-    assert_eq!(def.extras.as_ref().unwrap()["cache_control"]["type"], "ephemeral");
+    assert_eq!(
+        def.extras.as_ref().unwrap()["cache_control"]["type"],
+        "ephemeral"
+    );
 }
 
 #[test]

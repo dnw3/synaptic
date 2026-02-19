@@ -1342,10 +1342,9 @@ pub struct EntrypointConfig {
 ///
 /// The `invoke_fn` field is a type-erased async function (`Value -> Result<Value, SynapticError>`).
 /// Type alias for the async entrypoint function signature.
-pub type EntrypointFn =
-    dyn Fn(Value) -> Pin<Box<dyn Future<Output = Result<Value, SynapticError>> + Send>>
-        + Send
-        + Sync;
+pub type EntrypointFn = dyn Fn(Value) -> Pin<Box<dyn Future<Output = Result<Value, SynapticError>> + Send>>
+    + Send
+    + Sync;
 
 pub struct Entrypoint {
     pub config: EntrypointConfig,

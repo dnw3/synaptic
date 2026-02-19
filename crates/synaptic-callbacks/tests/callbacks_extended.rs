@@ -77,12 +77,8 @@ async fn recording_session_isolation_via_event_data() {
     // Verify different session IDs are captured
     match (&events[0], &events[1]) {
         (
-            RunEvent::RunStarted {
-                session_id: s1, ..
-            },
-            RunEvent::RunStarted {
-                session_id: s2, ..
-            },
+            RunEvent::RunStarted { session_id: s1, .. },
+            RunEvent::RunStarted { session_id: s2, .. },
         ) => {
             assert_eq!(s1, "session-1");
             assert_eq!(s2, "session-2");
@@ -94,8 +90,7 @@ async fn recording_session_isolation_via_event_data() {
 #[tokio::test]
 async fn composite_full_lifecycle() {
     let recorder = Arc::new(RecordingCallback::new());
-    let composite =
-        CompositeCallback::new(vec![recorder.clone() as Arc<dyn CallbackHandler>]);
+    let composite = CompositeCallback::new(vec![recorder.clone() as Arc<dyn CallbackHandler>]);
 
     // Simulate a full agent lifecycle
     let events = vec![

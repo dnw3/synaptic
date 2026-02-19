@@ -68,19 +68,9 @@ fn parse_skill_frontmatter(content: &str, path: &str) -> Option<Skill> {
             break;
         }
         if let Some(val) = trimmed.strip_prefix("name:") {
-            name = Some(
-                val.trim()
-                    .trim_matches('"')
-                    .trim_matches('\'')
-                    .to_string(),
-            );
+            name = Some(val.trim().trim_matches('"').trim_matches('\'').to_string());
         } else if let Some(val) = trimmed.strip_prefix("description:") {
-            description = Some(
-                val.trim()
-                    .trim_matches('"')
-                    .trim_matches('\'')
-                    .to_string(),
-            );
+            description = Some(val.trim().trim_matches('"').trim_matches('\'').to_string());
         }
     }
 

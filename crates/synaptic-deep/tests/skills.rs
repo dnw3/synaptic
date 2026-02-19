@@ -1,8 +1,8 @@
 use std::sync::Arc;
+use synaptic_core::Message;
 use synaptic_deep::backend::{Backend, StateBackend};
 use synaptic_deep::middleware::skills::SkillsMiddleware;
 use synaptic_middleware::{AgentMiddleware, ModelRequest};
-use synaptic_core::Message;
 
 fn empty_request() -> ModelRequest {
     ModelRequest {
@@ -78,7 +78,10 @@ async fn invalid_frontmatter_skipped() {
     let backend = Arc::new(StateBackend::new());
     // No frontmatter
     backend
-        .write_file(".skills/bad/SKILL.md", "# Just a header\nNo frontmatter here.")
+        .write_file(
+            ".skills/bad/SKILL.md",
+            "# Just a header\nNo frontmatter here.",
+        )
         .await
         .unwrap();
 
