@@ -1,38 +1,59 @@
 // Language switcher for Synaptic documentation
-// Injects an EN/ZH toggle into the mdBook menu bar.
+// Injects an EN/中文 toggle into the mdBook menu bar.
 (function () {
   "use strict";
 
-  var currentPath = window.location.pathname;
-  var isZh = currentPath.indexOf("/zh/") !== -1;
+  var path = window.location.pathname;
 
-  var targetPath;
-  var label;
-  if (isZh) {
-    // Switch to English — strip /zh/ prefix
-    targetPath = currentPath.replace(/\/zh\//, "/");
-    label = "EN";
-  } else {
-    // Switch to Chinese — insert /zh/ after base path
-    targetPath = currentPath.replace(/^(\/synapse\/)/, "$1zh/");
-    // Fallback: if no /synapse/ prefix (local dev), just prepend /zh
-    if (targetPath === currentPath) {
-      targetPath = "/zh" + currentPath;
-    }
-    label = "ZH";
+  // Detect current language from URL path
+  var isZh = /\/zh\//.test(path);
+  var isEn = /\/en\//.test(path);
+
+  // Build the target path for the other language
+  function switchPath(from, to) {
+    return path.replace("/" + from + "/", "/" + to + "/");
   }
 
   function insertSwitcher() {
     var rightButtons = document.querySelector(".right-buttons");
     if (!rightButtons) return;
 
-    var link = document.createElement("a");
-    link.href = targetPath;
-    link.className = "lang-switcher";
-    link.title = isZh ? "Switch to English" : "切换到中文";
-    link.textContent = label;
+    var container = document.createElement("div");
+    container.className = "lang-switcher";
 
-    rightButtons.insertBefore(link, rightButtons.firstChild);
+    if (isEn || isZh) {
+      // Both languages in /en/ and /zh/ subdirectories
+      var enLink = document.createElement("a");
+      enLink.href = isEn ? "#" : switchPath("zh", "en");
+      enLink.textContent = "EN";
+      enLink.className = isEn ? "lang-active" : "";
+      enLink.title = "English";
+      if (isEn) enLink.onclick = function (e) { e.preventDefault(); };
+
+      var sep = document.createElement("span");
+      sep.className = "lang-sep";
+      sep.textContent = "|";
+
+      var zhLink = document.createElement("a");
+      zhLink.href = isZh ? "#" : switchPath("en", "zh");
+      zhLink.textContent = "\u4E2D\u6587";
+      zhLink.className = isZh ? "lang-active" : "";
+      zhLink.title = "\u5207\u6362\u5230\u4E2D\u6587";
+      if (isZh) zhLink.onclick = function (e) { e.preventDefault(); };
+
+      container.appendChild(enLink);
+      container.appendChild(sep);
+      container.appendChild(zhLink);
+    } else {
+      // Fallback: guess /zh/ is nested under current root
+      var zhFallback = document.createElement("a");
+      zhFallback.href = path.replace(/^(\/[^/]+\/)/, "$1zh/");
+      zhFallback.textContent = "\u4E2D\u6587";
+      zhFallback.title = "\u5207\u6362\u5230\u4E2D\u6587";
+      container.appendChild(zhFallback);
+    }
+
+    rightButtons.insertBefore(container, rightButtons.firstChild);
   }
 
   if (document.readyState === "loading") {

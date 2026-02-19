@@ -16,22 +16,40 @@ pre code {
     line-height: 1.5;
 }
 
-/* Language switcher button */
+/* Language switcher toggle */
 .lang-switcher {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 12px;
+    gap: 0;
+    padding: 2px;
     border: 1px solid var(--sidebar-fg);
     border-radius: 4px;
-    color: var(--sidebar-fg);
-    text-decoration: none;
     font-size: 0.85em;
-    transition: background-color 0.2s;
+    margin-right: 8px;
 }
 
-.lang-switcher:hover {
+.lang-switcher a {
+    padding: 2px 10px;
+    color: var(--sidebar-fg);
+    text-decoration: none;
+    border-radius: 3px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.lang-switcher a:hover {
     background-color: var(--sidebar-active);
+}
+
+.lang-switcher a.lang-active {
+    background-color: var(--sidebar-fg);
+    color: var(--bg);
+    cursor: default;
+}
+
+.lang-switcher .lang-sep {
+    color: var(--sidebar-fg);
+    opacity: 0.4;
+    font-size: 0.8em;
 }
 
 /* Concept mapping table styling */
