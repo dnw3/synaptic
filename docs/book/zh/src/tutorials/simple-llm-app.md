@@ -11,11 +11,11 @@
 ## 完整代码
 
 ```rust
-use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
-use synaptic_models::ScriptedChatModel;
-use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
-use synaptic_parsers::StrOutputParser;
-use synaptic_runnables::Runnable;
+use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
+use synaptic::models::ScriptedChatModel;
+use synaptic::prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic::parsers::StrOutputParser;
+use synaptic::runnables::Runnable;
 use std::collections::HashMap;
 
 #[tokio::main]
@@ -98,7 +98,7 @@ let result = parser.invoke(response.message).await?;
 上面的代码分步执行了每个组件。在实际应用中，你可以使用 LCEL 管道运算符将它们串联成一个链：
 
 ```rust
-use synaptic_runnables::BoxRunnable;
+use synaptic::runnables::BoxRunnable;
 
 // 将组件转换为 BoxRunnable 并用 | 连接
 let chain = prompt.boxed() | model.boxed() | parser.boxed();

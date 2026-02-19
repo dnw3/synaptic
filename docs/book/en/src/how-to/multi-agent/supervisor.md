@@ -17,7 +17,7 @@ The supervisor pattern uses a central model to route conversations to specialize
 ## API
 
 ```rust,ignore
-use synaptic_graph::{create_supervisor, SupervisorOptions};
+use synaptic::graph::{create_supervisor, SupervisorOptions};
 
 pub fn create_supervisor(
     model: Arc<dyn ChatModel>,
@@ -42,8 +42,8 @@ If no `system_prompt` is provided, a default is generated:
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{ChatModel, Message, Tool};
-use synaptic_graph::{
+use synaptic::core::{ChatModel, Message, Tool};
+use synaptic::graph::{
     create_agent, create_supervisor, AgentOptions, MessageState, SupervisorOptions,
 };
 
@@ -97,7 +97,7 @@ println!("{}", result.messages.last().unwrap().content());
 Pass a checkpointer to persist the supervisor's state across calls:
 
 ```rust,ignore
-use synaptic_graph::MemorySaver;
+use synaptic::graph::MemorySaver;
 
 let supervisor = create_supervisor(
     model,
@@ -115,9 +115,9 @@ You can test supervisor graphs without an API key using `ScriptedChatModel`. Scr
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{ChatResponse, Message, ToolCall};
-use synaptic_models::ScriptedChatModel;
-use synaptic_graph::{
+use synaptic::core::{ChatResponse, Message, ToolCall};
+use synaptic::models::ScriptedChatModel;
+use synaptic::graph::{
     create_agent, create_supervisor, AgentOptions, MessageState, SupervisorOptions,
 };
 

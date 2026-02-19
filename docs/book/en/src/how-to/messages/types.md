@@ -21,7 +21,7 @@ This guide covers all message variants in Synaptic, how to create them, and how 
 Always use factory methods instead of constructing enum variants directly:
 
 ```rust
-use synaptic_core::{Message, ToolCall};
+use synaptic::core::{Message, ToolCall};
 use serde_json::json;
 
 // System message -- sets the model's behavior
@@ -61,7 +61,7 @@ let remove = Message::remove("msg-id-to-remove");
 All message variants share a common set of accessor methods:
 
 ```rust
-use synaptic_core::Message;
+use synaptic::core::Message;
 
 let msg = Message::human("Hello!");
 
@@ -91,7 +91,7 @@ assert!(msg.name().is_none());
 ### Tool call accessors
 
 ```rust
-use synaptic_core::{Message, ToolCall};
+use synaptic::core::{Message, ToolCall};
 use serde_json::json;
 
 let ai = Message::ai_with_tool_calls("", vec![
@@ -118,7 +118,7 @@ assert_eq!(tool_msg.tool_call_id(), Some("call_1"));
 Messages support a builder pattern for setting optional fields:
 
 ```rust
-use synaptic_core::Message;
+use synaptic::core::Message;
 use serde_json::json;
 
 let msg = Message::human("Hello!")
@@ -147,7 +147,7 @@ Available builder methods:
 Messages serialize to JSON with a `"role"` tag:
 
 ```rust
-use synaptic_core::Message;
+use synaptic::core::Message;
 
 let msg = Message::human("Hello!");
 let json = serde_json::to_string_pretty(&msg).unwrap();

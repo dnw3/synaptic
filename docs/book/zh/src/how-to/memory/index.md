@@ -26,8 +26,8 @@ pub trait MemoryStore: Send + Sync {
 最简单的 `MemoryStore` 实现是 `InMemoryStore`，它将消息存储在由 `Arc<RwLock<_>>` 保护的 `HashMap` 中：
 
 ```rust
-use synaptic_memory::InMemoryStore;
-use synaptic_core::{MemoryStore, Message};
+use synaptic::memory::InMemoryStore;
+use synaptic::core::{MemoryStore, Message};
 
 let store = InMemoryStore::new();
 

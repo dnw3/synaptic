@@ -16,7 +16,7 @@ tracing_subscriber::fmt::init();
 Then create the callback:
 
 ```rust
-use synaptic_callbacks::TracingCallback;
+use synaptic::callbacks::TracingCallback;
 
 let callback = TracingCallback::new();
 ```

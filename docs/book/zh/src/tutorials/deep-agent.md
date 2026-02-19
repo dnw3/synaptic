@@ -25,10 +25,7 @@ cd deep-agent-tutorial
 
 ```toml
 [dependencies]
-synaptic-deep = { path = "../crates/synaptic-deep" }
-synaptic-core = { path = "../crates/synaptic-core" }
-synaptic-graph = { path = "../crates/synaptic-graph" }
-synaptic-models = { path = "../crates/synaptic-models" }
+synaptic = { version = "0.2", features = ["deep"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -52,7 +49,7 @@ Synaptic 提供三种 Backend 实现：
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_deep::backend::{Backend, StateBackend};
+use synaptic::deep::backend::{Backend, StateBackend};
 
 let backend = Arc::new(StateBackend::new());
 ```
@@ -65,11 +62,11 @@ Deep Agent 将每个 Backend 操作封装为模型可以调用的工具。
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
-use synaptic_deep::backend::StateBackend;
-use synaptic_core::{ChatModel, Message};
-use synaptic_graph::MessageState;
-use synaptic_models::OpenAiChatModel;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::deep::backend::StateBackend;
+use synaptic::core::{ChatModel, Message};
+use synaptic::graph::MessageState;
+use synaptic::models::OpenAiChatModel;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -201,7 +198,7 @@ Deep Agent 可以通过 `task` 工具生成子 Agent。每个子 Agent 拥有自
 使用 `SubAgentDef` 定义自定义子 Agent 类型：
 
 ```rust,ignore
-use synaptic_deep::SubAgentDef;
+use synaptic::deep::SubAgentDef;
 
 let mut options = DeepAgentOptions::new(backend.clone());
 options.subagents = vec![SubAgentDef {
@@ -308,11 +305,11 @@ let agent = create_deep_agent(model.clone(), options)?;
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions, SubAgentDef};
-use synaptic_deep::backend::StateBackend;
-use synaptic_core::{ChatModel, Message};
-use synaptic_graph::MessageState;
-use synaptic_models::OpenAiChatModel;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions, SubAgentDef};
+use synaptic::deep::backend::StateBackend;
+use synaptic::core::{ChatModel, Message};
+use synaptic::graph::MessageState;
+use synaptic::models::OpenAiChatModel;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -383,11 +380,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```toml
 [dependencies]
-synaptic-deep = { path = "../crates/synaptic-deep", features = ["filesystem"] }
+synaptic = { version = "0.2", features = ["deep"] }
+synaptic-deep = { version = "0.2", features = ["filesystem"] }
 ```
 
 ```rust,ignore
-use synaptic_deep::backend::FilesystemBackend;
+use synaptic::deep::backend::FilesystemBackend;
 
 let backend = Arc::new(FilesystemBackend::new("/path/to/workspace"));
 let options = DeepAgentOptions::new(backend.clone());
@@ -402,11 +400,11 @@ let agent = create_deep_agent(model, options)?;
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{ChatModel, ChatResponse, Message, ToolCall};
-use synaptic_models::ScriptedChatModel;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
-use synaptic_deep::backend::StateBackend;
-use synaptic_graph::MessageState;
+use synaptic::core::{ChatModel, ChatResponse, Message, ToolCall};
+use synaptic::models::ScriptedChatModel;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::deep::backend::StateBackend;
+use synaptic::graph::MessageState;
 
 let backend = Arc::new(StateBackend::new());
 

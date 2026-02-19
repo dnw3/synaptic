@@ -5,7 +5,7 @@ The SSE (Server-Sent Events) transport connects to a remote MCP server over HTTP
 ## Configuration
 
 ```rust,ignore
-use synaptic_mcp::SseConnection;
+use synaptic::mcp::SseConnection;
 use std::collections::HashMap;
 
 let connection = SseConnection {
@@ -31,7 +31,7 @@ Both tool discovery (`tools/list`) and tool invocation (`tools/call`) use HTTP P
 
 ```rust,ignore
 use std::collections::HashMap;
-use synaptic_mcp::{MultiServerMcpClient, McpConnection, SseConnection};
+use synaptic::mcp::{MultiServerMcpClient, McpConnection, SseConnection};
 
 let mut servers = HashMap::new();
 servers.insert(

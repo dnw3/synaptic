@@ -7,7 +7,7 @@ Deep Agent 的 `backend` 控制文件系统工具如何与外部世界交互。S
 完全基于内存的 `backend`。文件存储在以标准化路径为键的 `HashMap<String, String>` 中，不会接触真实文件系统。目录通过路径前缀推断，而非作为显式条目存储。这是测试和沙箱演示的默认选择。
 
 ```rust,ignore
-use synaptic_deep::backend::StateBackend;
+use synaptic::deep::backend::StateBackend;
 use std::sync::Arc;
 
 let backend = Arc::new(StateBackend::new());
@@ -29,8 +29,8 @@ let content = backend.read_file("/hello.txt", 0, 2000).await?;
 通过 Synaptic 的 `Store` trait 持久化文件。每个文件以 `key=path`、`value={"content": "..."}` 的形式存储为一个条目。所有条目共享一个可配置的命名空间前缀。这使你可以用任何存储实现来支撑 agent 的工作空间——开发时使用 `InMemoryStore`，生产环境使用自定义的数据库存储。
 
 ```rust,ignore
-use synaptic_deep::backend::StoreBackend;
-use synaptic_store::InMemoryStore;
+use synaptic::deep::backend::StoreBackend;
+use synaptic::store::InMemoryStore;
 use std::sync::Arc;
 
 let store = Arc::new(InMemoryStore::new());
@@ -52,7 +52,7 @@ let agent = create_deep_agent(model, options)?;
 读写宿主操作系统上的真实文件。这是编程助手和本地自动化场景所需的 `backend`。
 
 ```rust,ignore
-use synaptic_deep::backend::FilesystemBackend;
+use synaptic::deep::backend::FilesystemBackend;
 use std::sync::Arc;
 
 let backend = Arc::new(FilesystemBackend::new("/home/user/project"));
@@ -68,17 +68,18 @@ let agent = create_deep_agent(model, options)?;
 > **Feature 门控：** `FilesystemBackend` 需要启用 `filesystem` Cargo feature：
 >
 > ```toml
-> synaptic-deep = { path = "../crates/synaptic-deep", features = ["filesystem"] }
+> synaptic = { version = "0.2", features = ["deep"] }
+synaptic-deep = { version = "0.2", features = ["filesystem"] }
 > ```
 
 **适用场景：** 本地 CLI 工具、编程助手，以及任何 agent 需要与真实文件交互的场景。
 
 ## 实现自定义 Backend
 
-三种 `backend` 都实现了 `synaptic_deep::backend` 中的 `Backend` trait：
+三种 `backend` 都实现了 `synaptic::deep::backend` 中的 `Backend` trait：
 
 ```rust,ignore
-use synaptic_deep::backend::{Backend, DirEntry, ExecResult, GrepOutputMode};
+use synaptic::deep::backend::{Backend, DirEntry, ExecResult, GrepOutputMode};
 
 #[async_trait]
 pub trait Backend: Send + Sync {
@@ -127,10 +128,10 @@ pub trait Backend: Send + Sync {
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{ChatResponse, Message, ToolCall};
-use synaptic_models::ScriptedChatModel;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
-use synaptic_deep::backend::StateBackend;
+use synaptic::core::{ChatResponse, Message, ToolCall};
+use synaptic::models::ScriptedChatModel;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::deep::backend::StateBackend;
 
 // 脚本化模型：先写入文件，然后结束
 let model = Arc::new(ScriptedChatModel::new(vec![

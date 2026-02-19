@@ -7,7 +7,7 @@ Handoff Tools 用于表示将对话从一个 Agent 转移到另一个 Agent 的�
 `create_handoff_tool` 函数创建一个 `Tool`，当被调用时返回一条转移消息。该工具被命名为 `transfer_to_<agent_name>`，路由逻辑使用这个命名约定来检测 Handoff。
 
 ```rust,ignore
-use synaptic_graph::create_handoff_tool;
+use synaptic::graph::create_handoff_tool;
 
 let handoff = create_handoff_tool("billing", "Transfer to the billing specialist");
 // handoff.name()        => "transfer_to_billing"
@@ -26,7 +26,7 @@ let handoff = create_handoff_tool("billing", "Transfer to the billing specialist
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{create_agent, create_handoff_tool, AgentOptions};
+use synaptic::graph::{create_agent, create_handoff_tool, AgentOptions};
 
 let escalate = create_handoff_tool("human_review", "Escalate to a human reviewer");
 
@@ -44,7 +44,7 @@ let agent = create_agent(model, all_tools, AgentOptions::default())?;
 
 ```rust,ignore
 use std::collections::HashMap;
-use synaptic_graph::{
+use synaptic::graph::{
     create_handoff_tool, StateGraph, FnNode, MessageState, END,
 };
 

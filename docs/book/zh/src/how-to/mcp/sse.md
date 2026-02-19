@@ -5,7 +5,7 @@ SSE（Server-Sent Events）传输通过 HTTP 连接到远程 MCP 服务器，使
 ## 配置
 
 ```rust,ignore
-use synaptic_mcp::SseConnection;
+use synaptic::mcp::SseConnection;
 use std::collections::HashMap;
 
 let connection = SseConnection {
@@ -31,7 +31,7 @@ let connection = SseConnection {
 
 ```rust,ignore
 use std::collections::HashMap;
-use synaptic_mcp::{MultiServerMcpClient, McpConnection, SseConnection};
+use synaptic::mcp::{MultiServerMcpClient, McpConnection, SseConnection};
 
 let mut servers = HashMap::new();
 servers.insert(

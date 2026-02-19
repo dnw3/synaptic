@@ -7,8 +7,8 @@
 `CompiledGraph` 上的 `stream()` 方法返回一个 `GraphStream`——一个 `Pin<Box<dyn Stream>>`，它产出 `Result<GraphEvent<S>, SynapticError>` 值：
 
 ```rust
-use synaptic_graph::{StateGraph, FnNode, MessageState, StreamMode, GraphEvent, END};
-use synaptic_core::Message;
+use synaptic::graph::{StateGraph, FnNode, MessageState, StreamMode, GraphEvent, END};
+use synaptic::core::Message;
 use futures::StreamExt;
 
 let step_a = FnNode::new(|mut state: MessageState| async move {
@@ -71,7 +71,7 @@ while let Some(event) = stream.next().await {
 你可以使用 `stream_modes()` 同时请求多种流模式。每个事件被包装在一个带有模式标签的 `MultiGraphEvent` 中：
 
 ```rust
-use synaptic_graph::{StreamMode, MultiGraphEvent};
+use synaptic::graph::{StreamMode, MultiGraphEvent};
 use futures::StreamExt;
 
 let mut stream = graph.stream_modes(
@@ -100,7 +100,7 @@ while let Some(result) = stream.next().await {
 你可以使用 `stream_with_config()` 将流式处理与检查点结合：
 
 ```rust
-use synaptic_graph::{MemorySaver, CheckpointConfig, StreamMode};
+use synaptic::graph::{MemorySaver, CheckpointConfig, StreamMode};
 use std::sync::Arc;
 
 let checkpointer = Arc::new(MemorySaver::new());

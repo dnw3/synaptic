@@ -8,8 +8,8 @@ This guide shows how to add automatic retry logic and rate limiting to any `Chat
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::ChatModel;
-use synaptic_models::{RetryChatModel, RetryPolicy};
+use synaptic::core::ChatModel;
+use synaptic::models::{RetryChatModel, RetryPolicy};
 
 let base_model: Arc<dyn ChatModel> = Arc::new(model);
 
@@ -23,7 +23,7 @@ Configure the maximum number of attempts and the base delay for exponential back
 
 ```rust
 use std::time::Duration;
-use synaptic_models::RetryPolicy;
+use synaptic::models::RetryPolicy;
 
 let policy = RetryPolicy {
     max_attempts: 5,                         // Try up to 5 times
@@ -58,8 +58,8 @@ All other errors are returned immediately without retrying.
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::ChatModel;
-use synaptic_models::RateLimitedChatModel;
+use synaptic::core::ChatModel;
+use synaptic::models::RateLimitedChatModel;
 
 let base_model: Arc<dyn ChatModel> = Arc::new(model);
 
@@ -79,8 +79,8 @@ When the concurrency limit is reached, additional callers wait until a slot beco
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::ChatModel;
-use synaptic_models::TokenBucketChatModel;
+use synaptic::core::ChatModel;
+use synaptic::models::TokenBucketChatModel;
 
 let base_model: Arc<dyn ChatModel> = Arc::new(model);
 
@@ -109,8 +109,8 @@ All wrappers implement `ChatModel`, so they compose naturally. A common pattern 
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::ChatModel;
-use synaptic_models::{RetryChatModel, RetryPolicy, TokenBucketChatModel};
+use synaptic::core::ChatModel;
+use synaptic::models::{RetryChatModel, RetryPolicy, TokenBucketChatModel};
 
 let base_model: Arc<dyn ChatModel> = Arc::new(model);
 

@@ -7,8 +7,8 @@ Edge 定义了图中节点之间的执行流。Synaptic 支持两种边：始终
 固定边无条件地将执行从一个节点路由到另一个节点：
 
 ```rust
-use synaptic_graph::{StateGraph, FnNode, MessageState, END};
-use synaptic_core::Message;
+use synaptic::graph::{StateGraph, FnNode, MessageState, END};
+use synaptic::core::Message;
 
 let node_a = FnNode::new(|mut state: MessageState| async move {
     state.messages.push(Message::ai("Step A"));
@@ -49,8 +49,8 @@ let graph = StateGraph::new()
 条件边根据一个检查当前状态并返回下一个节点名称的函数来路由执行：
 
 ```rust
-use synaptic_graph::{StateGraph, FnNode, MessageState, END};
-use synaptic_core::Message;
+use synaptic::graph::{StateGraph, FnNode, MessageState, END};
+use synaptic::core::Message;
 
 let router = FnNode::new(|state: MessageState| async move {
     Ok(state)  // routing logic is in the edge, not the node
@@ -91,7 +91,7 @@ let graph = StateGraph::new()
 
 ```rust
 use std::collections::HashMap;
-use synaptic_graph::{StateGraph, MessageState, END};
+use synaptic::graph::{StateGraph, MessageState, END};
 
 let graph = StateGraph::new()
     .add_node("router", router_node)

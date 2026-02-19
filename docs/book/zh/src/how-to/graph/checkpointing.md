@@ -27,7 +27,7 @@ pub struct Checkpoint {
 `MemorySaver` 是内置的内存检查点器。它将检查点存储在以线程 ID 为键的 `HashMap` 中：
 
 ```rust
-use synaptic_graph::MemorySaver;
+use synaptic::graph::MemorySaver;
 use std::sync::Arc;
 
 let checkpointer = Arc::new(MemorySaver::new());
@@ -40,8 +40,8 @@ let checkpointer = Arc::new(MemorySaver::new());
 编译图之后，使用 `.with_checkpointer()` 附加检查点器：
 
 ```rust
-use synaptic_graph::{StateGraph, FnNode, MessageState, MemorySaver, END};
-use synaptic_core::Message;
+use synaptic::graph::{StateGraph, FnNode, MessageState, MemorySaver, END};
+use synaptic::core::Message;
 use std::sync::Arc;
 
 let node = FnNode::new(|mut state: MessageState| async move {
@@ -62,7 +62,7 @@ let graph = StateGraph::new()
 `CheckpointConfig` 标识一个用于检查点的线程（对话）：
 
 ```rust
-use synaptic_graph::CheckpointConfig;
+use synaptic::graph::CheckpointConfig;
 
 let config = CheckpointConfig::new("thread-1");
 ```
@@ -109,7 +109,7 @@ for (state, next_node) in &history {
 
 ```rust
 use serde::{Serialize, Deserialize};
-use synaptic_graph::State;
+use synaptic::graph::State;
 
 #[derive(Clone, Serialize, Deserialize)]
 struct MyState {

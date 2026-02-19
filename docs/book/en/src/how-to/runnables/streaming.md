@@ -12,8 +12,8 @@ The default `stream()` implementation wraps `invoke()` as a single-item stream. 
 
 ```rust
 use futures::StreamExt;
-use synaptic_runnables::{Runnable, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 let upper = RunnableLambda::new(|x: String| async move {
     Ok(x.to_uppercase())
@@ -42,8 +42,8 @@ This means **only the final component in a chain truly streams**. Intermediate s
 
 ```rust
 use futures::StreamExt;
-use synaptic_runnables::{Runnable, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 let step1 = RunnableLambda::new(|x: String| async move {
     Ok(format!("processed: {x}"))
@@ -85,8 +85,8 @@ while let Some(result) = stream.next().await {
 
 ```rust
 use futures::StreamExt;
-use synaptic_runnables::{Runnable, RunnableGenerator};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableGenerator};
+use synaptic::core::RunnableConfig;
 
 let gen = RunnableGenerator::new(|input: String| {
     async_stream::stream! {

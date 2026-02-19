@@ -8,8 +8,8 @@
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::ChatModel;
-use synaptic_models::{RetryChatModel, RetryPolicy};
+use synaptic::core::ChatModel;
+use synaptic::models::{RetryChatModel, RetryPolicy};
 
 let base_model: Arc<dyn ChatModel> = Arc::new(model);
 
@@ -23,7 +23,7 @@ let retry_model = RetryChatModel::new(base_model, RetryPolicy::default());
 
 ```rust
 use std::time::Duration;
-use synaptic_models::RetryPolicy;
+use synaptic::models::RetryPolicy;
 
 let policy = RetryPolicy {
     max_attempts: 5,                         // Try up to 5 times
@@ -58,8 +58,8 @@ let retry_model = RetryChatModel::new(base_model, policy);
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::ChatModel;
-use synaptic_models::RateLimitedChatModel;
+use synaptic::core::ChatModel;
+use synaptic::models::RateLimitedChatModel;
 
 let base_model: Arc<dyn ChatModel> = Arc::new(model);
 
@@ -79,8 +79,8 @@ let limited = RateLimitedChatModel::new(base_model, 5);
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::ChatModel;
-use synaptic_models::TokenBucketChatModel;
+use synaptic::core::ChatModel;
+use synaptic::models::TokenBucketChatModel;
 
 let base_model: Arc<dyn ChatModel> = Arc::new(model);
 
@@ -109,8 +109,8 @@ let throttled = TokenBucketChatModel::new(base_model, 100.0, 10.0);
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::ChatModel;
-use synaptic_models::{RetryChatModel, RetryPolicy, TokenBucketChatModel};
+use synaptic::core::ChatModel;
+use synaptic::models::{RetryChatModel, RetryPolicy, TokenBucketChatModel};
 
 let base_model: Arc<dyn ChatModel> = Arc::new(model);
 

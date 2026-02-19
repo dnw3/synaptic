@@ -7,9 +7,9 @@
 Create the parser with a list of allowed values, then invoke it:
 
 ```rust
-use synaptic_parsers::EnumOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::EnumOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let parser = EnumOutputParser::new(vec![
     "positive".to_string(),
@@ -31,9 +31,9 @@ assert_eq!(result, "positive");
 The parser trims whitespace from the input before checking. If the trimmed input does not match any allowed value, it returns `Err(SynapticError::Parsing(...))`:
 
 ```rust
-use synaptic_parsers::EnumOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::EnumOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let parser = EnumOutputParser::new(vec![
     "positive".to_string(),
@@ -57,7 +57,7 @@ assert!(err.to_string().contains("expected one of"));
 `EnumOutputParser` implements `FormatInstructions`. Include the instructions in your prompt so the model knows which values to choose from:
 
 ```rust
-use synaptic_parsers::{EnumOutputParser, FormatInstructions};
+use synaptic::parsers::{EnumOutputParser, FormatInstructions};
 
 let parser = EnumOutputParser::new(vec![
     "positive".to_string(),
@@ -76,11 +76,11 @@ A typical classification pipeline combines a prompt, a model, a content extracto
 ```rust
 use std::collections::HashMap;
 use serde_json::json;
-use synaptic_core::{ChatResponse, Message, RunnableConfig};
-use synaptic_models::ScriptedChatModel;
-use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
-use synaptic_parsers::{StrOutputParser, EnumOutputParser, FormatInstructions};
-use synaptic_runnables::Runnable;
+use synaptic::core::{ChatResponse, Message, RunnableConfig};
+use synaptic::models::ScriptedChatModel;
+use synaptic::prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic::parsers::{StrOutputParser, EnumOutputParser, FormatInstructions};
+use synaptic::runnables::Runnable;
 
 let parser = EnumOutputParser::new(vec![
     "positive".to_string(),

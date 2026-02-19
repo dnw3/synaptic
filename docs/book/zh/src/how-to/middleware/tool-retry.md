@@ -5,7 +5,7 @@
 ## 构造函数
 
 ```rust,ignore
-use synaptic_middleware::ToolRetryMiddleware;
+use synaptic::middleware::ToolRetryMiddleware;
 
 // Retry up to 3 times (4 total attempts including the first)
 let mw = ToolRetryMiddleware::new(3);
@@ -27,8 +27,8 @@ let mw = ToolRetryMiddleware::new(3)
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_middleware::ToolRetryMiddleware;
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::middleware::ToolRetryMiddleware;
 
 let options = AgentOptions {
     middleware: vec![

@@ -40,7 +40,7 @@ after_agent(messages)
 `MiddlewareChain` 组合多个 Middleware，对 `before_*` 钩子按注册顺序执行，对 `after_*` 钩子按反序执行。
 
 ```rust,ignore
-use synaptic_middleware::MiddlewareChain;
+use synaptic::middleware::MiddlewareChain;
 
 let chain = MiddlewareChain::new(vec![
     Arc::new(ModelCallLimitMiddleware::new(10)),
@@ -53,8 +53,8 @@ let chain = MiddlewareChain::new(vec![
 通过 `AgentOptions::middleware` 传入 Middleware。Agent 图会自动将它们连接到模型节点和工具节点。
 
 ```rust,ignore
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_middleware::{ModelCallLimitMiddleware, ToolRetryMiddleware};
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::middleware::{ModelCallLimitMiddleware, ToolRetryMiddleware};
 
 let options = AgentOptions {
     middleware: vec![
@@ -85,7 +85,7 @@ let graph = create_agent(model, tools, options)?;
 为你的结构体实现 `AgentMiddleware`，并重写需要的钩子方法。
 
 ```rust,ignore
-use synaptic_middleware::{AgentMiddleware, ModelRequest};
+use synaptic::middleware::{AgentMiddleware, ModelRequest};
 
 struct LoggingMiddleware;
 

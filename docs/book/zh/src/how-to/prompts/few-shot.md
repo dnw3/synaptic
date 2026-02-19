@@ -8,7 +8,7 @@
 
 ```rust
 use std::collections::HashMap;
-use synaptic_prompts::{
+use synaptic::prompts::{
     FewShotChatMessagePromptTemplate, FewShotExample, PromptTemplate,
 };
 
@@ -51,7 +51,7 @@ let messages = template.format(&values).unwrap();
 
 ```rust
 use std::collections::HashMap;
-use synaptic_prompts::{
+use synaptic::prompts::{
     FewShotChatMessagePromptTemplate, FewShotExample, PromptTemplate,
 };
 
@@ -81,11 +81,11 @@ let messages = template.format(&values).unwrap();
 
 ```rust
 use std::collections::HashMap;
-use synaptic_core::RunnableConfig;
-use synaptic_prompts::{
+use synaptic::core::RunnableConfig;
+use synaptic::prompts::{
     FewShotChatMessagePromptTemplate, FewShotExample, PromptTemplate,
 };
-use synaptic_runnables::Runnable;
+use synaptic::runnables::Runnable;
 
 let template = FewShotChatMessagePromptTemplate::new(
     vec![FewShotExample {

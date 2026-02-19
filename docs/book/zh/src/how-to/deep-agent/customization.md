@@ -8,7 +8,7 @@ Deep Agent 的每个方面都可以通过 `DeepAgentOptions` 进行调整。本�
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
 
 let mut options = DeepAgentOptions::new(backend.clone());
 options.system_prompt = Some("You are a senior Rust engineer.".into());
@@ -48,7 +48,7 @@ pub struct DeepAgentOptions {
 后端为代理提供文件系统操作。这是 `DeepAgentOptions::new()` 唯一的必需参数。所有其他字段都有默认值。
 
 ```rust,ignore
-use synaptic_deep::backend::FilesystemBackend;
+use synaptic::deep::backend::FilesystemBackend;
 
 let backend = Arc::new(FilesystemBackend::new("/home/user/project"));
 let options = DeepAgentOptions::new(backend);
@@ -91,7 +91,7 @@ options.middleware = vec![
 可选的检查点器，用于图状态持久化。提供后，代理可以从检查点恢复。
 
 ```rust,ignore
-use synaptic_graph::MemorySaver;
+use synaptic::graph::MemorySaver;
 
 let mut options = DeepAgentOptions::new(backend.clone());
 options.checkpointer = Some(Arc::new(MemorySaver::new()));
@@ -102,7 +102,7 @@ options.checkpointer = Some(Arc::new(MemorySaver::new()));
 可选的存储，通过 `ToolRuntime` 用于运行时工具注入。
 
 ```rust,ignore
-use synaptic_store::InMemoryStore;
+use synaptic::store::InMemoryStore;
 
 let mut options = DeepAgentOptions::new(backend.clone());
 options.store = Some(Arc::new(InMemoryStore::new()));
@@ -167,7 +167,7 @@ options.memory_file = Some("docs/MEMORY.md".into());
 `task` 工具的自定义子代理定义。每个 `SubAgentDef` 描述一个可以被生成的专用子代理。
 
 ```rust,ignore
-use synaptic_deep::SubAgentDef;
+use synaptic::deep::SubAgentDef;
 
 let mut options = DeepAgentOptions::new(backend.clone());
 options.subagents = vec![
@@ -236,8 +236,8 @@ options.enable_memory = false;
 `create_deep_agent` 返回 `Result<CompiledGraph<MessageState>, SynapticError>`。生成的图与任何其他 Synaptic 图的使用方式相同：
 
 ```rust,ignore
-use synaptic_core::Message;
-use synaptic_graph::MessageState;
+use synaptic::core::Message;
+use synaptic::graph::MessageState;
 
 let agent = create_deep_agent(model, options)?;
 let result = agent.invoke(MessageState::with_messages(vec![
@@ -249,10 +249,10 @@ let result = agent.invoke(MessageState::with_messages(vec![
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::Message;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions, backend::FilesystemBackend};
-use synaptic_graph::MessageState;
-use synaptic_models::OpenAiChatModel;
+use synaptic::core::Message;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions, backend::FilesystemBackend};
+use synaptic::graph::MessageState;
+use synaptic::models::OpenAiChatModel;
 
 let model = Arc::new(OpenAiChatModel::new("gpt-4o"));
 let backend = Arc::new(FilesystemBackend::new("/home/user/project"));

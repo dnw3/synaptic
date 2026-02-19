@@ -69,7 +69,7 @@ The `synaptic` crate re-exports everything from all sub-crates under a unified n
 
 ```toml
 [dependencies]
-synaptic = { path = "crates/synaptic" }
+synaptic = "0.2"
 ```
 
 And then import from organized modules:

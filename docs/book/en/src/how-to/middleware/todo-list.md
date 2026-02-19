@@ -5,7 +5,7 @@ Injects task-planning state into the agent's context by maintaining a shared tod
 ## Constructor
 
 ```rust,ignore
-use synaptic_middleware::TodoListMiddleware;
+use synaptic::middleware::TodoListMiddleware;
 
 let mw = TodoListMiddleware::new();
 ```
@@ -34,8 +34,8 @@ Each task gets a unique auto-incrementing ID. Tasks have an `id`, `task` (descri
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_middleware::TodoListMiddleware;
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::middleware::TodoListMiddleware;
 
 let todo = Arc::new(TodoListMiddleware::new());
 todo.add("Gather user requirements").await;

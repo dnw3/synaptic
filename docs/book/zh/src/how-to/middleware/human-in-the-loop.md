@@ -7,7 +7,7 @@
 根据审批范围有两种构造方式：
 
 ```rust,ignore
-use synaptic_middleware::HumanInTheLoopMiddleware;
+use synaptic::middleware::HumanInTheLoopMiddleware;
 
 // Require approval for ALL tool calls
 let mw = HumanInTheLoopMiddleware::new(callback);
@@ -24,7 +24,7 @@ let mw = HumanInTheLoopMiddleware::for_tools(
 你需要实现 `ApprovalCallback` trait 来定义如何获取审批：
 
 ```rust,ignore
-use synaptic_middleware::ApprovalCallback;
+use synaptic::middleware::ApprovalCallback;
 
 struct CliApproval;
 
@@ -45,8 +45,8 @@ impl ApprovalCallback for CliApproval {
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_middleware::HumanInTheLoopMiddleware;
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::middleware::HumanInTheLoopMiddleware;
 
 let approval = Arc::new(CliApproval);
 let hitl = HumanInTheLoopMiddleware::for_tools(

@@ -48,7 +48,7 @@ If you prefer a single dependency instead of listing individual crates, use the 
 
 ```toml
 [dependencies]
-synaptic = { path = "crates/synaptic" }
+synaptic = "0.2"
 ```
 
 Then import through the unified namespace:

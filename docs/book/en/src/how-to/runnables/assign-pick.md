@@ -10,8 +10,8 @@ This guide shows how to use `RunnableAssign` to merge computed values into a JSO
 
 ```rust
 use serde_json::{json, Value};
-use synaptic_runnables::{Runnable, RunnableAssign, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableAssign, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 let assign = RunnableAssign::new(vec![
     (
@@ -57,7 +57,7 @@ assert_eq!(result["greeting"], "Hello, Alice!");
 `RunnablePassthrough` provides a convenience method that creates a `RunnableAssign` directly:
 
 ```rust
-use synaptic_runnables::{RunnablePassthrough, RunnableLambda};
+use synaptic::runnables::{RunnablePassthrough, RunnableLambda};
 use serde_json::Value;
 
 let assign = RunnablePassthrough::assign(vec![
@@ -81,8 +81,8 @@ let assign = RunnablePassthrough::assign(vec![
 
 ```rust
 use serde_json::{json, Value};
-use synaptic_runnables::{Runnable, RunnablePick};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnablePick};
+use synaptic::core::RunnableConfig;
 
 let pick = RunnablePick::new(vec![
     "name".to_string(),
@@ -123,8 +123,8 @@ A common pattern is to use `RunnableAssign` to enrich data, then `RunnablePick` 
 
 ```rust
 use serde_json::{json, Value};
-use synaptic_runnables::{Runnable, RunnableAssign, RunnablePick, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableAssign, RunnablePick, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 // Step 1: Enrich input with a computed field
 let assign = RunnableAssign::new(vec![

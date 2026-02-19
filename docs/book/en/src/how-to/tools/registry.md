@@ -12,8 +12,8 @@
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapticError};
-use synaptic_tools::ToolRegistry;
+use synaptic::core::{Tool, SynapticError};
+use synaptic::tools::ToolRegistry;
 
 struct EchoTool;
 
@@ -53,7 +53,7 @@ assert!(missing.is_none());
 ### Creating and Using
 
 ```rust
-use synaptic_tools::SerialToolExecutor;
+use synaptic::tools::SerialToolExecutor;
 use serde_json::json;
 
 let executor = SerialToolExecutor::new(registry);
@@ -74,7 +74,7 @@ If you call `execute()` with a name that is not registered, it returns `Synaptic
 
 ```rust
 let err = executor.execute("nonexistent", json!({})).await.unwrap_err();
-assert!(matches!(err, synaptic_core::SynapticError::ToolNotFound(name) if name == "nonexistent"));
+assert!(matches!(err, synaptic::core::SynapticError::ToolNotFound(name) if name == "nonexistent"));
 ```
 
 ## Complete Example
@@ -85,8 +85,8 @@ Here is a full example that registers multiple tools and executes them:
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapticError};
-use synaptic_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic::core::{Tool, SynapticError};
+use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 
 struct AddTool;
 
@@ -137,7 +137,7 @@ async fn main() -> Result<(), SynapticError> {
 In a typical agent workflow, the model's response contains `ToolCall` entries. You dispatch them through the executor and send the results back:
 
 ```rust
-use synaptic_core::{Message, ToolCall};
+use synaptic::core::{Message, ToolCall};
 use serde_json::json;
 
 // After model responds with tool calls:

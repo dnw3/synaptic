@@ -7,7 +7,7 @@ Synaptic 提供五种内置 Evaluator，从简单的字符串匹配到基于 LLM
 检查预测结果是否与参考字符串完全匹配：
 
 ```rust
-use synaptic_eval::{ExactMatchEvaluator, Evaluator};
+use synaptic::eval::{ExactMatchEvaluator, Evaluator};
 
 // Case-sensitive (default)
 let eval = ExactMatchEvaluator::new();
@@ -31,7 +31,7 @@ assert!(result.passed);  // Now passes
 检查预测结果是否为有效 JSON。reference 和 input 参数会被忽略：
 
 ```rust
-use synaptic_eval::{JsonValidityEvaluator, Evaluator};
+use synaptic::eval::{JsonValidityEvaluator, Evaluator};
 
 let eval = JsonValidityEvaluator::new();
 
@@ -50,7 +50,7 @@ assert!(!result.passed);
 检查预测结果是否匹配正则表达式模式：
 
 ```rust
-use synaptic_eval::{RegexMatchEvaluator, Evaluator};
+use synaptic::eval::{RegexMatchEvaluator, Evaluator};
 
 // Match a date pattern
 let eval = RegexMatchEvaluator::new(r"\d{4}-\d{2}-\d{2}")?;
@@ -69,8 +69,8 @@ assert!(!result.passed);
 计算预测结果和参考答案的 Embedding 之间的余弦相似度。分数等于余弦相似度，如果相似度达到或超过阈值，则评估通过：
 
 ```rust
-use synaptic_eval::{EmbeddingDistanceEvaluator, Evaluator};
-use synaptic_embeddings::FakeEmbeddings;
+use synaptic::eval::{EmbeddingDistanceEvaluator, Evaluator};
+use synaptic::embeddings::FakeEmbeddings;
 use std::sync::Arc;
 
 let embeddings = Arc::new(FakeEmbeddings::new());
@@ -92,8 +92,8 @@ println!("Passed (>= 0.8): {}", result.passed);
 使用 LLM 对预测质量在 0-10 分制上进行评判。分数被归一化到 0.0-1.0：
 
 ```rust
-use synaptic_eval::{LLMJudgeEvaluator, Evaluator};
-use synaptic_models::OpenAiChatModel;
+use synaptic::eval::{LLMJudgeEvaluator, Evaluator};
+use synaptic::models::OpenAiChatModel;
 use std::sync::Arc;
 
 let model = Arc::new(OpenAiChatModel::new("gpt-4o"));

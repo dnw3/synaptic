@@ -5,7 +5,7 @@ The Stdio transport spawns a child process and communicates with it over stdin/s
 ## Configuration
 
 ```rust,ignore
-use synaptic_mcp::StdioConnection;
+use synaptic::mcp::StdioConnection;
 use std::collections::HashMap;
 
 let connection = StdioConnection {
@@ -35,8 +35,8 @@ let connection = StdioConnection {
 ```rust,ignore
 use std::collections::HashMap;
 use std::sync::Arc;
-use synaptic_mcp::{MultiServerMcpClient, McpConnection, StdioConnection};
-use synaptic_graph::create_react_agent;
+use synaptic::mcp::{MultiServerMcpClient, McpConnection, StdioConnection};
+use synaptic::graph::create_react_agent;
 
 // Configure an MCP server that provides filesystem tools
 let mut servers = HashMap::new();
@@ -69,7 +69,7 @@ For unit tests, you can test MCP client types without spawning a real server. Th
 
 ```rust,ignore
 use std::collections::HashMap;
-use synaptic_mcp::{MultiServerMcpClient, McpConnection, StdioConnection};
+use synaptic::mcp::{MultiServerMcpClient, McpConnection, StdioConnection};
 
 // Create a client without connecting
 let mut servers = HashMap::new();

@@ -7,7 +7,7 @@ Handoff tools signal an intent to transfer a conversation from one agent to anot
 The `create_handoff_tool` function creates a `Tool` that, when called, returns a transfer message. The tool is named `transfer_to_<agent_name>` and routing logic uses this naming convention to detect handoffs.
 
 ```rust,ignore
-use synaptic_graph::create_handoff_tool;
+use synaptic::graph::create_handoff_tool;
 
 let handoff = create_handoff_tool("billing", "Transfer to the billing specialist");
 // handoff.name()        => "transfer_to_billing"
@@ -26,7 +26,7 @@ You can register handoff tools alongside regular tools when building an agent:
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{create_agent, create_handoff_tool, AgentOptions};
+use synaptic::graph::{create_agent, create_handoff_tool, AgentOptions};
 
 let escalate = create_handoff_tool("human_review", "Escalate to a human reviewer");
 
@@ -44,7 +44,7 @@ For workflows that don't fit the supervisor or swarm patterns, combine handoff t
 
 ```rust,ignore
 use std::collections::HashMap;
-use synaptic_graph::{
+use synaptic::graph::{
     create_handoff_tool, StateGraph, FnNode, MessageState, END,
 };
 

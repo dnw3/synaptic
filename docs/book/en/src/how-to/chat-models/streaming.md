@@ -17,7 +17,7 @@ Use `stream_chat()` and iterate over chunks with `StreamExt::next()`:
 
 ```rust
 use futures::StreamExt;
-use synaptic_core::{ChatModel, ChatRequest, Message, AIMessageChunk};
+use synaptic::core::{ChatModel, ChatRequest, Message, AIMessageChunk};
 
 async fn stream_example(model: &dyn ChatModel) -> Result<(), Box<dyn std::error::Error>> {
     let request = ChatRequest::new(vec![
@@ -48,7 +48,7 @@ type ChatStream<'a> = Pin<Box<dyn Stream<Item = Result<AIMessageChunk, SynapticE
 
 ```rust
 use futures::StreamExt;
-use synaptic_core::{ChatModel, ChatRequest, Message, AIMessageChunk};
+use synaptic::core::{ChatModel, ChatRequest, Message, AIMessageChunk};
 
 async fn accumulate_stream(model: &dyn ChatModel) -> Result<Message, Box<dyn std::error::Error>> {
     let request = ChatRequest::new(vec![
@@ -92,7 +92,7 @@ When the model streams a response that includes tool calls, tool call data arriv
 
 ```rust
 use futures::StreamExt;
-use synaptic_core::{ChatModel, ChatRequest, Message, AIMessageChunk, ToolDefinition};
+use synaptic::core::{ChatModel, ChatRequest, Message, AIMessageChunk, ToolDefinition};
 use serde_json::json;
 
 async fn stream_with_tools(model: &dyn ChatModel) -> Result<(), Box<dyn std::error::Error>> {

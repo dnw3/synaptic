@@ -8,7 +8,7 @@ Every aspect of a Deep Agent can be tuned through `DeepAgentOptions`. This page 
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
 
 let mut options = DeepAgentOptions::new(backend.clone());
 options.system_prompt = Some("You are a senior Rust engineer.".into());
@@ -48,7 +48,7 @@ pub struct DeepAgentOptions {
 The backend provides filesystem operations for the agent. This is the only required argument to `DeepAgentOptions::new()`. All other fields have defaults.
 
 ```rust,ignore
-use synaptic_deep::backend::FilesystemBackend;
+use synaptic::deep::backend::FilesystemBackend;
 
 let backend = Arc::new(FilesystemBackend::new("/home/user/project"));
 let options = DeepAgentOptions::new(backend);
@@ -91,7 +91,7 @@ options.middleware = vec![
 Optional checkpointer for graph state persistence. When provided, the agent can resume from checkpoints.
 
 ```rust,ignore
-use synaptic_graph::MemorySaver;
+use synaptic::graph::MemorySaver;
 
 let mut options = DeepAgentOptions::new(backend.clone());
 options.checkpointer = Some(Arc::new(MemorySaver::new()));
@@ -102,7 +102,7 @@ options.checkpointer = Some(Arc::new(MemorySaver::new()));
 Optional store for runtime tool injection via `ToolRuntime`.
 
 ```rust,ignore
-use synaptic_store::InMemoryStore;
+use synaptic::store::InMemoryStore;
 
 let mut options = DeepAgentOptions::new(backend.clone());
 options.store = Some(Arc::new(InMemoryStore::new()));
@@ -167,7 +167,7 @@ options.memory_file = Some("docs/MEMORY.md".into());
 Custom subagent definitions for the task tool. Each `SubAgentDef` describes a specialized subagent that can be spawned.
 
 ```rust,ignore
-use synaptic_deep::SubAgentDef;
+use synaptic::deep::SubAgentDef;
 
 let mut options = DeepAgentOptions::new(backend.clone());
 options.subagents = vec![
@@ -236,8 +236,8 @@ The `DeepSummarizationMiddleware` and `PatchToolCallsMiddleware` are always pres
 `create_deep_agent` returns `Result<CompiledGraph<MessageState>, SynapticError>`. The resulting graph is used like any other Synaptic graph:
 
 ```rust,ignore
-use synaptic_core::Message;
-use synaptic_graph::MessageState;
+use synaptic::core::Message;
+use synaptic::graph::MessageState;
 
 let agent = create_deep_agent(model, options)?;
 let result = agent.invoke(MessageState::with_messages(vec![
@@ -249,10 +249,10 @@ let result = agent.invoke(MessageState::with_messages(vec![
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::Message;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions, backend::FilesystemBackend};
-use synaptic_graph::MessageState;
-use synaptic_models::OpenAiChatModel;
+use synaptic::core::Message;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions, backend::FilesystemBackend};
+use synaptic::graph::MessageState;
+use synaptic::models::OpenAiChatModel;
 
 let model = Arc::new(OpenAiChatModel::new("gpt-4o"));
 let backend = Arc::new(FilesystemBackend::new("/home/user/project"));

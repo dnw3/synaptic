@@ -18,7 +18,7 @@ Swarm 模式创建一个去中心化的多 Agent 图，其中每个 Agent 都可
 ## API
 
 ```rust,ignore
-use synaptic_graph::{create_swarm, SwarmAgent, SwarmOptions};
+use synaptic::graph::{create_swarm, SwarmAgent, SwarmOptions};
 
 pub fn create_swarm(
     agents: Vec<SwarmAgent>,
@@ -46,8 +46,8 @@ pub fn create_swarm(
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{ChatModel, Message, Tool};
-use synaptic_graph::{create_swarm, MessageState, SwarmAgent, SwarmOptions};
+use synaptic::core::{ChatModel, Message, Tool};
+use synaptic::graph::{create_swarm, MessageState, SwarmAgent, SwarmOptions};
 
 // Assume `model` implements ChatModel and *_tools are Vec<Arc<dyn Tool>>.
 
@@ -97,9 +97,9 @@ println!("{}", result.messages.last().unwrap().content());
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{ChatResponse, Message, ToolCall};
-use synaptic_models::ScriptedChatModel;
-use synaptic_graph::{create_swarm, MessageState, SwarmAgent, SwarmOptions};
+use synaptic::core::{ChatResponse, Message, ToolCall};
+use synaptic::models::ScriptedChatModel;
+use synaptic::graph::{create_swarm, MessageState, SwarmAgent, SwarmOptions};
 
 // Triage model: transfers to billing
 let triage_model = Arc::new(ScriptedChatModel::new(vec![

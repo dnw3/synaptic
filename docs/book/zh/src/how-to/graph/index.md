@@ -22,8 +22,8 @@ Synaptic 通过 `synaptic_graph` crate 提供 LangGraph 风格的图编排功能
 5. 使用 `invoke()` 获取单次结果，或使用 `stream()` 获取逐节点的事件。
 
 ```rust
-use synaptic_graph::{StateGraph, MessageState, FnNode, END};
-use synaptic_core::Message;
+use synaptic::graph::{StateGraph, MessageState, FnNode, END};
+use synaptic::core::Message;
 
 let greet = FnNode::new(|mut state: MessageState| async move {
     state.messages.push(Message::ai("Hello from the graph!"));
@@ -58,7 +58,7 @@ assert_eq!(result.messages.len(), 2);
 使用 `add_node_with_cache()` 基于输入状态缓存节点结果。缓存条目在指定 TTL 后过期：
 
 ```rust
-use synaptic_graph::{StateGraph, CachePolicy, END};
+use synaptic::graph::{StateGraph, CachePolicy, END};
 use std::time::Duration;
 
 let graph = StateGraph::new()
@@ -95,7 +95,7 @@ let graph = StateGraph::new()
 使用 `create_agent()` 创建 agent 时，在 `AgentOptions` 中设置 `response_format` 可以将最终响应强制转换为特定的 JSON schema：
 
 ```rust
-use synaptic_graph::{create_agent, AgentOptions};
+use synaptic::graph::{create_agent, AgentOptions};
 
 let graph = create_agent(model, tools, AgentOptions {
     response_format: Some(serde_json::json!({

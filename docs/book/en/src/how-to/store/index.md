@@ -5,7 +5,7 @@ The `Store` trait provides persistent key-value storage for agents, enabling cro
 ## Store Trait
 
 ```rust,ignore
-use synaptic_store::Store;
+use synaptic::store::Store;
 
 #[async_trait]
 pub trait Store: Send + Sync {
@@ -33,7 +33,7 @@ pub struct Item {
 ## InMemoryStore
 
 ```rust,ignore
-use synaptic_store::InMemoryStore;
+use synaptic::store::InMemoryStore;
 
 let store = InMemoryStore::new();
 store.put(&["users", "prefs"], "theme", json!("dark")).await?;
@@ -46,8 +46,8 @@ let item = store.get(&["users", "prefs"], "theme").await?;
 When configured with an embeddings model, `InMemoryStore` uses cosine similarity for `search()` queries instead of substring matching. Items are ranked by relevance and `Item::score` is populated.
 
 ```rust,ignore
-use synaptic_store::InMemoryStore;
-use synaptic_embeddings::OpenAiEmbeddings;
+use synaptic::store::InMemoryStore;
+use synaptic::embeddings::OpenAiEmbeddings;
 
 let embeddings = Arc::new(OpenAiEmbeddings::new("text-embedding-3-small"));
 let store = InMemoryStore::new().with_embeddings(embeddings);
@@ -67,8 +67,8 @@ Without embeddings, `search()` falls back to substring matching on key and value
 ## Using with Agents
 
 ```rust,ignore
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_store::InMemoryStore;
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::store::InMemoryStore;
 
 let store = Arc::new(InMemoryStore::new());
 let options = AgentOptions {

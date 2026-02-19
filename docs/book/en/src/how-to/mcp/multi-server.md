@@ -12,7 +12,7 @@ Pass a `HashMap<String, McpConnection>` where keys are server names and values a
 
 ```rust,ignore
 use std::collections::HashMap;
-use synaptic_mcp::{
+use synaptic::mcp::{
     MultiServerMcpClient, McpConnection,
     StdioConnection, HttpConnection, SseConnection,
 };
@@ -79,7 +79,7 @@ let client = MultiServerMcpClient::new(servers).with_prefix(false);
 The `load_mcp_tools` convenience function combines `connect()` and `get_tools()`:
 
 ```rust,ignore
-use synaptic_mcp::load_mcp_tools;
+use synaptic::mcp::load_mcp_tools;
 
 let client = MultiServerMcpClient::new(servers);
 let tools = load_mcp_tools(&client).await?;

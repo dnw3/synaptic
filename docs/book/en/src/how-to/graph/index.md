@@ -22,8 +22,8 @@ Synaptic provides LangGraph-style graph orchestration through the `synaptic_grap
 5. Run the graph with `invoke()` for a single result or `stream()` for per-node events.
 
 ```rust
-use synaptic_graph::{StateGraph, MessageState, FnNode, END};
-use synaptic_core::Message;
+use synaptic::graph::{StateGraph, MessageState, FnNode, END};
+use synaptic::core::Message;
 
 let greet = FnNode::new(|mut state: MessageState| async move {
     state.messages.push(Message::ai("Hello from the graph!"));
@@ -58,7 +58,7 @@ assert_eq!(result.messages.len(), 2);
 Use `add_node_with_cache()` to cache node results based on input state. Cached entries expire after the specified TTL:
 
 ```rust
-use synaptic_graph::{StateGraph, CachePolicy, END};
+use synaptic::graph::{StateGraph, CachePolicy, END};
 use std::time::Duration;
 
 let graph = StateGraph::new()
@@ -95,7 +95,7 @@ let graph = StateGraph::new()
 When creating an agent with `create_agent()`, set `response_format` in `AgentOptions` to force the final response into a specific JSON schema:
 
 ```rust
-use synaptic_graph::{create_agent, AgentOptions};
+use synaptic::graph::{create_agent, AgentOptions};
 
 let graph = create_agent(model, tools, AgentOptions {
     response_format: Some(serde_json::json!({

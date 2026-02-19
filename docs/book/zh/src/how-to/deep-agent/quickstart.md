@@ -8,10 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic-deep = { path = "../crates/synaptic-deep" }
-synaptic-models = { path = "../crates/synaptic-models" }
-synaptic-graph = { path = "../crates/synaptic-graph" }
-synaptic-core = { path = "../crates/synaptic-core" }
+synaptic = { version = "0.2", features = ["deep"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -20,7 +17,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 `backend` 决定了 agent 如何与外部世界交互。在本快速入门中，我们使用 `FilesystemBackend`，它可以读写你机器上的真实文件：
 
 ```rust,ignore
-use synaptic_deep::backend::FilesystemBackend;
+use synaptic::deep::backend::FilesystemBackend;
 use std::sync::Arc;
 
 let backend = Arc::new(FilesystemBackend::new("/tmp/my-workspace"));
@@ -29,7 +26,7 @@ let backend = Arc::new(FilesystemBackend::new("/tmp/my-workspace"));
 如果想在不接触文件系统的情况下进行测试，可以换用 `StateBackend::new()`：
 
 ```rust,ignore
-use synaptic_deep::backend::StateBackend;
+use synaptic::deep::backend::StateBackend;
 
 let backend = Arc::new(StateBackend::new());
 ```
@@ -39,8 +36,8 @@ let backend = Arc::new(StateBackend::new());
 使用 `create_deep_agent` 配合一个模型和一个 `DeepAgentOptions`。选项结构体有合理的默认值——你只需要提供 `backend`：
 
 ```rust,ignore
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
-use synaptic_models::OpenAiChatModel;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::models::OpenAiChatModel;
 use std::sync::Arc;
 
 let model = Arc::new(OpenAiChatModel::new("gpt-4o"));
@@ -56,8 +53,8 @@ let agent = create_deep_agent(model, options)?;
 使用你的提示词构建一个 `MessageState` 并调用 `invoke`。Agent 会进行推理、调用工具，最终返回结果：
 
 ```rust,ignore
-use synaptic_graph::MessageState;
-use synaptic_core::Message;
+use synaptic::graph::MessageState;
+use synaptic::core::Message;
 
 let state = MessageState::with_messages(vec![
     Message::human("Create a file called hello.txt containing 'Hello, world!'"),
@@ -110,10 +107,10 @@ let agent = create_deep_agent(model, options)?;
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::Message;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions, backend::FilesystemBackend};
-use synaptic_graph::MessageState;
-use synaptic_models::OpenAiChatModel;
+use synaptic::core::Message;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions, backend::FilesystemBackend};
+use synaptic::graph::MessageState;
+use synaptic::models::OpenAiChatModel;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

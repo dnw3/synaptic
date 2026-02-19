@@ -6,8 +6,8 @@
 
 ```rust,ignore
 use std::time::Duration;
-use synaptic_graph::{CachePolicy, FnNode, StateGraph, MessageState, END};
-use synaptic_core::Message;
+use synaptic::graph::{CachePolicy, FnNode, StateGraph, MessageState, END};
+use synaptic::core::Message;
 
 let expensive = FnNode::new(|mut state: MessageState| async move {
     state.messages.push(Message::ai("Expensive result"));
@@ -41,8 +41,8 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 use async_trait::async_trait;
 use serde::{Serialize, Deserialize};
-use synaptic_core::SynapticError;
-use synaptic_graph::{CachePolicy, Node, NodeOutput, State, StateGraph, END};
+use synaptic::core::SynapticError;
+use synaptic::graph::{CachePolicy, Node, NodeOutput, State, StateGraph, END};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 struct MyState { counter: usize }

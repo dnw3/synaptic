@@ -9,7 +9,7 @@
 ## 基本用法
 
 ```rust
-use synaptic_core::{merge_message_runs, Message};
+use synaptic::core::{merge_message_runs, Message};
 
 let messages = vec![
     Message::human("Hello"),
@@ -38,7 +38,7 @@ assert_eq!(merged[1].content(), "I'm fine!\nThanks for asking!");
 来自连续 AI 消息的工具调用会被合并：
 
 ```rust
-use synaptic_core::{merge_message_runs, Message, ToolCall};
+use synaptic::core::{merge_message_runs, Message, ToolCall};
 use serde_json::json;
 
 let messages = vec![
@@ -70,7 +70,7 @@ assert_eq!(merged[0].tool_calls().len(), 2);
 不同角色的消息永远不会被合并，即使它们看起来相关：
 
 ```rust
-use synaptic_core::{merge_message_runs, Message};
+use synaptic::core::{merge_message_runs, Message};
 
 let messages = vec![
     Message::system("Be helpful."),
@@ -88,7 +88,7 @@ assert_eq!(merged.len(), 4);  // No change -- all roles are different
 一些提供商会拒绝包含连续同角色消息的请求。在发送之前使用 `merge_message_runs` 进行清理：
 
 ```rust
-use synaptic_core::{merge_message_runs, ChatRequest, Message};
+use synaptic::core::{merge_message_runs, ChatRequest, Message};
 
 let conversation = vec![
     Message::system("You are a translator."),
@@ -107,7 +107,7 @@ let request = ChatRequest::new(cleaned);
 `merge_message_runs` 在接收空输入时返回空向量：
 
 ```rust
-use synaptic_core::merge_message_runs;
+use synaptic::core::merge_message_runs;
 
 let result = merge_message_runs(vec![]);
 assert!(result.is_empty());

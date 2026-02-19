@@ -21,8 +21,8 @@ pub trait TextSplitter: Send + Sync {
 Splits text on a single separator string, then merges small pieces to stay under `chunk_size`.
 
 ```rust
-use synaptic_splitters::CharacterTextSplitter;
-use synaptic_splitters::TextSplitter;
+use synaptic::splitters::CharacterTextSplitter;
+use synaptic::splitters::TextSplitter;
 
 // Chunk size in characters, default separator is "\n\n"
 let splitter = CharacterTextSplitter::new(500);
@@ -44,8 +44,8 @@ The most commonly used splitter. Tries a hierarchy of separators in order, split
 Default separators: `["\n\n", "\n", " ", ""]`
 
 ```rust
-use synaptic_splitters::RecursiveCharacterTextSplitter;
-use synaptic_splitters::TextSplitter;
+use synaptic::splitters::RecursiveCharacterTextSplitter;
+use synaptic::splitters::TextSplitter;
 
 let splitter = RecursiveCharacterTextSplitter::new(1000)
     .with_chunk_overlap(200);
@@ -71,7 +71,7 @@ let splitter = RecursiveCharacterTextSplitter::new(1000)
 Use `from_language()` to get separators tuned for a specific programming language:
 
 ```rust
-use synaptic_splitters::{RecursiveCharacterTextSplitter, Language};
+use synaptic::splitters::{RecursiveCharacterTextSplitter, Language};
 
 let splitter = RecursiveCharacterTextSplitter::from_language(
     Language::Rust,
@@ -85,7 +85,7 @@ let splitter = RecursiveCharacterTextSplitter::from_language(
 Splits markdown text by headers, adding the header hierarchy to each chunk's metadata.
 
 ```rust
-use synaptic_splitters::{MarkdownHeaderTextSplitter, HeaderType};
+use synaptic::splitters::{MarkdownHeaderTextSplitter, HeaderType};
 
 let splitter = MarkdownHeaderTextSplitter::new(vec![
     HeaderType { level: "#".to_string(), name: "h1".to_string() },
@@ -111,8 +111,8 @@ Note that `MarkdownHeaderTextSplitter` also implements `TextSplitter`, but `spli
 Splits text by estimated token count using a ~4 characters per token heuristic. Splits at word boundaries to keep chunks readable.
 
 ```rust
-use synaptic_splitters::TokenTextSplitter;
-use synaptic_splitters::TextSplitter;
+use synaptic::splitters::TokenTextSplitter;
+use synaptic::splitters::TextSplitter;
 
 // chunk_size is in estimated tokens (not characters)
 let splitter = TokenTextSplitter::new(500)
@@ -128,7 +128,7 @@ This is consistent with the token estimation used in `ConversationTokenBufferMem
 Splits HTML text by header tags (`<h1>`, `<h2>`, etc.), adding header hierarchy to each chunk's metadata. Similar to `MarkdownHeaderTextSplitter` but for HTML content.
 
 ```rust
-use synaptic_splitters::HtmlHeaderTextSplitter;
+use synaptic::splitters::HtmlHeaderTextSplitter;
 
 let splitter = HtmlHeaderTextSplitter::new(vec![
     ("h1".to_string(), "Header 1".to_string()),
@@ -148,8 +148,8 @@ The constructor takes a list of `(tag_name, metadata_key)` pairs. Only the speci
 All splitters can split a `Vec<Document>` into smaller chunks. Each chunk inherits the parent's metadata and gets a `chunk_index` field. The chunk ID is formatted as `"{original_id}-chunk-{index}"`.
 
 ```rust
-use synaptic_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
-use synaptic_retrieval::Document;
+use synaptic::splitters::{RecursiveCharacterTextSplitter, TextSplitter};
+use synaptic::retrieval::Document;
 
 let splitter = RecursiveCharacterTextSplitter::new(500);
 

@@ -9,7 +9,7 @@ The `Tool` trait requires three methods:
 ```rust
 use async_trait::async_trait;
 use serde_json::Value;
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 
 #[async_trait]
 pub trait Tool: Send + Sync {
@@ -31,7 +31,7 @@ Here is a complete example of a weather tool:
 ```rust
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapticError};
+use synaptic::core::{Tool, SynapticError};
 
 struct WeatherTool;
 
@@ -74,7 +74,7 @@ Return `SynapticError::Tool(...)` for tool-specific errors:
 ```rust
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapticError};
+use synaptic::core::{Tool, SynapticError};
 
 struct DivisionTool;
 
@@ -109,7 +109,7 @@ Once defined, wrap the tool in an `Arc` and register it:
 
 ```rust
 use std::sync::Arc;
-use synaptic_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 use serde_json::json;
 
 let registry = ToolRegistry::new();
@@ -129,9 +129,9 @@ Here is a complete offline example that defines tools, registers them, and wires
 ```rust,ignore
 use std::sync::Arc;
 use serde_json::{json, Value};
-use synaptic_core::{ChatModel, ChatResponse, Message, Tool, ToolCall, SynapticError};
-use synaptic_models::ScriptedChatModel;
-use synaptic_graph::{create_react_agent, MessageState};
+use synaptic::core::{ChatModel, ChatResponse, Message, Tool, ToolCall, SynapticError};
+use synaptic::models::ScriptedChatModel;
+use synaptic::graph::{create_react_agent, MessageState};
 
 // 1. Define tools (using the trait)
 struct AddTool;
@@ -184,7 +184,7 @@ To tell a chat model about available tools, create `ToolDefinition` values and a
 
 ```rust
 use serde_json::json;
-use synaptic_core::{ChatRequest, Message, ToolDefinition};
+use synaptic::core::{ChatRequest, Message, ToolDefinition};
 
 let tool_def = ToolDefinition {
     name: "get_weather".to_string(),
@@ -215,8 +215,8 @@ Instead of manually implementing the `Tool` trait, you can use the `#[tool]`
 attribute macro from `synaptic-macros` to generate the boilerplate:
 
 ```rust,ignore
-use synaptic_macros::tool;
-use synaptic_core::SynapticError;
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
 use serde_json::{json, Value};
 
 /// Get the current weather for a location.

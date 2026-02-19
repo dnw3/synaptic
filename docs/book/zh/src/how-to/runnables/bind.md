@@ -11,8 +11,8 @@
 ## 基本用法
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 let step = RunnableLambda::new(|x: String| async move {
     Ok(x.to_uppercase())

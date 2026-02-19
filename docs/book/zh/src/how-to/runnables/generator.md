@@ -14,8 +14,8 @@
 ## 基本用法
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableGenerator};
-use synaptic_core::{RunnableConfig, SynapticError};
+use synaptic::runnables::{Runnable, RunnableGenerator};
+use synaptic::core::{RunnableConfig, SynapticError};
 
 let gen = RunnableGenerator::new(|input: String| {
     async_stream::stream! {
@@ -36,8 +36,8 @@ assert_eq!(result, vec!["HELLO", "WORLD"]);
 
 ```rust
 use futures::StreamExt;
-use synaptic_runnables::{Runnable, RunnableGenerator};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableGenerator};
+use synaptic::core::RunnableConfig;
 
 let gen = RunnableGenerator::new(|input: String| {
     async_stream::stream! {
@@ -64,8 +64,8 @@ while let Some(item) = stream.next().await {
 如果生成器产出一个 `Err`，`invoke()` 停止收集并返回该错误。`stream()` 则产出该错误并继续到下一项：
 
 ```rust
-use synaptic_runnables::RunnableGenerator;
-use synaptic_core::SynapticError;
+use synaptic::runnables::RunnableGenerator;
+use synaptic::core::SynapticError;
 
 let gen = RunnableGenerator::new(|_input: String| {
     async_stream::stream! {
@@ -87,7 +87,7 @@ let gen = RunnableGenerator::new(|_input: String| {
 `RunnableGenerator` 实现了 `Runnable<I, Vec<O>>`，因此它可以与 pipe 运算符配合使用。在链中需要流式生成的地方放置它即可：
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableGenerator, RunnableLambda};
+use synaptic::runnables::{Runnable, RunnableGenerator, RunnableLambda};
 
 let tokenize = RunnableGenerator::new(|input: String| {
     async_stream::stream! {

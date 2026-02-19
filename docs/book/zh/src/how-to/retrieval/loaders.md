@@ -24,7 +24,7 @@ pub trait Loader: Send + Sync {
 将一段文本字符串包装为单个 `Document`。适用于内容已经在内存中的场景。
 
 ```rust
-use synaptic_loaders::{TextLoader, Loader};
+use synaptic::loaders::{TextLoader, Loader};
 
 let loader = TextLoader::new("doc-1", "Rust is a systems programming language.");
 let docs = loader.load().await?;
@@ -40,7 +40,7 @@ assert_eq!(docs[0].content, "Rust is a systems programming language.");
 使用 `tokio::fs::read_to_string` 从磁盘读取文件，返回单个 `Document`。文件路径用作文档 ID，并将 `source` 元数据键设置为文件路径。
 
 ```rust
-use synaptic_loaders::{FileLoader, Loader};
+use synaptic::loaders::{FileLoader, Loader};
 
 let loader = FileLoader::new("data/notes.txt");
 let docs = loader.load().await?;
@@ -53,7 +53,7 @@ assert_eq!(docs[0].metadata["source"], "data/notes.txt");
 从 JSON 字符串加载文档。如果 JSON 是对象数组，则每个对象成为一个 `Document`。如果是单个对象，则生成一个 `Document`。
 
 ```rust
-use synaptic_loaders::{JsonLoader, Loader};
+use synaptic::loaders::{JsonLoader, Loader};
 
 let json_data = r#"[
     {"id": "1", "content": "First document"},
@@ -80,7 +80,7 @@ let loader = JsonLoader::new(json_data)
 从 CSV 数据加载文档。每行成为一个 `Document`。所有列都存储为元数据。
 
 ```rust
-use synaptic_loaders::{CsvLoader, Loader};
+use synaptic::loaders::{CsvLoader, Loader};
 
 let csv_data = "title,body,author\nIntro,Hello world,Alice\nChapter 1,Once upon a time,Bob";
 
@@ -103,7 +103,7 @@ assert_eq!(docs[0].metadata["author"], "Alice");
 从目录加载所有文件，每个文件成为一个 `Document`。使用 `with_glob` 按扩展名过滤，使用 `with_recursive` 包含子目录。
 
 ```rust
-use synaptic_loaders::{DirectoryLoader, Loader};
+use synaptic::loaders::{DirectoryLoader, Loader};
 
 let loader = DirectoryLoader::new("./docs")
     .with_glob("*.txt")
@@ -120,7 +120,7 @@ let docs = loader.load().await?;
 读取一个 Markdown 文件，返回单个 `Document`，元数据中包含 `format: "markdown"`。
 
 ```rust
-use synaptic_loaders::{MarkdownLoader, Loader};
+use synaptic::loaders::{MarkdownLoader, Loader};
 
 let loader = MarkdownLoader::new("docs/guide.md");
 let docs = loader.load().await?;
@@ -133,7 +133,7 @@ assert_eq!(docs[0].metadata["format"], "markdown");
 通过 HTTP GET 从 URL 获取内容，返回单个 `Document`。元数据包括 `source`（URL）和 `content_type`（来自响应头）。
 
 ```rust
-use synaptic_loaders::{WebBaseLoader, Loader};
+use synaptic::loaders::{WebBaseLoader, Loader};
 
 let loader = WebBaseLoader::new("https://example.com/page.html");
 let docs = loader.load().await?;
@@ -147,7 +147,7 @@ assert_eq!(docs[0].metadata["source"], "https://example.com/page.html");
 
 ```rust
 use futures::StreamExt;
-use synaptic_loaders::{DirectoryLoader, Loader};
+use synaptic::loaders::{DirectoryLoader, Loader};
 
 let loader = DirectoryLoader::new("./data").with_glob("*.txt");
 let mut stream = loader.lazy_load();

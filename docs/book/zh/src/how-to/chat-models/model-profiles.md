@@ -31,7 +31,7 @@ pub struct ModelProfile {
 每个 `ChatModel` 实现都公开了 `profile()` 方法，返回 `Option<ModelProfile>`。默认实现返回 `None`，因此提供商通过覆盖该方法来选择启用：
 
 ```rust,ignore
-use synaptic_core::ChatModel;
+use synaptic::core::ChatModel;
 
 let model = my_chat_model();
 
@@ -52,7 +52,7 @@ if let Some(profile) = model.profile() {
 在编写跨多个提供商的通用代码时，Profile 非常有用。例如，您可以在能力检查后有条件地执行 Tool 调用或 Structured Output 逻辑：
 
 ```rust,ignore
-use synaptic_core::{ChatModel, ChatRequest, ToolChoice};
+use synaptic::core::{ChatModel, ChatRequest, ToolChoice};
 
 async fn maybe_call_with_tools(
     model: &dyn ChatModel,
@@ -78,7 +78,7 @@ async fn maybe_call_with_tools(
 如果您实现了自己的 `ChatModel`，可以覆盖 `profile()` 来声明模型能力：
 
 ```rust,ignore
-use synaptic_core::{ChatModel, ModelProfile};
+use synaptic::core::{ChatModel, ModelProfile};
 
 impl ChatModel for MyCustomModel {
     // ... chat() and stream_chat() ...

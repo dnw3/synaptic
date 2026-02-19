@@ -7,8 +7,8 @@ For declarative interrupts (`interrupt_before`/`interrupt_after`), see [Human-in
 ## The `interrupt()` Function
 
 ```rust,ignore
-use synaptic_graph::{interrupt, Node, NodeOutput, MessageState};
-use synaptic_core::SynapticError;
+use synaptic::graph::{interrupt, Node, NodeOutput, MessageState};
+use synaptic::core::SynapticError;
 use async_trait::async_trait;
 
 struct ApprovalGate;
@@ -54,7 +54,7 @@ if result.is_interrupted() {
 use std::sync::Arc;
 use serde::{Serialize, Deserialize};
 use serde_json::json;
-use synaptic_graph::{
+use synaptic::graph::{
     interrupt, CheckpointConfig, FnNode, MemorySaver,
     NodeOutput, State, StateGraph, END,
 };

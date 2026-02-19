@@ -30,7 +30,7 @@ implementation. The macro generates:
 
 ```rust,ignore
 use synaptic::macros::tool;
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 
 /// Search the web for a given query.
 #[tool]
@@ -138,7 +138,7 @@ schemars = { version = "0.8", features = ["derive"] }
 use schemars::JsonSchema;
 use serde::Deserialize;
 use synaptic::macros::tool;
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 
 #[derive(Deserialize, JsonSchema)]
 struct UserInfo {
@@ -256,7 +256,7 @@ these values at construction time, and they are hidden from the LLM entirely.
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 use serde_json::Value;
 
 #[tool]
@@ -315,7 +315,7 @@ the raw `serde_json::Value` passed to `call()` directly.
 
 ```rust,ignore
 use synaptic::macros::tool;
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 use serde_json::{json, Value};
 
 /// Echo the input back.
@@ -372,7 +372,7 @@ There are three injection kinds:
 | `#[inject(tool_call_id)]` | `ToolRuntime::tool_call_id` (the ID of the current call) | `String` |
 
 ```rust,ignore
-use synaptic_core::{SynapticError, ToolRuntime};
+use synaptic::core::{SynapticError, ToolRuntime};
 use std::sync::Arc;
 
 #[tool]
@@ -423,7 +423,7 @@ The macro automatically detects the return type:
 
 ```rust,ignore
 use synaptic::macros::chain;
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 use serde_json::Value;
 
 // Value output — result is serialized to Value
@@ -491,7 +491,7 @@ let result = pipeline.invoke(serde_json::json!("hello")).await?;
 ## `#[entrypoint]` -- Workflow Entry Points
 
 `#[entrypoint]` defines a LangGraph-style workflow entry point. The macro
-generates a factory function that returns a `synaptic_core::Entrypoint` struct
+generates a factory function that returns a `synaptic::core::Entrypoint` struct
 containing the configuration and a boxed async closure.
 
 The decorated function must:
@@ -504,7 +504,7 @@ The decorated function must:
 
 ```rust,ignore
 use synaptic::macros::entrypoint;
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 use serde_json::Value;
 
 #[entrypoint]
@@ -550,7 +550,7 @@ entrypoints for tracing and streaming identification. The macro:
 
 ```rust,ignore
 use synaptic::macros::task;
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 
 #[task]
 async fn fetch_weather(city: String) -> Result<String, SynapticError> {
@@ -600,7 +600,7 @@ the message list.
 
 ```rust,ignore
 use synaptic::macros::before_agent;
-use synaptic_core::{Message, SynapticError};
+use synaptic::core::{Message, SynapticError};
 
 #[before_agent]
 async fn inject_system(messages: &mut Vec<Message>) -> Result<(), SynapticError> {
@@ -620,8 +620,8 @@ tweak temperature, inject a system prompt).
 
 ```rust,ignore
 use synaptic::macros::before_model;
-use synaptic_middleware::ModelRequest;
-use synaptic_core::SynapticError;
+use synaptic::middleware::ModelRequest;
+use synaptic::core::SynapticError;
 
 #[before_model]
 async fn set_temperature(request: &mut ModelRequest) -> Result<(), SynapticError> {
@@ -640,8 +640,8 @@ Runs after each model call. Use this to inspect or mutate the response.
 
 ```rust,ignore
 use synaptic::macros::after_model;
-use synaptic_middleware::{ModelRequest, ModelResponse};
-use synaptic_core::SynapticError;
+use synaptic::middleware::{ModelRequest, ModelResponse};
+use synaptic::core::SynapticError;
 
 #[after_model]
 async fn log_usage(request: &ModelRequest, response: &mut ModelResponse) -> Result<(), SynapticError> {
@@ -662,7 +662,7 @@ Runs after the agent loop finishes. Receives the final message list.
 
 ```rust,ignore
 use synaptic::macros::after_agent;
-use synaptic_core::{Message, SynapticError};
+use synaptic::core::{Message, SynapticError};
 
 #[after_agent]
 async fn summarize(messages: &mut Vec<Message>) -> Result<(), SynapticError> {
@@ -683,8 +683,8 @@ fallbacks, caching, or circuit-breaker patterns.
 
 ```rust,ignore
 use synaptic::macros::wrap_model_call;
-use synaptic_middleware::{ModelRequest, ModelResponse, ModelCaller};
-use synaptic_core::SynapticError;
+use synaptic::middleware::{ModelRequest, ModelResponse, ModelCaller};
+use synaptic::core::SynapticError;
 
 #[wrap_model_call]
 async fn retry_once(
@@ -709,8 +709,8 @@ invocations. Useful for logging, permission checks, or sandboxing.
 
 ```rust,ignore
 use synaptic::macros::wrap_tool_call;
-use synaptic_middleware::{ToolCallRequest, ToolCaller};
-use synaptic_core::SynapticError;
+use synaptic::middleware::{ToolCallRequest, ToolCaller};
+use synaptic::core::SynapticError;
 use serde_json::Value;
 
 #[wrap_tool_call]
@@ -741,7 +741,7 @@ Under the hood, the macro generates a middleware whose `before_model` hook sets
 
 ```rust,ignore
 use synaptic::macros::dynamic_prompt;
-use synaptic_core::Message;
+use synaptic::core::Message;
 
 #[dynamic_prompt]
 fn context_aware_prompt(messages: &[Message]) -> String {
@@ -754,6 +754,38 @@ fn context_aware_prompt(messages: &[Message]) -> String {
 
 let mw = context_aware_prompt(); // Arc<dyn AgentMiddleware>
 ```
+
+> **Why is `#[dynamic_prompt]` synchronous?**
+>
+> Unlike the other middleware macros, `#[dynamic_prompt]` takes a plain `fn`
+> instead of `async fn`. This is a deliberate design choice:
+>
+> 1. **Pure computation** — Dynamic prompt generation typically involves
+>    inspecting the message list and building a string. These are pure CPU
+>    operations (pattern matching, string formatting) with no I/O involved.
+>    Making them async would add unnecessary overhead (Future state machine,
+>    poll machinery) for zero benefit.
+>
+> 2. **Simplicity** — Synchronous functions are easier to write and reason
+>    about. No `.await`, no pinning, no Send/Sync bounds to worry about.
+>
+> 3. **Internal async wrapping** — The macro generates a `before_model` hook
+>    that calls your sync function inside an async context. The hook itself
+>    is async (as required by `AgentMiddleware`), but your function doesn't
+>    need to be.
+>
+> If you need async operations in your prompt generation (e.g., fetching
+> context from a database or calling an API), use `#[before_model]` directly
+> and set `request.system_prompt` yourself:
+>
+> ```rust,ignore
+> #[before_model]
+> async fn async_prompt(request: &mut ModelRequest) -> Result<(), SynapticError> {
+>     let context = fetch_from_database().await?;  // async I/O
+>     request.system_prompt = Some(format!("Context: {}", context));
+>     Ok(())
+> }
+> ```
 
 ### Stateful Middleware with `#[field]`
 
@@ -769,8 +801,8 @@ function will accept the field values, and the generated struct stores them.
 ```rust,ignore
 use std::time::Duration;
 use synaptic::macros::wrap_tool_call;
-use synaptic_middleware::{ToolCallRequest, ToolCaller};
-use synaptic_core::SynapticError;
+use synaptic::middleware::{ToolCallRequest, ToolCaller};
+use synaptic::core::SynapticError;
 use serde_json::Value;
 
 #[wrap_tool_call]
@@ -805,8 +837,8 @@ let mw = tool_retry(3, Duration::from_millis(100));
 ```rust,ignore
 use std::sync::Arc;
 use synaptic::macros::wrap_model_call;
-use synaptic_middleware::{BaseChatModelCaller, ModelRequest, ModelResponse, ModelCaller};
-use synaptic_core::{ChatModel, SynapticError};
+use synaptic::middleware::{BaseChatModelCaller, ModelRequest, ModelResponse, ModelCaller};
+use synaptic::core::{ChatModel, SynapticError};
 
 #[wrap_model_call]
 async fn model_fallback(
@@ -835,7 +867,7 @@ let mw = model_fallback(vec![backup_model]);
 
 ```rust,ignore
 use synaptic::macros::dynamic_prompt;
-use synaptic_core::Message;
+use synaptic::core::Message;
 
 #[dynamic_prompt]
 fn branded_prompt(#[field] brand: String, messages: &[Message]) -> String {
@@ -929,6 +961,151 @@ async fn call_api(query: String, api_key: String, secret: String) -> Result<Stri
 
 ---
 
+## Complete Examples
+
+The following end-to-end scenarios show how the macros work together in
+realistic applications.
+
+### Scenario A: Weather Agent with Custom Tool
+
+This example defines a tool with `#[tool]` and a `#[field]` for an API key,
+registers it, creates a ReAct agent with `create_react_agent`, and runs a
+query.
+
+```rust,ignore
+use synaptic::core::{ChatModel, Message, SynapticError};
+use synaptic::graph::{create_react_agent, MessageState, GraphResult};
+use synaptic::models::ScriptedChatModel;
+use std::sync::Arc;
+
+/// Get the current weather for a city.
+#[tool]
+async fn get_weather(
+    #[field] api_key: String,
+    /// City name to look up
+    city: String,
+) -> Result<String, SynapticError> {
+    // In production, call a real weather API with api_key
+    Ok(format!("72°F and sunny in {}", city))
+}
+
+#[tokio::main]
+async fn main() -> Result<(), SynapticError> {
+    let tool = get_weather("sk-fake-key".into());
+    let tools: Vec<Arc<dyn synaptic::core::Tool>> = vec![tool];
+
+    let model: Arc<dyn ChatModel> = Arc::new(ScriptedChatModel::new(vec![/* ... */]));
+    let agent = create_react_agent(model, tools).compile()?;
+
+    let state = MessageState::from_messages(vec![
+        Message::human("What's the weather in Tokyo?"),
+    ]);
+
+    let result = agent.invoke(state, None).await?;
+    println!("{:?}", result.into_state().messages);
+    Ok(())
+}
+```
+
+### Scenario B: Data Pipeline with Chain Macros
+
+This example composes multiple `#[chain]` steps into a processing pipeline
+that extracts text, normalizes it, and counts words.
+
+```rust,ignore
+use synaptic::core::{RunnableConfig, SynapticError};
+use synaptic::runnables::Runnable;
+use serde_json::{json, Value};
+
+#[chain]
+async fn extract_text(input: Value) -> Result<Value, SynapticError> {
+    let text = input["content"].as_str().unwrap_or("");
+    Ok(json!(text.to_string()))
+}
+
+#[chain]
+async fn normalize(input: Value) -> Result<Value, SynapticError> {
+    let text = input.as_str().unwrap_or("").to_lowercase().trim().to_string();
+    Ok(json!(text))
+}
+
+#[chain]
+async fn word_count(input: Value) -> Result<Value, SynapticError> {
+    let text = input.as_str().unwrap_or("");
+    let count = text.split_whitespace().count();
+    Ok(json!({"text": text, "word_count": count}))
+}
+
+#[tokio::main]
+async fn main() -> Result<(), SynapticError> {
+    let pipeline = extract_text() | normalize() | word_count();
+    let config = RunnableConfig::default();
+
+    let input = json!({"content": "  Hello World  from Synaptic!  "});
+    let result = pipeline.invoke(input, &config).await?;
+
+    println!("Result: {}", result);
+    // {"text": "hello world from synaptic!", "word_count": 4}
+    Ok(())
+}
+```
+
+### Scenario C: Agent with Middleware Stack
+
+This example combines middleware macros into a real agent with logging, retry,
+and dynamic prompting.
+
+```rust,ignore
+use synaptic::core::{Message, SynapticError};
+use synaptic::middleware::{AgentMiddleware, MiddlewareChain, ModelRequest, ModelResponse, ModelCaller};
+use std::sync::Arc;
+
+// Log every model call
+#[after_model]
+async fn log_response(request: &ModelRequest, response: &mut ModelResponse) -> Result<(), SynapticError> {
+    println!("[LOG] Model responded with {} chars",
+        response.message.content().len());
+    Ok(())
+}
+
+// Retry failed model calls up to 2 times
+#[wrap_model_call]
+async fn retry_model(
+    #[field] max_retries: usize,
+    request: ModelRequest,
+    next: &dyn ModelCaller,
+) -> Result<ModelResponse, SynapticError> {
+    let mut last_err = None;
+    for _ in 0..=max_retries {
+        match next.call(request.clone()).await {
+            Ok(resp) => return Ok(resp),
+            Err(e) => last_err = Some(e),
+        }
+    }
+    Err(last_err.unwrap())
+}
+
+// Dynamic system prompt based on conversation length
+#[dynamic_prompt]
+fn adaptive_prompt(messages: &[Message]) -> String {
+    if messages.len() > 20 {
+        "Be concise. Summarize rather than elaborate.".into()
+    } else {
+        "You are a helpful assistant. Be thorough.".into()
+    }
+}
+
+fn build_middleware_stack() -> Vec<Arc<dyn AgentMiddleware>> {
+    vec![
+        adaptive_prompt(),
+        retry_model(2),
+        log_response(),
+    ]
+}
+```
+
+---
+
 ## Comparison with Python LangChain
 
 If you are coming from Python LangChain / LangGraph, here is how the Synaptic
@@ -998,7 +1175,7 @@ Tools generated by `#[tool]` can be tested like any other `Tool` implementation.
 
 ```rust,ignore
 use serde_json::json;
-use synaptic_core::Tool;
+use synaptic::core::Tool;
 
 /// Add two numbers.
 #[tool]
@@ -1034,8 +1211,8 @@ async fn test_add_tool() {
 For `#[chain]` macros, test the returned `BoxRunnable` with `invoke()`:
 
 ```rust,ignore
-use synaptic_core::RunnableConfig;
-use synaptic_runnables::Runnable;
+use synaptic::core::RunnableConfig;
+use synaptic::runnables::Runnable;
 
 #[chain]
 async fn to_upper(s: String) -> Result<String, SynapticError> {

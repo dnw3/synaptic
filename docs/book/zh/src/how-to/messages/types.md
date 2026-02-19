@@ -21,7 +21,7 @@
 始终使用工厂方法，而不是直接构造枚举变体：
 
 ```rust
-use synaptic_core::{Message, ToolCall};
+use synaptic::core::{Message, ToolCall};
 use serde_json::json;
 
 // System message -- sets the model's behavior
@@ -61,7 +61,7 @@ let remove = Message::remove("msg-id-to-remove");
 所有消息变体共享一组通用的访问器方法：
 
 ```rust
-use synaptic_core::Message;
+use synaptic::core::Message;
 
 let msg = Message::human("Hello!");
 
@@ -91,7 +91,7 @@ assert!(msg.name().is_none());
 ### 工具调用访问器
 
 ```rust
-use synaptic_core::{Message, ToolCall};
+use synaptic::core::{Message, ToolCall};
 use serde_json::json;
 
 let ai = Message::ai_with_tool_calls("", vec![
@@ -118,7 +118,7 @@ assert_eq!(tool_msg.tool_call_id(), Some("call_1"));
 消息支持构建器模式来设置可选字段：
 
 ```rust
-use synaptic_core::Message;
+use synaptic::core::Message;
 use serde_json::json;
 
 let msg = Message::human("Hello!")
@@ -147,7 +147,7 @@ assert_eq!(msg.name(), Some("Alice"));
 消息序列化为带有 `"role"` 标签的 JSON：
 
 ```rust
-use synaptic_core::Message;
+use synaptic::core::Message;
 
 let msg = Message::human("Hello!");
 let json = serde_json::to_string_pretty(&msg).unwrap();

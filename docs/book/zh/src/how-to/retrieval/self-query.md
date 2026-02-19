@@ -19,7 +19,7 @@
 首先，使用 `MetadataFieldInfo` 描述文档集合中可用的元数据字段：
 
 ```rust
-use synaptic_retrieval::MetadataFieldInfo;
+use synaptic::retrieval::MetadataFieldInfo;
 
 let fields = vec![
     MetadataFieldInfo {
@@ -46,7 +46,7 @@ let fields = vec![
 
 ```rust
 use std::sync::Arc;
-use synaptic_retrieval::{SelfQueryRetriever, MetadataFieldInfo, Retriever};
+use synaptic::retrieval::{SelfQueryRetriever, MetadataFieldInfo, Retriever};
 
 let base_retriever: Arc<dyn Retriever> = Arc::new(/* any retriever */);
 let model: Arc<dyn ChatModel> = Arc::new(/* any ChatModel */);
@@ -88,7 +88,7 @@ let results = retriever.retrieve(
 ```rust
 use std::sync::Arc;
 use std::collections::HashMap;
-use synaptic_retrieval::{
+use synaptic::retrieval::{
     BM25Retriever,
     SelfQueryRetriever,
     MetadataFieldInfo,

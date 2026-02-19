@@ -32,12 +32,7 @@ RAG 管道由五个阶段组成，每个阶段对应 Synaptic 中的一个或多
 
 ```toml
 [dependencies]
-synaptic-core = { path = "../crates/synaptic-core" }
-synaptic-loaders = { path = "../crates/synaptic-loaders" }
-synaptic-splitters = { path = "../crates/synaptic-splitters" }
-synaptic-embeddings = { path = "../crates/synaptic-embeddings" }
-synaptic-vectorstores = { path = "../crates/synaptic-vectorstores" }
-synaptic-retrieval = { path = "../crates/synaptic-retrieval" }
+synaptic = { version = "0.2", features = ["rag"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -46,8 +41,8 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 Synaptic 提供多种文档加载器。最简单的是 `TextLoader`，它从文本文件加载内容并创建 `Document` 对象：
 
 ```rust
-use synaptic_loaders::{Loader, TextLoader};
-use synaptic_retrieval::Document;
+use synaptic::loaders::{Loader, TextLoader};
+use synaptic::retrieval::Document;
 
 // 从文件加载
 let loader = TextLoader::new("docs/my-knowledge-base.txt");
@@ -78,7 +73,7 @@ let documents = vec![
 长文档需要拆分为较小的块，以便于嵌入和检索。`RecursiveCharacterTextSplitter` 是最常用的分割器，它按层级分隔符（`\n\n` -> `\n` -> ` ` -> `""`）递归拆分文本：
 
 ```rust
-use synaptic_splitters::{TextSplitter, RecursiveCharacterTextSplitter};
+use synaptic::splitters::{TextSplitter, RecursiveCharacterTextSplitter};
 
 let splitter = RecursiveCharacterTextSplitter::new(500)  // 每块最多 500 个字符
     .with_chunk_overlap(50);  // 相邻块之间重叠 50 个字符
@@ -101,8 +96,8 @@ println!("原始文档: {} 个, 拆分后: {} 个块", documents.len(), chunks.l
 将文档块转换为向量并存储到向量数据库中。这里我们使用 `FakeEmbeddings`（确定性测试用嵌入模型）和 `InMemoryVectorStore`：
 
 ```rust
-use synaptic_embeddings::FakeEmbeddings;
-use synaptic_vectorstores::{VectorStore, InMemoryVectorStore};
+use synaptic::embeddings::FakeEmbeddings;
+use synaptic::vectorstores::{VectorStore, InMemoryVectorStore};
 
 // 创建嵌入模型（生产环境使用 OpenAiEmbeddings 或 OllamaEmbeddings）
 let embeddings = FakeEmbeddings::new();
@@ -124,7 +119,7 @@ println!("已索引 {} 个文档块", ids.len());
 在生产环境中，你会使用真实的嵌入模型：
 
 ```rust
-use synaptic_embeddings::OpenAiEmbeddings;
+use synaptic::embeddings::OpenAiEmbeddings;
 
 let embeddings = OpenAiEmbeddings::new("text-embedding-3-small");
 ```
@@ -134,8 +129,8 @@ let embeddings = OpenAiEmbeddings::new("text-embedding-3-small");
 使用 `VectorStoreRetriever` 将向量存储桥接到 `Retriever` trait，方便与 Synaptic 的其他组件集成：
 
 ```rust
-use synaptic_vectorstores::VectorStoreRetriever;
-use synaptic_retrieval::Retriever;
+use synaptic::vectorstores::VectorStoreRetriever;
+use synaptic::retrieval::Retriever;
 
 // 创建检索器，每次检索返回最相似的 3 个文档
 let retriever = VectorStoreRetriever::new(store, embeddings, 3);
@@ -163,7 +158,7 @@ Synaptic 提供多种高级检索策略，可以显著提高检索质量：
 将检索到的文档作为上下文，结合用户问题构建提示，发送给 LLM 生成回答：
 
 ```rust
-use synaptic_core::{ChatModel, ChatRequest, Message, SynapticError};
+use synaptic::core::{ChatModel, ChatRequest, Message, SynapticError};
 
 // 将检索到的文档拼接为上下文
 let context = relevant_docs.iter()
@@ -192,11 +187,11 @@ println!("回答: {}", response.message.content());
 以下是将所有步骤组合在一起的完整示例：
 
 ```rust
-use synaptic_core::{ChatModel, ChatRequest, Message, SynapticError};
-use synaptic_embeddings::FakeEmbeddings;
-use synaptic_retrieval::{Document, Retriever};
-use synaptic_splitters::{TextSplitter, RecursiveCharacterTextSplitter};
-use synaptic_vectorstores::{VectorStore, InMemoryVectorStore, VectorStoreRetriever};
+use synaptic::core::{ChatModel, ChatRequest, Message, SynapticError};
+use synaptic::embeddings::FakeEmbeddings;
+use synaptic::retrieval::{Document, Retriever};
+use synaptic::splitters::{TextSplitter, RecursiveCharacterTextSplitter};
+use synaptic::vectorstores::{VectorStore, InMemoryVectorStore, VectorStoreRetriever};
 
 #[tokio::main]
 async fn main() -> Result<(), SynapticError> {

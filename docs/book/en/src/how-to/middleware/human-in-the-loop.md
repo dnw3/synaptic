@@ -7,7 +7,7 @@ Pauses tool execution to request human approval before proceeding. Use this when
 There are two constructors depending on the scope of approval:
 
 ```rust,ignore
-use synaptic_middleware::HumanInTheLoopMiddleware;
+use synaptic::middleware::HumanInTheLoopMiddleware;
 
 // Require approval for ALL tool calls
 let mw = HumanInTheLoopMiddleware::new(callback);
@@ -24,7 +24,7 @@ let mw = HumanInTheLoopMiddleware::for_tools(
 You must implement the `ApprovalCallback` trait to define how approval is obtained:
 
 ```rust,ignore
-use synaptic_middleware::ApprovalCallback;
+use synaptic::middleware::ApprovalCallback;
 
 struct CliApproval;
 
@@ -45,8 +45,8 @@ Return `Ok(true)` to approve, `Ok(false)` to reject (the model receives a reject
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_middleware::HumanInTheLoopMiddleware;
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::middleware::HumanInTheLoopMiddleware;
 
 let approval = Arc::new(CliApproval);
 let hitl = HumanInTheLoopMiddleware::for_tools(

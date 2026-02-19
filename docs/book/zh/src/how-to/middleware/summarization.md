@@ -5,7 +5,7 @@
 ## 构造函数
 
 ```rust,ignore
-use synaptic_middleware::SummarizationMiddleware;
+use synaptic::middleware::SummarizationMiddleware;
 
 let mw = SummarizationMiddleware::new(
     summarizer_model,   // Arc<dyn ChatModel> -- model used to generate summaries
@@ -26,8 +26,8 @@ let mw = SummarizationMiddleware::new(
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_middleware::SummarizationMiddleware;
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::middleware::SummarizationMiddleware;
 
 let summarizer = Arc::new(OpenAiChatModel::new("gpt-4o-mini"));
 
@@ -86,10 +86,10 @@ let graph = create_agent(agent_model, tools, options)?;
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{ChatResponse, Message};
-use synaptic_models::ScriptedChatModel;
-use synaptic_middleware::SummarizationMiddleware;
-use synaptic_graph::{create_agent, AgentOptions, MessageState};
+use synaptic::core::{ChatResponse, Message};
+use synaptic::models::ScriptedChatModel;
+use synaptic::middleware::SummarizationMiddleware;
+use synaptic::graph::{create_agent, AgentOptions, MessageState};
 
 // Script: summarizer returns a summary, agent responds
 let summarizer = Arc::new(ScriptedChatModel::new(vec![

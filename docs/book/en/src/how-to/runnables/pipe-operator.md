@@ -11,8 +11,8 @@ The pipe operator is implemented via Rust's `BitOr` trait on `BoxRunnable`. Both
 ## Basic chaining
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableLambda, BoxRunnable};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableLambda, BoxRunnable};
+use synaptic::core::RunnableConfig;
 
 let step1 = RunnableLambda::new(|x: String| async move {
     Ok(format!("Step 1: {x}"))
@@ -54,8 +54,8 @@ Each `|` wraps the left side into a new `RunnableSequence`, so `a | b | c` produ
 Steps can change the type flowing through the chain, as long as each step's output matches the next step's input:
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 // String -> usize -> String
 let count_chars = RunnableLambda::new(|s: String| async move {
@@ -84,7 +84,7 @@ Rust's type system needs to know the exact types at compile time. Without `boxed
 `RunnablePassthrough` is a no-op runnable that passes its input through unchanged. It is useful when you need an identity step in a chain -- for example, as one branch in a `RunnableParallel`:
 
 ```rust
-use synaptic_runnables::{Runnable, RunnablePassthrough};
+use synaptic::runnables::{Runnable, RunnablePassthrough};
 
 let passthrough = RunnablePassthrough;
 let result = passthrough.invoke("unchanged".to_string(), &config).await?;
@@ -96,7 +96,7 @@ assert_eq!(result, "unchanged");
 If any step in the chain returns an `Err`, the chain short-circuits immediately and returns that error. Subsequent steps are not executed:
 
 ```rust
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 
 let failing = RunnableLambda::new(|_x: String| async move {
     Err::<String, _>(SynapticError::Validation("something went wrong".into()))

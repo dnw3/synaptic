@@ -8,7 +8,7 @@ Deep Agent 可以生成子代理（**subagent**）来处理独立的子任务。
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
 
 let mut options = DeepAgentOptions::new(backend);
 options.enable_subagents = true; // 默认启用
@@ -32,7 +32,7 @@ let agent = create_deep_agent(model, options)?;
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions, SubAgentDef};
+use synaptic::deep::{create_deep_agent, DeepAgentOptions, SubAgentDef};
 
 let mut options = DeepAgentOptions::new(backend);
 options.subagents = vec![
@@ -60,7 +60,7 @@ let agent = create_deep_agent(model, options)?;
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
 
 let mut options = DeepAgentOptions::new(backend);
 options.max_subagent_depth = 3; // 默认值为 3
@@ -85,9 +85,9 @@ let agent = create_deep_agent(model, options)?;
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::Message;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
-use synaptic_graph::MessageState;
+use synaptic::core::Message;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::graph::MessageState;
 
 let options = DeepAgentOptions::new(backend);
 let agent = create_deep_agent(model, options)?;

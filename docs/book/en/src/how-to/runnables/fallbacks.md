@@ -11,8 +11,8 @@ This is particularly useful when working with LLM providers that may experience 
 ## Basic usage
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableWithFallbacks, RunnableLambda};
-use synaptic_core::{RunnableConfig, SynapticError};
+use synaptic::runnables::{Runnable, RunnableWithFallbacks, RunnableLambda};
+use synaptic::core::{RunnableConfig, SynapticError};
 
 // A runnable that always fails
 let unreliable = RunnableLambda::new(|_x: String| async move {
@@ -104,7 +104,7 @@ let chain = preprocess.boxed() | resilient_model.boxed() | postprocess.boxed();
 You can combine both -- wrap a retrying runnable as the primary, with a different provider as a fallback:
 
 ```rust
-use synaptic_runnables::{RunnableRetry, RetryPolicy, RunnableWithFallbacks};
+use synaptic::runnables::{RunnableRetry, RetryPolicy, RunnableWithFallbacks};
 
 let retrying_primary = RunnableRetry::new(primary.boxed(), RetryPolicy::default());
 let resilient = RunnableWithFallbacks::new(

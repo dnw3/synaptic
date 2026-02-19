@@ -23,7 +23,7 @@ pub struct ToolDefinition {
 ```rust,ignore
 use std::collections::HashMap;
 use serde_json::{json, Value};
-use synaptic_core::ToolDefinition;
+use synaptic::core::ToolDefinition;
 
 let mut extras = HashMap::new();
 extras.insert("cache_control".to_string(), json!({"type": "ephemeral"}));
@@ -78,7 +78,7 @@ let def = ToolDefinition {
 在实现 `Tool` trait 时，从 `as_tool_definition()` 返回 extras：
 
 ```rust,ignore
-use synaptic_core::Tool;
+use synaptic::core::Tool;
 
 impl Tool for MyTool {
     fn name(&self) -> &'static str { "my_tool" }

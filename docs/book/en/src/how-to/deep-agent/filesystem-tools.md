@@ -7,8 +7,8 @@ A Deep Agent ships with six built-in filesystem tools, plus a conditional sevent
 If you need the tool set outside of a `DeepAgent` (for example, in a custom graph), use the factory function:
 
 ```rust,ignore
-use synaptic_deep::tools::create_filesystem_tools;
-use synaptic_deep::backend::FilesystemBackend;
+use synaptic::deep::tools::create_filesystem_tools;
+use synaptic::deep::backend::FilesystemBackend;
 use std::sync::Arc;
 
 let backend = Arc::new(FilesystemBackend::new("/workspace"));

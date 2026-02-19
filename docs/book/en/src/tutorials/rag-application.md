@@ -8,14 +8,7 @@ Add the required Synaptic crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic-core = { path = "../crates/synaptic-core" }
-synaptic-loaders = { path = "../crates/synaptic-loaders" }
-synaptic-splitters = { path = "../crates/synaptic-splitters" }
-synaptic-embeddings = { path = "../crates/synaptic-embeddings" }
-synaptic-vectorstores = { path = "../crates/synaptic-vectorstores" }
-synaptic-retrieval = { path = "../crates/synaptic-retrieval" }
-synaptic-models = { path = "../crates/synaptic-models" }
-synaptic-prompts = { path = "../crates/synaptic-prompts" }
+synaptic = { version = "0.2", features = ["rag"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -55,7 +48,7 @@ A RAG pipeline has two phases:
 Synaptic provides several document loaders. `TextLoader` wraps an in-memory string into a `Document`. For files on disk, use `FileLoader`.
 
 ```rust
-use synaptic_loaders::{Loader, TextLoader};
+use synaptic::loaders::{Loader, TextLoader};
 
 let loader = TextLoader::new(
     "rust-intro",
@@ -80,7 +73,7 @@ Each `Document` has three fields:
 For loading files from disk, use `FileLoader`:
 
 ```rust
-use synaptic_loaders::{Loader, FileLoader};
+use synaptic::loaders::{Loader, FileLoader};
 
 let loader = FileLoader::new("data/rust-book.txt");
 let docs = loader.load().await?;
@@ -95,7 +88,7 @@ Other loaders include `JsonLoader`, `CsvLoader`, and `DirectoryLoader` (for load
 Large documents need to be split into smaller chunks so that retrieval can return focused, relevant passages instead of entire files. `RecursiveCharacterTextSplitter` tries a hierarchy of separators (`\n\n`, `\n`, ` `, `""`) and keeps chunks within a size limit.
 
 ```rust
-use synaptic_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
+use synaptic::splitters::{RecursiveCharacterTextSplitter, TextSplitter};
 
 let splitter = RecursiveCharacterTextSplitter::new(100)
     .with_chunk_overlap(20);
@@ -121,8 +114,8 @@ Embeddings convert text into numerical vectors so that similarity can be compute
 
 ```rust
 use std::sync::Arc;
-use synaptic_embeddings::FakeEmbeddings;
-use synaptic_vectorstores::{InMemoryVectorStore, VectorStore};
+use synaptic::embeddings::FakeEmbeddings;
+use synaptic::vectorstores::{InMemoryVectorStore, VectorStore};
 
 let embeddings = Arc::new(FakeEmbeddings::new(128));
 
@@ -145,7 +138,7 @@ For production use, replace `FakeEmbeddings` with `OpenAiEmbeddings` or `OllamaE
 Now you can search the vector store for chunks that are similar to a query:
 
 ```rust
-use synaptic_vectorstores::VectorStore;
+use synaptic::vectorstores::VectorStore;
 
 let results = store.similarity_search("What is Rust?", 3, embeddings.as_ref()).await?;
 for doc in &results {
@@ -160,8 +153,8 @@ The second argument (`3`) is `k` -- the number of results to return.
 For a cleaner API that decouples retrieval logic from the store implementation, wrap the store in a `VectorStoreRetriever`:
 
 ```rust
-use synaptic_retrieval::Retriever;
-use synaptic_vectorstores::VectorStoreRetriever;
+use synaptic::retrieval::Retriever;
+use synaptic::vectorstores::VectorStoreRetriever;
 
 let retriever = VectorStoreRetriever::new(
     Arc::new(store),
@@ -184,13 +177,13 @@ The `Retriever` trait has a single method -- `retrieve(query, top_k)` -- and is 
 The final step combines retrieved context with the user's question in a prompt. Here is the complete pipeline:
 
 ```rust
-use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
-use synaptic_models::ScriptedChatModel;
-use synaptic_loaders::{Loader, TextLoader};
-use synaptic_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
-use synaptic_embeddings::FakeEmbeddings;
-use synaptic_vectorstores::{InMemoryVectorStore, VectorStore, VectorStoreRetriever};
-use synaptic_retrieval::Retriever;
+use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
+use synaptic::models::ScriptedChatModel;
+use synaptic::loaders::{Loader, TextLoader};
+use synaptic::splitters::{RecursiveCharacterTextSplitter, TextSplitter};
+use synaptic::embeddings::FakeEmbeddings;
+use synaptic::vectorstores::{InMemoryVectorStore, VectorStore, VectorStoreRetriever};
+use synaptic::retrieval::Retriever;
 use std::sync::Arc;
 
 #[tokio::main]

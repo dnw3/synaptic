@@ -7,7 +7,7 @@ This guide shows how to select specific messages from a conversation and trim me
 The `filter_messages` function selects messages based on their type (role), name, or ID. It supports both inclusion and exclusion filters.
 
 ```rust
-use synaptic_core::{filter_messages, Message};
+use synaptic::core::{filter_messages, Message};
 ```
 
 ### Filter by type
@@ -108,7 +108,7 @@ let result = filter_messages(
 The `trim_messages` function trims a message list to fit within a token budget. It supports two strategies: keep the first messages or keep the last messages.
 
 ```rust
-use synaptic_core::{trim_messages, TrimStrategy, Message};
+use synaptic::core::{trim_messages, TrimStrategy, Message};
 ```
 
 ### Keep last messages (most common)

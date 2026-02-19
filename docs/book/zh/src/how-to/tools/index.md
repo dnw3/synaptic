@@ -27,8 +27,8 @@ Tool 赋予 LLM 在真实世界中采取行动的能力——调用 API、查询
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapticError};
-use synaptic_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic::core::{Tool, SynapticError};
+use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 
 struct AddTool;
 

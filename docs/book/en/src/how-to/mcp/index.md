@@ -1,6 +1,6 @@
 # MCP (Model Context Protocol)
 
-The `synaptic_mcp` crate connects to external MCP-compatible tool servers, discovers their tools, and exposes them as standard `synaptic_core::Tool` implementations.
+The `synaptic_mcp` crate connects to external MCP-compatible tool servers, discovers their tools, and exposes them as standard `synaptic::core::Tool` implementations.
 
 ## What is MCP?
 
@@ -20,7 +20,7 @@ All transports use the same JSON-RPC `tools/list` method for discovery and `tool
 
 ```rust,ignore
 use std::collections::HashMap;
-use synaptic_mcp::{MultiServerMcpClient, McpConnection, StdioConnection};
+use synaptic::mcp::{MultiServerMcpClient, McpConnection, StdioConnection};
 
 // Configure a single MCP server
 let mut servers = HashMap::new();
@@ -55,7 +55,7 @@ let client = MultiServerMcpClient::new(servers).with_prefix(false);
 The `load_mcp_tools` function combines `connect()` and `get_tools()` in a single call:
 
 ```rust,ignore
-use synaptic_mcp::load_mcp_tools;
+use synaptic::mcp::load_mcp_tools;
 
 let tools = load_mcp_tools(&client).await?;
 ```
@@ -63,7 +63,7 @@ let tools = load_mcp_tools(&client).await?;
 ## Crate Imports
 
 ```rust,ignore
-use synaptic_mcp::{
+use synaptic::mcp::{
     MultiServerMcpClient,
     McpConnection,
     StdioConnection,

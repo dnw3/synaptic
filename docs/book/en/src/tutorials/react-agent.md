@@ -19,9 +19,7 @@ Add the required crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic-core = { path = "../crates/synaptic-core" }
-synaptic-graph = { path = "../crates/synaptic-graph" }
-synaptic-tools = { path = "../crates/synaptic-tools" }
+synaptic = { version = "0.2", features = ["agent"] }
 async-trait = "0.1"
 serde_json = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
@@ -34,7 +32,7 @@ Every tool in Synaptic implements the `Tool` trait. A tool has a name, a descrip
 ```rust
 use async_trait::async_trait;
 use serde_json::json;
-use synaptic_core::{SynapticError, Tool};
+use synaptic::core::{SynapticError, Tool};
 
 struct AddTool;
 
@@ -65,7 +63,7 @@ For this tutorial we build a simple demo model that simulates the ReAct loop. On
 ```rust
 use async_trait::async_trait;
 use serde_json::json;
-use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError, ToolCall};
+use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError, ToolCall};
 
 struct DemoModel;
 
@@ -111,8 +109,8 @@ A conditional edge routes from "agent" to "tools" if the response contains tool 
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::Tool;
-use synaptic_graph::create_react_agent;
+use synaptic::core::Tool;
+use synaptic::graph::create_react_agent;
 
 let model = Arc::new(DemoModel);
 let tools: Vec<Arc<dyn Tool>> = vec![Arc::new(AddTool)];
@@ -127,8 +125,8 @@ Both the model and tools are wrapped in `Arc` because the graph needs shared own
 Create an initial `MessageState` with the user's question and invoke the graph:
 
 ```rust
-use synaptic_core::Message;
-use synaptic_graph::MessageState;
+use synaptic::core::Message;
+use synaptic::graph::MessageState;
 
 let initial_state = MessageState {
     messages: vec![Message::human("What is 7 + 5?")],
@@ -151,8 +149,8 @@ Here is the complete program that ties all the pieces together:
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::json;
-use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError, Tool, ToolCall};
-use synaptic_graph::{create_react_agent, MessageState};
+use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError, Tool, ToolCall};
+use synaptic::graph::{create_react_agent, MessageState};
 
 // --- Model ---
 

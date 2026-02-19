@@ -11,8 +11,8 @@ pipe 运算符通过 Rust 的 `BitOr` trait 在 `BoxRunnable` 上实现。两侧
 ## 基本串联
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableLambda, BoxRunnable};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableLambda, BoxRunnable};
+use synaptic::core::RunnableConfig;
 
 let step1 = RunnableLambda::new(|x: String| async move {
     Ok(format!("Step 1: {x}"))
@@ -54,8 +54,8 @@ assert_eq!(result, "Step 1: start -> Step 2 -> Step 3");
 各步骤可以改变流经链的类型，只要每个步骤的输出与下一个步骤的输入匹配即可：
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 // String -> usize -> String
 let count_chars = RunnableLambda::new(|s: String| async move {
@@ -84,7 +84,7 @@ Rust 的类型系统需要在编译时知道确切的类型。如果不使用 `b
 `RunnablePassthrough` 是一个无操作的 runnable，原样传递其输入。当你需要在链中使用一个恒等步骤时它很有用——例如，作为 `RunnableParallel` 中的一个分支：
 
 ```rust
-use synaptic_runnables::{Runnable, RunnablePassthrough};
+use synaptic::runnables::{Runnable, RunnablePassthrough};
 
 let passthrough = RunnablePassthrough;
 let result = passthrough.invoke("unchanged".to_string(), &config).await?;
@@ -96,7 +96,7 @@ assert_eq!(result, "unchanged");
 如果链中的任何步骤返回 `Err`，链会立即短路并返回该错误。后续步骤不会被执行：
 
 ```rust
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 
 let failing = RunnableLambda::new(|_x: String| async move {
     Err::<String, _>(SynapticError::Validation("something went wrong".into()))

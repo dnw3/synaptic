@@ -7,7 +7,7 @@ The `Message` enum is defined in `synaptic_core` and uses a tagged union with si
 ## Quick example
 
 ```rust
-use synaptic_core::{ChatRequest, Message};
+use synaptic::core::{ChatRequest, Message};
 
 let messages = vec![
     Message::system("You are a helpful assistant."),

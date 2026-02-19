@@ -7,7 +7,7 @@ Trims or filters the conversation context before each model call. Use this to ke
 The middleware accepts a `ContextStrategy` that defines how messages are edited:
 
 ```rust,ignore
-use synaptic_middleware::{ContextEditingMiddleware, ContextStrategy};
+use synaptic::middleware::{ContextEditingMiddleware, ContextStrategy};
 
 // Keep only the last 10 non-system messages
 let mw = ContextEditingMiddleware::new(ContextStrategy::LastN(10));
@@ -38,8 +38,8 @@ let mw = ContextEditingMiddleware::strip_tool_calls();
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_middleware::ContextEditingMiddleware;
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::middleware::ContextEditingMiddleware;
 
 let options = AgentOptions {
     middleware: vec![

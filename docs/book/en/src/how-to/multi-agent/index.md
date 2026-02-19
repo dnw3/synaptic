@@ -23,7 +23,7 @@ Synaptic provides prebuilt multi-agent orchestration patterns that compose indiv
 All multi-agent functions live in `synaptic_graph`:
 
 ```rust,ignore
-use synaptic_graph::{
+use synaptic::graph::{
     create_supervisor, SupervisorOptions,
     create_swarm, SwarmAgent, SwarmOptions,
     create_handoff_tool,
@@ -36,10 +36,10 @@ use synaptic_graph::{
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{
+use synaptic::graph::{
     create_agent, create_supervisor, AgentOptions, SupervisorOptions, MessageState,
 };
-use synaptic_core::Message;
+use synaptic::core::Message;
 
 // Build two sub-agents
 let agent_a = create_agent(model.clone(), tools_a, AgentOptions::default())?;

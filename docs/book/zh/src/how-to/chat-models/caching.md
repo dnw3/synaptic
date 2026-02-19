@@ -17,8 +17,8 @@ Synaptic 通过 `LlmCache` trait 提供两种缓存实现：
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::ChatModel;
-use synaptic_cache::{InMemoryCache, CachedChatModel};
+use synaptic::core::ChatModel;
+use synaptic::cache::{InMemoryCache, CachedChatModel};
 
 let base_model: Arc<dyn ChatModel> = Arc::new(model);
 let cache = Arc::new(InMemoryCache::new());
@@ -38,7 +38,7 @@ let cached_model = CachedChatModel::new(base_model, cache);
 ```rust
 use std::time::Duration;
 use std::sync::Arc;
-use synaptic_cache::InMemoryCache;
+use synaptic::cache::InMemoryCache;
 
 // Entries expire after 1 hour
 let cache = Arc::new(InMemoryCache::with_ttl(Duration::from_secs(3600)));
@@ -55,10 +55,10 @@ TTL 过期后，该条目的缓存查找将返回 `None`，下一次请求将重
 
 ```rust
 use std::sync::Arc;
-use synaptic_cache::{SemanticCache, CachedChatModel};
-use synaptic_embeddings::OpenAiEmbeddings;
+use synaptic::cache::{SemanticCache, CachedChatModel};
+use synaptic::embeddings::OpenAiEmbeddings;
 
-let embeddings: Arc<dyn synaptic_embeddings::Embeddings> = Arc::new(embeddings_provider);
+let embeddings: Arc<dyn synaptic::embeddings::Embeddings> = Arc::new(embeddings_provider);
 
 // Similarity threshold of 0.95 means only very similar queries match
 let cache = Arc::new(SemanticCache::new(embeddings, 0.95));
@@ -98,7 +98,7 @@ pub trait LlmCache: Send + Sync {
 两种缓存实现都支持清除所有条目：
 
 ```rust
-use synaptic_cache::LlmCache;
+use synaptic::cache::LlmCache;
 
 // cache implements LlmCache
 // cache.clear().await?;
@@ -110,9 +110,9 @@ use synaptic_cache::LlmCache;
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::ChatModel;
-use synaptic_cache::{InMemoryCache, CachedChatModel};
-use synaptic_models::{RetryChatModel, RetryPolicy};
+use synaptic::core::ChatModel;
+use synaptic::cache::{InMemoryCache, CachedChatModel};
+use synaptic::models::{RetryChatModel, RetryPolicy};
 
 let base_model: Arc<dyn ChatModel> = Arc::new(model);
 

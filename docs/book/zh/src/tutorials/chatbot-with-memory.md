@@ -8,8 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic-core = { path = "../crates/synaptic-core" }
-synaptic-memory = { path = "../crates/synaptic-memory" }
+synaptic = { version = "0.2", features = ["memory"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -18,8 +17,8 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 每个聊天机器人都需要记住对话内容。Synaptic 提供了 `MemoryStore` trait 来定义这个能力，`InMemoryStore` 是一个基于 `HashMap` 的简单内存实现。
 
 ```rust
-use synaptic_core::{MemoryStore, Message, SynapticError};
-use synaptic_memory::InMemoryStore;
+use synaptic::core::{MemoryStore, Message, SynapticError};
+use synaptic::memory::InMemoryStore;
 
 #[tokio::main]
 async fn main() -> Result<(), SynapticError> {
@@ -64,8 +63,8 @@ ai: 我可以帮你完成很多任务！
 每个 session ID 对应一个独立的对话历史。这就是你将多个用户或对话线程分开的方式：
 
 ```rust
-use synaptic_core::{MemoryStore, Message, SynapticError};
-use synaptic_memory::InMemoryStore;
+use synaptic::core::{MemoryStore, Message, SynapticError};
+use synaptic::memory::InMemoryStore;
 
 #[tokio::main]
 async fn main() -> Result<(), SynapticError> {
@@ -104,8 +103,8 @@ Session ID 是任意字符串。在 Web 应用中，你通常会使用用户 ID�
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::MemoryStore;
-use synaptic_memory::{InMemoryStore, ConversationBufferMemory};
+use synaptic::core::MemoryStore;
+use synaptic::memory::{InMemoryStore, ConversationBufferMemory};
 
 let store = Arc::new(InMemoryStore::new());
 let memory = ConversationBufferMemory::new(store);
@@ -120,8 +119,8 @@ let memory = ConversationBufferMemory::new(store);
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::MemoryStore;
-use synaptic_memory::{InMemoryStore, ConversationWindowMemory};
+use synaptic::core::MemoryStore;
+use synaptic::memory::{InMemoryStore, ConversationWindowMemory};
 
 let store = Arc::new(InMemoryStore::new());
 let memory = ConversationWindowMemory::new(store, 10); // 保留最近 10 条消息
@@ -136,8 +135,8 @@ let memory = ConversationWindowMemory::new(store, 10); // 保留最近 10 条消
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::{ChatModel, MemoryStore};
-use synaptic_memory::{InMemoryStore, ConversationSummaryMemory};
+use synaptic::core::{ChatModel, MemoryStore};
+use synaptic::memory::{InMemoryStore, ConversationSummaryMemory};
 
 let store = Arc::new(InMemoryStore::new());
 let model: Arc<dyn ChatModel> = /* 你的聊天模型 */;
@@ -154,8 +153,8 @@ let memory = ConversationSummaryMemory::new(store, model, 6);
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::MemoryStore;
-use synaptic_memory::{InMemoryStore, ConversationTokenBufferMemory};
+use synaptic::core::MemoryStore;
+use synaptic::memory::{InMemoryStore, ConversationTokenBufferMemory};
 
 let store = Arc::new(InMemoryStore::new());
 let memory = ConversationTokenBufferMemory::new(store, 4000); // 4000 token 预算
@@ -170,8 +169,8 @@ let memory = ConversationTokenBufferMemory::new(store, 4000); // 4000 token 预�
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::{ChatModel, MemoryStore};
-use synaptic_memory::{InMemoryStore, ConversationSummaryBufferMemory};
+use synaptic::core::{ChatModel, MemoryStore};
+use synaptic::memory::{InMemoryStore, ConversationSummaryBufferMemory};
 
 let store = Arc::new(InMemoryStore::new());
 let model: Arc<dyn ChatModel> = /* 你的聊天模型 */;
@@ -194,9 +193,9 @@ let memory = ConversationSummaryBufferMemory::new(store, model, 2000);
 ```rust
 use std::sync::Arc;
 use std::collections::HashMap;
-use synaptic_core::{MemoryStore, RunnableConfig};
-use synaptic_memory::{InMemoryStore, RunnableWithMessageHistory};
-use synaptic_runnables::Runnable;
+use synaptic::core::{MemoryStore, RunnableConfig};
+use synaptic::memory::{InMemoryStore, RunnableWithMessageHistory};
+use synaptic::runnables::Runnable;
 
 // 用自动历史管理包装模型链
 let memory = Arc::new(InMemoryStore::new());

@@ -31,7 +31,7 @@ pub struct ToolRuntime {
 ```rust,ignore
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{RuntimeAwareTool, ToolRuntime, SynapticError};
+use synaptic::core::{RuntimeAwareTool, ToolRuntime, SynapticError};
 
 struct SaveNoteTool;
 
@@ -78,8 +78,8 @@ impl RuntimeAwareTool for SaveNoteTool {
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::ToolNode;
-use synaptic_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic::graph::ToolNode;
+use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 
 let registry = ToolRegistry::new();
 let executor = SerialToolExecutor::new(registry);
@@ -99,7 +99,7 @@ let tool_node = ToolNode::new(executor)
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{RuntimeAwareTool, RuntimeAwareToolAdapter, ToolRuntime};
+use synaptic::core::{RuntimeAwareTool, RuntimeAwareToolAdapter, ToolRuntime};
 
 let tool: Arc<dyn RuntimeAwareTool> = Arc::new(SaveNoteTool);
 let adapter = RuntimeAwareToolAdapter::new(tool);
@@ -124,7 +124,7 @@ let result = adapter.call(json!({"key": "k", "text": "hello"})).await?;
 通过 `create_react_agent` 构建 ReAct Agent 时，可以通过 `AgentOptions` 传入 Store，它会自动连接到 `ToolNode`，供所有已注册的 Runtime-Aware Tool 使用：
 
 ```rust,ignore
-use synaptic_graph::{create_react_agent, AgentOptions};
+use synaptic::graph::{create_react_agent, AgentOptions};
 
 let graph = create_react_agent(
     model,

@@ -21,8 +21,8 @@ pub trait TextSplitter: Send + Sync {
 按单个分隔符字符串分割文本，然后合并小片段以保持在 `chunk_size` 以内。
 
 ```rust
-use synaptic_splitters::CharacterTextSplitter;
-use synaptic_splitters::TextSplitter;
+use synaptic::splitters::CharacterTextSplitter;
+use synaptic::splitters::TextSplitter;
 
 // Chunk size in characters, default separator is "\n\n"
 let splitter = CharacterTextSplitter::new(500);
@@ -44,8 +44,8 @@ let splitter = CharacterTextSplitter::new(500)
 默认分隔符：`["\n\n", "\n", " ", ""]`
 
 ```rust
-use synaptic_splitters::RecursiveCharacterTextSplitter;
-use synaptic_splitters::TextSplitter;
+use synaptic::splitters::RecursiveCharacterTextSplitter;
+use synaptic::splitters::TextSplitter;
 
 let splitter = RecursiveCharacterTextSplitter::new(1000)
     .with_chunk_overlap(200);
@@ -71,7 +71,7 @@ let splitter = RecursiveCharacterTextSplitter::new(1000)
 使用 `from_language()` 获取针对特定编程语言调优的分隔符：
 
 ```rust
-use synaptic_splitters::{RecursiveCharacterTextSplitter, Language};
+use synaptic::splitters::{RecursiveCharacterTextSplitter, Language};
 
 let splitter = RecursiveCharacterTextSplitter::from_language(
     Language::Rust,
@@ -85,7 +85,7 @@ let splitter = RecursiveCharacterTextSplitter::from_language(
 按标题分割 Markdown 文本，将标题层级添加到每个块的元数据中。
 
 ```rust
-use synaptic_splitters::{MarkdownHeaderTextSplitter, HeaderType};
+use synaptic::splitters::{MarkdownHeaderTextSplitter, HeaderType};
 
 let splitter = MarkdownHeaderTextSplitter::new(vec![
     HeaderType { level: "#".to_string(), name: "h1".to_string() },
@@ -111,8 +111,8 @@ let splitter = MarkdownHeaderTextSplitter::default_headers();
 使用约 4 字符/Token 的启发式方法按估计的 Token 数量分割文本。在单词边界处分割以保持块的可读性。
 
 ```rust
-use synaptic_splitters::TokenTextSplitter;
-use synaptic_splitters::TextSplitter;
+use synaptic::splitters::TokenTextSplitter;
+use synaptic::splitters::TextSplitter;
 
 // chunk_size is in estimated tokens (not characters)
 let splitter = TokenTextSplitter::new(500)
@@ -128,7 +128,7 @@ let chunks = splitter.split_text("long text...");
 按 HTML 标题标签（`<h1>`、`<h2>` 等）分割 HTML 文本，将标题层级添加到每个块的元数据中。类似于 `MarkdownHeaderTextSplitter`，但用于 HTML 内容。
 
 ```rust
-use synaptic_splitters::HtmlHeaderTextSplitter;
+use synaptic::splitters::HtmlHeaderTextSplitter;
 
 let splitter = HtmlHeaderTextSplitter::new(vec![
     ("h1".to_string(), "Header 1".to_string()),
@@ -148,8 +148,8 @@ let docs = splitter.split_html(html);
 所有分割器都可以将 `Vec<Document>` 分割为更小的块。每个块继承父文档的元数据，并获得一个 `chunk_index` 字段。块的 ID 格式为 `"{original_id}-chunk-{index}"`。
 
 ```rust
-use synaptic_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
-use synaptic_retrieval::Document;
+use synaptic::splitters::{RecursiveCharacterTextSplitter, TextSplitter};
+use synaptic::retrieval::Document;
 
 let splitter = RecursiveCharacterTextSplitter::new(500);
 

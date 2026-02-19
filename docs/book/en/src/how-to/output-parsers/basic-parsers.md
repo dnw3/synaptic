@@ -9,9 +9,9 @@ Extracts the text content from a `Message`. This is the most commonly used parse
 **Signature:** `Runnable<Message, String>`
 
 ```rust
-use synaptic_parsers::StrOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::{Message, RunnableConfig};
+use synaptic::parsers::StrOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::{Message, RunnableConfig};
 
 let parser = StrOutputParser;
 let config = RunnableConfig::default();
@@ -29,9 +29,9 @@ Parses a JSON string into a `serde_json::Value`. Useful when you need to work wi
 **Signature:** `Runnable<String, serde_json::Value>`
 
 ```rust
-use synaptic_parsers::JsonOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::JsonOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let parser = JsonOutputParser;
 let config = RunnableConfig::default();
@@ -54,9 +54,9 @@ Splits a string into a `Vec<String>` using a configurable separator. Useful when
 **Signature:** `Runnable<String, Vec<String>>`
 
 ```rust
-use synaptic_parsers::{ListOutputParser, ListSeparator};
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::{ListOutputParser, ListSeparator};
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let config = RunnableConfig::default();
 
@@ -85,9 +85,9 @@ Parses yes/no, true/false, y/n, and 1/0 style responses into a `bool`. Case-inse
 **Signature:** `Runnable<String, bool>`
 
 ```rust
-use synaptic_parsers::BooleanOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::BooleanOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let parser = BooleanOutputParser;
 let config = RunnableConfig::default();
@@ -107,9 +107,9 @@ Parses XML-formatted LLM output into an `XmlElement` tree. Supports nested eleme
 **Signature:** `Runnable<String, XmlElement>`
 
 ```rust
-use synaptic_parsers::{XmlOutputParser, XmlElement};
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::{XmlOutputParser, XmlElement};
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let config = RunnableConfig::default();
 
@@ -134,9 +134,9 @@ Parses markdown-formatted bullet lists (`- item` or `* item`) into a `Vec<String
 **Signature:** `Runnable<String, Vec<String>>`
 
 ```rust
-use synaptic_parsers::MarkdownListOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::MarkdownListOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let parser = MarkdownListOutputParser;
 let config = RunnableConfig::default();
@@ -156,9 +156,9 @@ Parses numbered lists (`1. item`, `2. item`) into a `Vec<String>`. The number pr
 **Signature:** `Runnable<String, Vec<String>>`
 
 ```rust
-use synaptic_parsers::NumberedListOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::NumberedListOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let parser = NumberedListOutputParser;
 let config = RunnableConfig::default();
@@ -176,7 +176,7 @@ assert_eq!(result, vec!["Rust", "Python", "TypeScript"]);
 All parsers implement the `FormatInstructions` trait. You can include the instructions in your prompt to guide the model:
 
 ```rust
-use synaptic_parsers::{JsonOutputParser, ListOutputParser, FormatInstructions};
+use synaptic::parsers::{JsonOutputParser, ListOutputParser, FormatInstructions};
 
 let json_parser = JsonOutputParser;
 println!("{}", json_parser.get_format_instructions());
@@ -194,11 +194,11 @@ A typical chain pipes a prompt template through a model and into a parser:
 ```rust
 use std::collections::HashMap;
 use serde_json::json;
-use synaptic_core::{ChatResponse, Message, RunnableConfig};
-use synaptic_models::ScriptedChatModel;
-use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
-use synaptic_parsers::StrOutputParser;
-use synaptic_runnables::Runnable;
+use synaptic::core::{ChatResponse, Message, RunnableConfig};
+use synaptic::models::ScriptedChatModel;
+use synaptic::prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic::parsers::StrOutputParser;
+use synaptic::runnables::Runnable;
 
 let model = ScriptedChatModel::new(vec![
     ChatResponse {

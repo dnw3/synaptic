@@ -7,7 +7,7 @@ This guide shows how to include tool (function) definitions in a chat request so
 A `ToolDefinition` describes a tool the model can invoke. It has a name, description, and a JSON Schema for its parameters:
 
 ```rust
-use synaptic_core::ToolDefinition;
+use synaptic::core::ToolDefinition;
 use serde_json::json;
 
 let weather_tool = ToolDefinition {
@@ -31,7 +31,7 @@ let weather_tool = ToolDefinition {
 Use `ChatRequest::with_tools()` to attach tool definitions to a single request:
 
 ```rust
-use synaptic_core::{ChatModel, ChatRequest, Message, ToolDefinition};
+use synaptic::core::{ChatModel, ChatRequest, Message, ToolDefinition};
 use serde_json::json;
 
 async fn call_with_tools(model: &dyn ChatModel) -> Result<(), Box<dyn std::error::Error>> {
@@ -76,7 +76,7 @@ When the model returns tool calls, each `ToolCall` contains:
 After executing the tool, send the result back as a `Tool` message:
 
 ```rust
-use synaptic_core::{ChatRequest, Message, ToolCall};
+use synaptic::core::{ChatRequest, Message, ToolCall};
 use serde_json::json;
 
 // Suppose the model returned a tool call
@@ -106,8 +106,8 @@ If you want every request through a model to automatically include certain tool 
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::{ChatModel, ChatRequest, Message, ToolDefinition};
-use synaptic_models::BoundToolsChatModel;
+use synaptic::core::{ChatModel, ChatRequest, Message, ToolDefinition};
+use synaptic::models::BoundToolsChatModel;
 use serde_json::json;
 
 let tools = vec![

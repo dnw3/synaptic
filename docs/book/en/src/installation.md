@@ -54,21 +54,11 @@ Individual features: `models`, `runnables`, `prompts`, `parsers`, `tools`, `memo
 
 The `core` module (traits and types) is always available regardless of feature selection.
 
-### Quick Start Examples
-
-**From a local checkout** (during development or before the crate is published):
+### Quick Start Example
 
 ```toml
 [dependencies]
-synaptic = { path = "path/to/synaptic/crates/synaptic", features = ["agent"] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-```
-
-**Once published to crates.io**:
-
-```toml
-[dependencies]
-synaptic = { version = "0.1", features = ["agent"] }
+synaptic = { version = "0.2", features = ["agent"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -94,8 +84,8 @@ Alternatively, you can depend on individual crates directly if you want to minim
 
 ```toml
 [dependencies]
-synaptic-core = { path = "path/to/synaptic/crates/synaptic-core" }
-synaptic-models = { path = "path/to/synaptic/crates/synaptic-models" }
+synaptic-core = "0.2"
+synaptic-models = "0.2"
 ```
 
 ## Provider API Keys

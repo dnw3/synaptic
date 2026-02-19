@@ -8,7 +8,7 @@ When subagents are enabled, `create_deep_agent` adds a built-in **task** tool. W
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
 
 let mut options = DeepAgentOptions::new(backend);
 options.enable_subagents = true; // enabled by default
@@ -32,7 +32,7 @@ For more control, define named subagent types with `SubAgentDef`. Each definitio
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions, SubAgentDef};
+use synaptic::deep::{create_deep_agent, DeepAgentOptions, SubAgentDef};
 
 let mut options = DeepAgentOptions::new(backend);
 options.subagents = vec![
@@ -60,7 +60,7 @@ Subagents can themselves spawn further subagents. To prevent unbounded recursion
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
 
 let mut options = DeepAgentOptions::new(backend);
 options.max_subagent_depth = 3; // default is 3
@@ -85,9 +85,9 @@ When the subagent finishes, only the content of its last AI message is returned 
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::Message;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
-use synaptic_graph::MessageState;
+use synaptic::core::Message;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::graph::MessageState;
 
 let options = DeepAgentOptions::new(backend);
 let agent = create_deep_agent(model, options)?;

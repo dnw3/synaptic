@@ -7,7 +7,7 @@
 `ToolDefinition` 描述了模型可以调用的 Tool。它包含名称、描述和参数的 JSON Schema：
 
 ```rust
-use synaptic_core::ToolDefinition;
+use synaptic::core::ToolDefinition;
 use serde_json::json;
 
 let weather_tool = ToolDefinition {
@@ -31,7 +31,7 @@ let weather_tool = ToolDefinition {
 使用 `ChatRequest::with_tools()` 将 Tool 定义附加到单个请求：
 
 ```rust
-use synaptic_core::{ChatModel, ChatRequest, Message, ToolDefinition};
+use synaptic::core::{ChatModel, ChatRequest, Message, ToolDefinition};
 use serde_json::json;
 
 async fn call_with_tools(model: &dyn ChatModel) -> Result<(), Box<dyn std::error::Error>> {
@@ -76,7 +76,7 @@ async fn call_with_tools(model: &dyn ChatModel) -> Result<(), Box<dyn std::error
 执行 Tool 后，将结果作为 `Tool` 消息发回：
 
 ```rust
-use synaptic_core::{ChatRequest, Message, ToolCall};
+use synaptic::core::{ChatRequest, Message, ToolCall};
 use serde_json::json;
 
 // Suppose the model returned a tool call
@@ -106,8 +106,8 @@ let follow_up = ChatRequest::new(messages);
 
 ```rust
 use std::sync::Arc;
-use synaptic_core::{ChatModel, ChatRequest, Message, ToolDefinition};
-use synaptic_models::BoundToolsChatModel;
+use synaptic::core::{ChatModel, ChatRequest, Message, ToolDefinition};
+use synaptic::models::BoundToolsChatModel;
 use serde_json::json;
 
 let tools = vec![

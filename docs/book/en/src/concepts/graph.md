@@ -221,7 +221,7 @@ The graph pauses **after** executing the named nodes. The node's output is alrea
 Nodes can also interrupt programmatically using the `interrupt()` function:
 
 ```rust
-use synaptic_graph::{interrupt, NodeOutput};
+use synaptic::graph::{interrupt, NodeOutput};
 
 // Inside a node's process() method:
 Ok(interrupt(serde_json::json!({"question": "Approve?"})))

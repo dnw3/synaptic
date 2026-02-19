@@ -15,8 +15,8 @@ Synaptic 通过 `Runnable` trait 和一组可组合的构建模块实现了 LCEL
 每个 `Runnable` 还有一个 `boxed()` 方法，可以将其包装为 `BoxRunnable<I, O>`——一个类型擦除的容器，支持使用 `|` pipe 运算符进行组合。
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableLambda, BoxRunnable};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableLambda, BoxRunnable};
+use synaptic::core::RunnableConfig;
 
 let step = RunnableLambda::new(|x: String| async move {
     Ok(x.to_uppercase())

@@ -22,8 +22,8 @@ pub trait Embeddings: Send + Sync {
 基于输入文本的简单哈希生成确定性向量。适用于测试和开发，无需 API 调用。
 
 ```rust
-use synaptic_embeddings::FakeEmbeddings;
-use synaptic_embeddings::Embeddings;
+use synaptic::embeddings::FakeEmbeddings;
+use synaptic::embeddings::Embeddings;
 
 // Specify the number of dimensions (default is 4)
 let embeddings = FakeEmbeddings::new(4);
@@ -41,9 +41,9 @@ let query_vector = embeddings.embed_query("search query").await?;
 
 ```rust
 use std::sync::Arc;
-use synaptic_embeddings::{OpenAiEmbeddings, OpenAiEmbeddingsConfig};
-use synaptic_embeddings::Embeddings;
-use synaptic_models::backend::HttpBackend;
+use synaptic::embeddings::{OpenAiEmbeddings, OpenAiEmbeddingsConfig};
+use synaptic::embeddings::Embeddings;
+use synaptic::models::backend::HttpBackend;
 
 let config = OpenAiEmbeddingsConfig::new("sk-...")
     .with_model("text-embedding-3-small");  // default model
@@ -67,9 +67,9 @@ let config = OpenAiEmbeddingsConfig::new("sk-...")
 
 ```rust
 use std::sync::Arc;
-use synaptic_embeddings::{OllamaEmbeddings, OllamaEmbeddingsConfig};
-use synaptic_embeddings::Embeddings;
-use synaptic_models::backend::HttpBackend;
+use synaptic::embeddings::{OllamaEmbeddings, OllamaEmbeddingsConfig};
+use synaptic::embeddings::Embeddings;
+use synaptic::models::backend::HttpBackend;
 
 let config = OllamaEmbeddingsConfig::new("nomic-embed-text");
 // Default base_url: http://localhost:11434
@@ -93,7 +93,7 @@ let config = OllamaEmbeddingsConfig::new("nomic-embed-text")
 
 ```rust
 use std::sync::Arc;
-use synaptic_embeddings::{CacheBackedEmbeddings, FakeEmbeddings, Embeddings};
+use synaptic::embeddings::{CacheBackedEmbeddings, FakeEmbeddings, Embeddings};
 
 let inner = Arc::new(FakeEmbeddings::new(128));
 let cached = CacheBackedEmbeddings::new(inner);
@@ -114,9 +114,9 @@ assert_eq!(v1, v2);
 Embeddings 作为参数传递给 VectorStore 方法，而不是存储在 VectorStore 内部。这种设计让你可以在不重建 Store 的情况下更换 Embeddings 提供商。
 
 ```rust
-use synaptic_vectorstores::{InMemoryVectorStore, VectorStore};
-use synaptic_embeddings::FakeEmbeddings;
-use synaptic_retrieval::Document;
+use synaptic::vectorstores::{InMemoryVectorStore, VectorStore};
+use synaptic::embeddings::FakeEmbeddings;
+use synaptic::retrieval::Document;
 
 let embeddings = FakeEmbeddings::new(128);
 let store = InMemoryVectorStore::new();

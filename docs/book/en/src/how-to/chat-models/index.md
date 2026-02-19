@@ -15,7 +15,7 @@ Each provider adapter takes a configuration struct and a `ProviderBackend`:
 
 ```rust
 use std::sync::Arc;
-use synaptic_models::{OpenAiChatModel, OpenAiConfig, HttpBackend};
+use synaptic::models::{OpenAiChatModel, OpenAiConfig, HttpBackend};
 
 let config = OpenAiConfig::new("sk-...", "gpt-4o");
 let backend = Arc::new(HttpBackend::new());
@@ -41,7 +41,7 @@ All wrappers implement `ChatModel`, so they can be stacked:
 
 ```rust
 use std::sync::Arc;
-use synaptic_models::{RetryChatModel, RetryPolicy, RateLimitedChatModel};
+use synaptic::models::{RetryChatModel, RetryPolicy, RateLimitedChatModel};
 
 let model: Arc<dyn ChatModel> = Arc::new(base_model);
 let with_retry = Arc::new(RetryChatModel::new(model, RetryPolicy::default()));

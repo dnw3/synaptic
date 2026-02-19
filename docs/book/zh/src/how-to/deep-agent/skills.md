@@ -68,7 +68,7 @@ my-project/
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
 
 let mut options = DeepAgentOptions::new(backend);
 options.skills_dir = Some(".skills".to_string());  // 默认值

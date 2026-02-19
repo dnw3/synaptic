@@ -4,6 +4,7 @@ description = "Callback handlers: RecordingCallback, TracingCallback, CompositeC
 edition.workspace = true
 version.workspace = true
 license.workspace = true
+readme.workspace = true
 authors.workspace = true
 rust-version.workspace = true
 repository.workspace = true
@@ -13,4 +14,4 @@ homepage.workspace = true
 async-trait.workspace = true
 tokio.workspace = true
 tracing.workspace = true
-synaptic-core = { version = "0.2.1", path = "../synaptic-core" }
+synaptic-core = { version = "0.2", path = "../synaptic-core" }

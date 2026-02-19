@@ -9,7 +9,7 @@
 ## `ToolChoice` 枚举
 
 ```rust
-use synaptic_core::ToolChoice;
+use synaptic::core::ToolChoice;
 
 // Auto -- 模型自行决定是否使用 Tool（这是默认行为）
 ToolChoice::Auto
@@ -29,7 +29,7 @@ ToolChoice::Specific("get_weather".to_string())
 使用 `ChatRequest::with_tool_choice()`：
 
 ```rust
-use synaptic_core::{ChatRequest, Message, ToolChoice, ToolDefinition};
+use synaptic::core::{ChatRequest, Message, ToolChoice, ToolDefinition};
 use serde_json::json;
 
 let tools = vec![

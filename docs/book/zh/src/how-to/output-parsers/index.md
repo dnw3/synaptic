@@ -21,9 +21,9 @@ OutputParser 将原始 LLM 输出转换为结构化数据。Synaptic 中的每�
 ## 快速示例
 
 ```rust
-use synaptic_parsers::StrOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::{Message, RunnableConfig};
+use synaptic::parsers::StrOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::{Message, RunnableConfig};
 
 let parser = StrOutputParser;
 let config = RunnableConfig::default();

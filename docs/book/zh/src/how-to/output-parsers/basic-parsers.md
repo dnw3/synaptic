@@ -9,9 +9,9 @@ Synaptic 提供了多种简单的 OutputParser，用于常见的转换操作。�
 **签名：** `Runnable<Message, String>`
 
 ```rust
-use synaptic_parsers::StrOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::{Message, RunnableConfig};
+use synaptic::parsers::StrOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::{Message, RunnableConfig};
 
 let parser = StrOutputParser;
 let config = RunnableConfig::default();
@@ -29,9 +29,9 @@ assert_eq!(result, "Hello world");
 **签名：** `Runnable<String, serde_json::Value>`
 
 ```rust
-use synaptic_parsers::JsonOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::JsonOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let parser = JsonOutputParser;
 let config = RunnableConfig::default();
@@ -54,9 +54,9 @@ assert_eq!(result["version"], 1);
 **签名：** `Runnable<String, Vec<String>>`
 
 ```rust
-use synaptic_parsers::{ListOutputParser, ListSeparator};
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::{ListOutputParser, ListSeparator};
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let config = RunnableConfig::default();
 
@@ -85,9 +85,9 @@ assert_eq!(result, vec!["a", "b", "c"]);
 **签名：** `Runnable<String, bool>`
 
 ```rust
-use synaptic_parsers::BooleanOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::BooleanOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let parser = BooleanOutputParser;
 let config = RunnableConfig::default();
@@ -107,9 +107,9 @@ assert_eq!(parser.invoke("N".to_string(), &config).await?, false);
 **签名：** `Runnable<String, XmlElement>`
 
 ```rust
-use synaptic_parsers::{XmlOutputParser, XmlElement};
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::{XmlOutputParser, XmlElement};
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let config = RunnableConfig::default();
 
@@ -134,9 +134,9 @@ assert_eq!(result.children[0].text, Some("hello".to_string()));
 **签名：** `Runnable<String, Vec<String>>`
 
 ```rust
-use synaptic_parsers::MarkdownListOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::MarkdownListOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let parser = MarkdownListOutputParser;
 let config = RunnableConfig::default();
@@ -156,9 +156,9 @@ assert_eq!(result, vec!["Apple", "Banana", "Cherry"]);
 **签名：** `Runnable<String, Vec<String>>`
 
 ```rust
-use synaptic_parsers::NumberedListOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::NumberedListOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let parser = NumberedListOutputParser;
 let config = RunnableConfig::default();
@@ -176,7 +176,7 @@ assert_eq!(result, vec!["Rust", "Python", "TypeScript"]);
 所有解析器都实现了 `FormatInstructions` trait。你可以在提示词中包含这些指令来引导模型：
 
 ```rust
-use synaptic_parsers::{JsonOutputParser, ListOutputParser, FormatInstructions};
+use synaptic::parsers::{JsonOutputParser, ListOutputParser, FormatInstructions};
 
 let json_parser = JsonOutputParser;
 println!("{}", json_parser.get_format_instructions());
@@ -194,11 +194,11 @@ println!("{}", list_parser.get_format_instructions());
 ```rust
 use std::collections::HashMap;
 use serde_json::json;
-use synaptic_core::{ChatResponse, Message, RunnableConfig};
-use synaptic_models::ScriptedChatModel;
-use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
-use synaptic_parsers::StrOutputParser;
-use synaptic_runnables::Runnable;
+use synaptic::core::{ChatResponse, Message, RunnableConfig};
+use synaptic::models::ScriptedChatModel;
+use synaptic::prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic::parsers::StrOutputParser;
+use synaptic::runnables::Runnable;
 
 let model = ScriptedChatModel::new(vec![
     ChatResponse {

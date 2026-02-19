@@ -9,8 +9,8 @@ This guide shows how to use `RunnableEach` to map a runnable over each element i
 ## Basic usage
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableEach, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableEach, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 let upper = RunnableLambda::new(|s: String| async move {
     Ok(s.to_uppercase())
@@ -32,8 +32,8 @@ assert_eq!(result, vec!["HELLO", "WORLD"]);
 If the inner runnable fails on any element, `RunnableEach` stops and returns that error immediately. Elements processed before the failure are discarded:
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableEach, RunnableLambda};
-use synaptic_core::{RunnableConfig, SynapticError};
+use synaptic::runnables::{Runnable, RunnableEach, RunnableLambda};
+use synaptic::core::{RunnableConfig, SynapticError};
 
 let must_be_short = RunnableLambda::new(|s: String| async move {
     if s.len() > 5 {
@@ -59,8 +59,8 @@ assert!(result.is_err()); // fails on "toolong"
 An empty input vector produces an empty output vector:
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableEach, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableEach, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 let identity = RunnableLambda::new(|s: String| async move { Ok(s) });
 let each = RunnableEach::new(identity.boxed());
@@ -75,7 +75,7 @@ assert!(result.is_empty());
 `RunnableEach` implements `Runnable<Vec<I>, Vec<O>>`, so it composes with the pipe operator. A common pattern is to split input into parts, process each with `RunnableEach`, and then combine the results:
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableEach, RunnableLambda};
+use synaptic::runnables::{Runnable, RunnableEach, RunnableLambda};
 
 // Step 1: split a string into words
 let split = RunnableLambda::new(|s: String| async move {

@@ -47,7 +47,7 @@ Synaptic 附带四个 Callback Handler：
 
 ```rust
 use async_trait::async_trait;
-use synaptic_core::{CallbackHandler, RunEvent, SynapticError};
+use synaptic::core::{CallbackHandler, RunEvent, SynapticError};
 
 struct MetricsCallback;
 

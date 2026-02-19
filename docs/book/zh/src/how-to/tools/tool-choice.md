@@ -17,7 +17,7 @@
 
 ```rust
 use serde_json::json;
-use synaptic_core::{ChatRequest, Message, ToolChoice, ToolDefinition};
+use synaptic::core::{ChatRequest, Message, ToolChoice, ToolDefinition};
 
 let weather_tool = ToolDefinition {
     name: "get_weather".to_string(),
@@ -46,7 +46,7 @@ let request = ChatRequest::new(vec![
 让模型自行决定。这是通用 Agent 的最佳选择，当不需要工具时应以文本形式响应：
 
 ```rust
-use synaptic_core::{ChatRequest, Message, ToolChoice};
+use synaptic::core::{ChatRequest, Message, ToolChoice};
 
 let request = ChatRequest::new(vec![
     Message::human("Hello, how are you?"),
@@ -60,7 +60,7 @@ let request = ChatRequest::new(vec![
 强制使用工具。适用于 Agent 循环中下一步必须是工具调用的场景，或者当你确定用户的请求需要调用工具时：
 
 ```rust
-use synaptic_core::{ChatRequest, Message, ToolChoice};
+use synaptic::core::{ChatRequest, Message, ToolChoice};
 
 let request = ChatRequest::new(vec![
     Message::human("Look up the weather in Paris and Tokyo."),
@@ -75,7 +75,7 @@ let request = ChatRequest::new(vec![
 禁止工具调用。适用于你想在不从请求中移除工具的情况下临时禁用工具，或者在最终总结步骤中使用：
 
 ```rust
-use synaptic_core::{ChatRequest, Message, ToolChoice};
+use synaptic::core::{ChatRequest, Message, ToolChoice};
 
 let request = ChatRequest::new(vec![
     Message::system("Summarize the tool results for the user."),
@@ -92,7 +92,7 @@ let request = ChatRequest::new(vec![
 强制使用特定工具。适用于你明确知道应该调用哪个工具的场景：
 
 ```rust
-use synaptic_core::{ChatRequest, Message, ToolChoice};
+use synaptic::core::{ChatRequest, Message, ToolChoice};
 
 let request = ChatRequest::new(vec![
     Message::human("Check the weather in London."),
@@ -110,11 +110,11 @@ let request = ChatRequest::new(vec![
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{
+use synaptic::core::{
     ChatModel, ChatRequest, Message, SynapticError, Tool,
     ToolChoice, ToolDefinition,
 };
-use synaptic_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 
 // Define the tool
 struct CalculatorTool;

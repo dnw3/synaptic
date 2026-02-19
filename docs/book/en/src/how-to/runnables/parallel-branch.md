@@ -12,8 +12,8 @@ The input type must implement `Clone`, because each branch receives its own copy
 
 ```rust
 use serde_json::Value;
-use synaptic_runnables::{Runnable, RunnableParallel, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableParallel, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 let parallel = RunnableParallel::new(vec![
     (
@@ -83,8 +83,8 @@ If any branch fails, the entire `RunnableParallel` invocation returns the first 
 ### Basic usage
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableBranch, RunnableLambda, BoxRunnable};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableBranch, RunnableLambda, BoxRunnable};
+use synaptic::core::RunnableConfig;
 
 let branch = RunnableBranch::new(
     vec![

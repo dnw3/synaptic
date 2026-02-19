@@ -7,7 +7,7 @@
 在 `StateGraph` 上使用 `add_deferred_node()` 代替 `add_node()`：
 
 ```rust,ignore
-use synaptic_graph::{FnNode, State, StateGraph, END};
+use synaptic::graph::{FnNode, State, StateGraph, END};
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -68,7 +68,7 @@ assert_eq!(graph.incoming_edge_count("worker_a"), 0);
 `Deferred` 节点被设计为 `Command::send()` 扇出工作后的聚合目标：
 
 ```rust,ignore
-use synaptic_graph::{Command, NodeOutput, Send};
+use synaptic::graph::{Command, NodeOutput, Send};
 
 let dispatcher = FnNode::new(|_state: AggState| async move {
     let targets = vec![

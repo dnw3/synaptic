@@ -23,7 +23,7 @@ Synaptic 提供了预构建的多 Agent 编排模式，可以将多个独立的 
 所有多 Agent 函数都位于 `synaptic_graph` 中：
 
 ```rust,ignore
-use synaptic_graph::{
+use synaptic::graph::{
     create_supervisor, SupervisorOptions,
     create_swarm, SwarmAgent, SwarmOptions,
     create_handoff_tool,
@@ -36,10 +36,10 @@ use synaptic_graph::{
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{
+use synaptic::graph::{
     create_agent, create_supervisor, AgentOptions, SupervisorOptions, MessageState,
 };
-use synaptic_core::Message;
+use synaptic::core::Message;
 
 // Build two sub-agents
 let agent_a = create_agent(model.clone(), tools_a, AgentOptions::default())?;

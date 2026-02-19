@@ -10,8 +10,8 @@
 
 ```rust
 use std::time::Duration;
-use synaptic_runnables::{Runnable, RunnableRetry, RetryPolicy, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableRetry, RetryPolicy, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 let flaky_step = RunnableLambda::new(|x: String| async move {
     // Imagine this sometimes fails due to network issues
@@ -33,7 +33,7 @@ assert_eq!(result, "HELLO");
 
 ```rust
 use std::time::Duration;
-use synaptic_runnables::RetryPolicy;
+use synaptic::runnables::RetryPolicy;
 
 let policy = RetryPolicy::default()
     .with_max_attempts(5)               // Up to 5 total attempts (1 initial + 4 retries)
@@ -73,8 +73,8 @@ delay = min(base_delay * 2^attempt, max_delay)
 默认情况下，所有错误都会触发重试。使用 `with_retry_on()` 指定一个谓词，决定哪些错误值得重试：
 
 ```rust
-use synaptic_runnables::RetryPolicy;
-use synaptic_core::SynapticError;
+use synaptic::runnables::RetryPolicy;
+use synaptic::core::SynapticError;
 
 let policy = RetryPolicy::default()
     .with_max_attempts(4)
@@ -99,7 +99,7 @@ pub struct RunnableRetry<I: Send + Clone + 'static, O: Send + 'static> { ... }
 `RunnableRetry` 实现了 `Runnable<I, O>`，因此它可以与 pipe 运算符配合使用：
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableRetry, RetryPolicy, RunnableLambda};
+use synaptic::runnables::{Runnable, RunnableRetry, RetryPolicy, RunnableLambda};
 
 let preprocess = RunnableLambda::new(|x: String| async move {
     Ok(x.trim().to_string())
@@ -118,7 +118,7 @@ let chain = preprocess.boxed() | retrying_model.boxed();
 为了最大程度的弹性，可以用 fallbacks 包装带重试的 runnable。主 runnable 会重试到其限制次数；如果仍然失败，则尝试回退：
 
 ```rust
-use synaptic_runnables::{RunnableRetry, RetryPolicy, RunnableWithFallbacks};
+use synaptic::runnables::{RunnableRetry, RetryPolicy, RunnableWithFallbacks};
 
 let retrying_primary = RunnableRetry::new(
     primary_model.boxed(),
@@ -137,8 +137,8 @@ let resilient = RunnableWithFallbacks::new(
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
-use synaptic_runnables::{Runnable, RunnableRetry, RetryPolicy, RunnableLambda};
-use synaptic_core::{RunnableConfig, SynapticError};
+use synaptic::runnables::{Runnable, RunnableRetry, RetryPolicy, RunnableLambda};
+use synaptic::core::{RunnableConfig, SynapticError};
 
 // Simulate a flaky service that fails twice then succeeds
 let call_count = Arc::new(AtomicUsize::new(0));

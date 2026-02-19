@@ -19,8 +19,8 @@ Human-in-the-loop（HITL）允许你在特定位置暂停图的执行，让人�
 一个常见模式是在工具执行节点之前中断，以便人类可以审查 Agent 提出的工具调用：
 
 ```rust
-use synaptic_graph::{StateGraph, FnNode, MessageState, MemorySaver, CheckpointConfig, END};
-use synaptic_core::Message;
+use synaptic::graph::{StateGraph, FnNode, MessageState, MemorySaver, CheckpointConfig, END};
+use synaptic::core::Message;
 use std::sync::Arc;
 
 let agent_node = FnNode::new(|mut state: MessageState| async move {
@@ -111,7 +111,7 @@ println!("Final messages: {}", state.messages.len());
 为了获得更多控制，节点可以调用 `interrupt()` 函数以自定义值暂停执行。当中断决策取决于运行时状态时，这很有用：
 
 ```rust
-use synaptic_graph::{interrupt, Node, NodeOutput, MessageState};
+use synaptic::graph::{interrupt, Node, NodeOutput, MessageState};
 
 struct ApprovalNode;
 
@@ -151,7 +151,7 @@ if result.is_interrupted() {
 节点也可以使用 `Command` 来覆盖正常的基于边的路由：
 
 ```rust
-use synaptic_graph::{Command, NodeOutput};
+use synaptic::graph::{Command, NodeOutput};
 
 // Route to a specific node, skipping normal edges
 Ok(NodeOutput::Command(Command::goto("summary")))

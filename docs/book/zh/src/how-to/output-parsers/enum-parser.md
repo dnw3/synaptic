@@ -7,9 +7,9 @@
 使用允许值列表创建解析器，然后调用它：
 
 ```rust
-use synaptic_parsers::EnumOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::EnumOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let parser = EnumOutputParser::new(vec![
     "positive".to_string(),
@@ -31,9 +31,9 @@ assert_eq!(result, "positive");
 解析器在检查前会去除输入的空白。如果去除空白后的输入不匹配任何允许值，则返回 `Err(SynapticError::Parsing(...))`：
 
 ```rust
-use synaptic_parsers::EnumOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::EnumOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 
 let parser = EnumOutputParser::new(vec![
     "positive".to_string(),
@@ -57,7 +57,7 @@ assert!(err.to_string().contains("expected one of"));
 `EnumOutputParser` 实现了 `FormatInstructions`。在提示词中包含这些指令，让模型知道可以从哪些值中选择：
 
 ```rust
-use synaptic_parsers::{EnumOutputParser, FormatInstructions};
+use synaptic::parsers::{EnumOutputParser, FormatInstructions};
 
 let parser = EnumOutputParser::new(vec![
     "positive".to_string(),
@@ -76,11 +76,11 @@ let instructions = parser.get_format_instructions();
 ```rust
 use std::collections::HashMap;
 use serde_json::json;
-use synaptic_core::{ChatResponse, Message, RunnableConfig};
-use synaptic_models::ScriptedChatModel;
-use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
-use synaptic_parsers::{StrOutputParser, EnumOutputParser, FormatInstructions};
-use synaptic_runnables::Runnable;
+use synaptic::core::{ChatResponse, Message, RunnableConfig};
+use synaptic::models::ScriptedChatModel;
+use synaptic::prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic::parsers::{StrOutputParser, EnumOutputParser, FormatInstructions};
+use synaptic::runnables::Runnable;
 
 let parser = EnumOutputParser::new(vec![
     "positive".to_string(),

@@ -6,8 +6,8 @@
 
 ```rust
 use std::sync::Arc;
-use synaptic_memory::{ConversationTokenBufferMemory, InMemoryStore};
-use synaptic_core::{MemoryStore, Message};
+use synaptic::memory::{ConversationTokenBufferMemory, InMemoryStore};
+use synaptic::core::{MemoryStore, Message};
 
 let store = Arc::new(InMemoryStore::new());
 

@@ -1,6 +1,6 @@
 # MCP（Model Context Protocol）
 
-`synaptic_mcp` crate 连接到外部兼容 MCP 的工具服务器，发现其工具，并将它们作为标准的 `synaptic_core::Tool` 实现公开。
+`synaptic_mcp` crate 连接到外部兼容 MCP 的工具服务器，发现其工具，并将它们作为标准的 `synaptic::core::Tool` 实现公开。
 
 ## 什么是 MCP？
 
@@ -20,7 +20,7 @@ Model Context Protocol 是一个用于将 AI 模型连接到外部工具服务�
 
 ```rust,ignore
 use std::collections::HashMap;
-use synaptic_mcp::{MultiServerMcpClient, McpConnection, StdioConnection};
+use synaptic::mcp::{MultiServerMcpClient, McpConnection, StdioConnection};
 
 // Configure a single MCP server
 let mut servers = HashMap::new();
@@ -55,7 +55,7 @@ let client = MultiServerMcpClient::new(servers).with_prefix(false);
 `load_mcp_tools` 函数将 `connect()` 和 `get_tools()` 合并为一次调用：
 
 ```rust,ignore
-use synaptic_mcp::load_mcp_tools;
+use synaptic::mcp::load_mcp_tools;
 
 let tools = load_mcp_tools(&client).await?;
 ```
@@ -63,7 +63,7 @@ let tools = load_mcp_tools(&client).await?;
 ## Crate 导入
 
 ```rust,ignore
-use synaptic_mcp::{
+use synaptic::mcp::{
     MultiServerMcpClient,
     McpConnection,
     StdioConnection,

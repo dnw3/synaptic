@@ -5,8 +5,8 @@
 ## 用法
 
 ```rust
-use synaptic_callbacks::RecordingCallback;
-use synaptic_core::RunEvent;
+use synaptic::callbacks::RecordingCallback;
+use synaptic::core::RunEvent;
 
 let callback = RecordingCallback::new();
 

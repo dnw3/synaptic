@@ -31,7 +31,7 @@ The trait requires `name()`, `description()`, and `call_with_runtime()`. Optiona
 ```rust,ignore
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{RuntimeAwareTool, ToolRuntime, SynapticError};
+use synaptic::core::{RuntimeAwareTool, ToolRuntime, SynapticError};
 
 struct SaveNoteTool;
 
@@ -78,8 +78,8 @@ impl RuntimeAwareTool for SaveNoteTool {
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::ToolNode;
-use synaptic_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic::graph::ToolNode;
+use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 
 let registry = ToolRegistry::new();
 let executor = SerialToolExecutor::new(registry);
@@ -99,7 +99,7 @@ If you need to use a `RuntimeAwareTool` in a context that expects the standard `
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{RuntimeAwareTool, RuntimeAwareToolAdapter, ToolRuntime};
+use synaptic::core::{RuntimeAwareTool, RuntimeAwareToolAdapter, ToolRuntime};
 
 let tool: Arc<dyn RuntimeAwareTool> = Arc::new(SaveNoteTool);
 let adapter = RuntimeAwareToolAdapter::new(tool);
@@ -124,7 +124,7 @@ If `set_runtime()` is not called before `call()`, the adapter uses a default emp
 When building a ReAct agent via `create_react_agent`, pass a store through `AgentOptions` to have it automatically wired into the `ToolNode` for all registered runtime-aware tools:
 
 ```rust,ignore
-use synaptic_graph::{create_react_agent, AgentOptions};
+use synaptic::graph::{create_react_agent, AgentOptions};
 
 let graph = create_react_agent(
     model,

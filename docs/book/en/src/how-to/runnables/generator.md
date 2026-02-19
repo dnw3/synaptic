@@ -14,8 +14,8 @@ This is useful when you want a runnable that naturally produces output increment
 ## Basic usage
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableGenerator};
-use synaptic_core::{RunnableConfig, SynapticError};
+use synaptic::runnables::{Runnable, RunnableGenerator};
+use synaptic::core::{RunnableConfig, SynapticError};
 
 let gen = RunnableGenerator::new(|input: String| {
     async_stream::stream! {
@@ -36,8 +36,8 @@ The real power of `RunnableGenerator` is streaming. `stream()` yields each item 
 
 ```rust
 use futures::StreamExt;
-use synaptic_runnables::{Runnable, RunnableGenerator};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableGenerator};
+use synaptic::core::RunnableConfig;
 
 let gen = RunnableGenerator::new(|input: String| {
     async_stream::stream! {
@@ -64,8 +64,8 @@ Each streamed item is wrapped in `Vec<O>` to match the output type of `invoke()`
 If the generator yields an `Err`, `invoke()` stops collecting and returns that error. `stream()` yields the error and continues to the next item:
 
 ```rust
-use synaptic_runnables::RunnableGenerator;
-use synaptic_core::SynapticError;
+use synaptic::runnables::RunnableGenerator;
+use synaptic::core::SynapticError;
 
 let gen = RunnableGenerator::new(|_input: String| {
     async_stream::stream! {
@@ -87,7 +87,7 @@ let gen = RunnableGenerator::new(|_input: String| {
 `RunnableGenerator` implements `Runnable<I, Vec<O>>`, so it works with the pipe operator. Place it wherever you need streaming generation in a chain:
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableGenerator, RunnableLambda};
+use synaptic::runnables::{Runnable, RunnableGenerator, RunnableLambda};
 
 let tokenize = RunnableGenerator::new(|input: String| {
     async_stream::stream! {

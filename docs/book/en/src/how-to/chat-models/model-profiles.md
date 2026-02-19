@@ -31,7 +31,7 @@ pub struct ModelProfile {
 Every `ChatModel` implementation exposes a `profile()` method that returns `Option<ModelProfile>`. The default implementation returns `None`, so providers opt in by overriding it:
 
 ```rust,ignore
-use synaptic_core::ChatModel;
+use synaptic::core::ChatModel;
 
 let model = my_chat_model();
 
@@ -52,7 +52,7 @@ if let Some(profile) = model.profile() {
 Profiles are useful when writing generic code that works across multiple providers. For example, you can guard tool-calling or structured-output logic behind a capability check:
 
 ```rust,ignore
-use synaptic_core::{ChatModel, ChatRequest, ToolChoice};
+use synaptic::core::{ChatModel, ChatRequest, ToolChoice};
 
 async fn maybe_call_with_tools(
     model: &dyn ChatModel,
@@ -78,7 +78,7 @@ async fn maybe_call_with_tools(
 If you implement your own `ChatModel`, override `profile()` to advertise capabilities:
 
 ```rust,ignore
-use synaptic_core::{ChatModel, ModelProfile};
+use synaptic::core::{ChatModel, ModelProfile};
 
 impl ChatModel for MyCustomModel {
     // ... chat() and stream_chat() ...

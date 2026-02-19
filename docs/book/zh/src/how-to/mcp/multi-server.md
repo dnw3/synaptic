@@ -12,7 +12,7 @@
 
 ```rust,ignore
 use std::collections::HashMap;
-use synaptic_mcp::{
+use synaptic::mcp::{
     MultiServerMcpClient, McpConnection,
     StdioConnection, HttpConnection, SseConnection,
 };
@@ -79,7 +79,7 @@ let client = MultiServerMcpClient::new(servers).with_prefix(false);
 `load_mcp_tools` 便捷函数将 `connect()` 和 `get_tools()` 合并：
 
 ```rust,ignore
-use synaptic_mcp::load_mcp_tools;
+use synaptic::mcp::load_mcp_tools;
 
 let client = MultiServerMcpClient::new(servers);
 let tools = load_mcp_tools(&client).await?;

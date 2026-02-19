@@ -19,7 +19,7 @@ The `SelfQueryRetriever` uses a `ChatModel` to parse the user's natural language
 First, describe the metadata fields available in your document corpus using `MetadataFieldInfo`:
 
 ```rust
-use synaptic_retrieval::MetadataFieldInfo;
+use synaptic::retrieval::MetadataFieldInfo;
 
 let fields = vec![
     MetadataFieldInfo {
@@ -46,7 +46,7 @@ Each field has a `name`, a human-readable `description`, and a `field_type` that
 
 ```rust
 use std::sync::Arc;
-use synaptic_retrieval::{SelfQueryRetriever, MetadataFieldInfo, Retriever};
+use synaptic::retrieval::{SelfQueryRetriever, MetadataFieldInfo, Retriever};
 
 let base_retriever: Arc<dyn Retriever> = Arc::new(/* any retriever */);
 let model: Arc<dyn ChatModel> = Arc::new(/* any ChatModel */);
@@ -88,7 +88,7 @@ Numeric comparisons work on both integers and floats. String comparisons use lex
 ```rust
 use std::sync::Arc;
 use std::collections::HashMap;
-use synaptic_retrieval::{
+use synaptic::retrieval::{
     BM25Retriever,
     SelfQueryRetriever,
     MetadataFieldInfo,

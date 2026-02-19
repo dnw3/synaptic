@@ -7,7 +7,7 @@
 `Dataset` 是 `DatasetItem` 值的集合，每个值包含一个 `input` 和一个 `reference`（预期答案）：
 
 ```rust
-use synaptic_eval::{Dataset, DatasetItem};
+use synaptic::eval::{Dataset, DatasetItem};
 
 // From DatasetItem structs
 let dataset = Dataset::new(vec![
@@ -33,7 +33,7 @@ let dataset = Dataset::from_pairs(vec![
 `evaluate()` 函数接收一个 Evaluator、一个 Dataset 和一个预测结果切片。它对每个预测结果与对应的 Dataset 项进行评估，并返回 `EvalReport`：
 
 ```rust
-use synaptic_eval::{evaluate, Dataset, ExactMatchEvaluator};
+use synaptic::eval::{evaluate, Dataset, ExactMatchEvaluator};
 
 let dataset = Dataset::from_pairs(vec![
     ("What is 2+2?", "4"),
@@ -92,7 +92,7 @@ for (i, result) in report.results.iter().enumerate() {
 4. 检查报告。
 
 ```rust
-use synaptic_eval::{evaluate, Dataset, ExactMatchEvaluator};
+use synaptic::eval::{evaluate, Dataset, ExactMatchEvaluator};
 
 // 1. Dataset
 let dataset = Dataset::from_pairs(vec![
@@ -128,7 +128,7 @@ println!("Accuracy: {:.0}% ({}/{})",
 `evaluate()` 函数可以与任何 `Evaluator` 配合使用。替换不同的 Evaluator 即可改变评分标准，无需修改 Dataset 或预测管道：
 
 ```rust
-use synaptic_eval::{evaluate, RegexMatchEvaluator};
+use synaptic::eval::{evaluate, RegexMatchEvaluator};
 
 // Check that predictions contain a date
 let evaluator = RegexMatchEvaluator::new(r"\d{4}-\d{2}-\d{2}")?;

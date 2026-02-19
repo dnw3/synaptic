@@ -6,8 +6,8 @@
 
 ```rust
 use std::sync::Arc;
-use synaptic_memory::{ConversationSummaryBufferMemory, InMemoryStore};
-use synaptic_core::{MemoryStore, Message, ChatModel};
+use synaptic::memory::{ConversationSummaryBufferMemory, InMemoryStore};
+use synaptic::core::{MemoryStore, Message, ChatModel};
 
 let model: Arc<dyn ChatModel> = Arc::new(my_model);
 let store = Arc::new(InMemoryStore::new());
@@ -77,9 +77,9 @@ Use `ScriptedChatModel` to test summarization without API keys:
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{ChatResponse, MemoryStore, Message};
-use synaptic_models::ScriptedChatModel;
-use synaptic_memory::{ConversationSummaryBufferMemory, InMemoryStore};
+use synaptic::core::{ChatResponse, MemoryStore, Message};
+use synaptic::models::ScriptedChatModel;
+use synaptic::memory::{ConversationSummaryBufferMemory, InMemoryStore};
 
 // Script the model to return a summary when called
 let summarizer = Arc::new(ScriptedChatModel::new(vec![

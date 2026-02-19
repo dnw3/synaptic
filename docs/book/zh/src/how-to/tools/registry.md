@@ -12,8 +12,8 @@
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapticError};
-use synaptic_tools::ToolRegistry;
+use synaptic::core::{Tool, SynapticError};
+use synaptic::tools::ToolRegistry;
 
 struct EchoTool;
 
@@ -53,7 +53,7 @@ assert!(missing.is_none());
 ### 创建和使用
 
 ```rust
-use synaptic_tools::SerialToolExecutor;
+use synaptic::tools::SerialToolExecutor;
 use serde_json::json;
 
 let executor = SerialToolExecutor::new(registry);
@@ -74,7 +74,7 @@ assert_eq!(result, json!({"echo": {"message": "hello"}}));
 
 ```rust
 let err = executor.execute("nonexistent", json!({})).await.unwrap_err();
-assert!(matches!(err, synaptic_core::SynapticError::ToolNotFound(name) if name == "nonexistent"));
+assert!(matches!(err, synaptic::core::SynapticError::ToolNotFound(name) if name == "nonexistent"));
 ```
 
 ## 完整示例
@@ -85,8 +85,8 @@ assert!(matches!(err, synaptic_core::SynapticError::ToolNotFound(name) if name =
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapticError};
-use synaptic_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic::core::{Tool, SynapticError};
+use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 
 struct AddTool;
 
@@ -137,7 +137,7 @@ async fn main() -> Result<(), SynapticError> {
 在典型的 Agent 工作流中，模型的响应包含 `ToolCall` 条目。你需要通过执行器分发它们，并将结果发送回模型：
 
 ```rust
-use synaptic_core::{Message, ToolCall};
+use synaptic::core::{Message, ToolCall};
 use serde_json::json;
 
 // After model responds with tool calls:

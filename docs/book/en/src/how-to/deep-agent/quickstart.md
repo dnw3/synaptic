@@ -8,10 +8,7 @@ Add the required crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic-deep = { path = "../crates/synaptic-deep" }
-synaptic-models = { path = "../crates/synaptic-models" }
-synaptic-graph = { path = "../crates/synaptic-graph" }
-synaptic-core = { path = "../crates/synaptic-core" }
+synaptic = { version = "0.2", features = ["deep"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -20,7 +17,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 The backend determines how the agent interacts with the outside world. For this quickstart we use `FilesystemBackend`, which reads and writes real files on your machine:
 
 ```rust,ignore
-use synaptic_deep::backend::FilesystemBackend;
+use synaptic::deep::backend::FilesystemBackend;
 use std::sync::Arc;
 
 let backend = Arc::new(FilesystemBackend::new("/tmp/my-workspace"));
@@ -29,7 +26,7 @@ let backend = Arc::new(FilesystemBackend::new("/tmp/my-workspace"));
 For testing without touching the filesystem, swap in `StateBackend::new()` instead:
 
 ```rust,ignore
-use synaptic_deep::backend::StateBackend;
+use synaptic::deep::backend::StateBackend;
 
 let backend = Arc::new(StateBackend::new());
 ```
@@ -39,8 +36,8 @@ let backend = Arc::new(StateBackend::new());
 Use `create_deep_agent` with a model and a `DeepAgentOptions`. The options struct has sensible defaults -- you only need to provide the backend:
 
 ```rust,ignore
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
-use synaptic_models::OpenAiChatModel;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::models::OpenAiChatModel;
 use std::sync::Arc;
 
 let model = Arc::new(OpenAiChatModel::new("gpt-4o"));
@@ -56,8 +53,8 @@ let agent = create_deep_agent(model, options)?;
 Build a `MessageState` with your prompt and call `invoke`. The agent will reason, call tools, and return a final result:
 
 ```rust,ignore
-use synaptic_graph::MessageState;
-use synaptic_core::Message;
+use synaptic::graph::MessageState;
+use synaptic::core::Message;
 
 let state = MessageState::with_messages(vec![
     Message::human("Create a file called hello.txt containing 'Hello, world!'"),
@@ -110,10 +107,10 @@ Key defaults:
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::Message;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions, backend::FilesystemBackend};
-use synaptic_graph::MessageState;
-use synaptic_models::OpenAiChatModel;
+use synaptic::core::Message;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions, backend::FilesystemBackend};
+use synaptic::graph::MessageState;
+use synaptic::models::OpenAiChatModel;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

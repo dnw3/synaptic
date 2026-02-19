@@ -17,7 +17,7 @@ Supervisor 模式使用一个中心模型将对话路由到专门的子 Agent。
 ## API
 
 ```rust,ignore
-use synaptic_graph::{create_supervisor, SupervisorOptions};
+use synaptic::graph::{create_supervisor, SupervisorOptions};
 
 pub fn create_supervisor(
     model: Arc<dyn ChatModel>,
@@ -42,8 +42,8 @@ pub fn create_supervisor(
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{ChatModel, Message, Tool};
-use synaptic_graph::{
+use synaptic::core::{ChatModel, Message, Tool};
+use synaptic::graph::{
     create_agent, create_supervisor, AgentOptions, MessageState, SupervisorOptions,
 };
 
@@ -97,7 +97,7 @@ println!("{}", result.messages.last().unwrap().content());
 传入一个 checkpointer 以跨调用持久化 Supervisor 的状态：
 
 ```rust,ignore
-use synaptic_graph::MemorySaver;
+use synaptic::graph::MemorySaver;
 
 let supervisor = create_supervisor(
     model,
@@ -115,9 +115,9 @@ let supervisor = create_supervisor(
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{ChatResponse, Message, ToolCall};
-use synaptic_models::ScriptedChatModel;
-use synaptic_graph::{
+use synaptic::core::{ChatResponse, Message, ToolCall};
+use synaptic::models::ScriptedChatModel;
+use synaptic::graph::{
     create_agent, create_supervisor, AgentOptions, MessageState, SupervisorOptions,
 };
 

@@ -9,7 +9,7 @@ Synaptic 中的每个工具都实现了 `synaptic-core` 中的 `Tool` trait。�
 ```rust
 use async_trait::async_trait;
 use serde_json::Value;
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 
 #[async_trait]
 pub trait Tool: Send + Sync {
@@ -31,7 +31,7 @@ pub trait Tool: Send + Sync {
 ```rust
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapticError};
+use synaptic::core::{Tool, SynapticError};
 
 struct WeatherTool;
 
@@ -74,7 +74,7 @@ impl Tool for WeatherTool {
 ```rust
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapticError};
+use synaptic::core::{Tool, SynapticError};
 
 struct DivisionTool;
 
@@ -109,7 +109,7 @@ impl Tool for DivisionTool {
 
 ```rust
 use std::sync::Arc;
-use synaptic_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 use serde_json::json;
 
 let registry = ToolRegistry::new();
@@ -128,7 +128,7 @@ let result = executor.execute("get_weather", json!({"location": "Tokyo"})).await
 
 ```rust
 use serde_json::json;
-use synaptic_core::{ChatRequest, Message, ToolDefinition};
+use synaptic::core::{ChatRequest, Message, ToolDefinition};
 
 let tool_def = ToolDefinition {
     name: "get_weather".to_string(),
@@ -158,8 +158,8 @@ let request = ChatRequest::new(vec![
 除了手动实现 `Tool` trait，你还可以使用 `synaptic-macros` 中的 `#[tool]` 属性宏来生成样板代码：
 
 ```rust,ignore
-use synaptic_macros::tool;
-use synaptic_core::SynapticError;
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
 use serde_json::{json, Value};
 
 /// Get the current weather for a location.

@@ -5,7 +5,7 @@ The HTTP transport connects to an MCP server using standard HTTP POST requests w
 ## Configuration
 
 ```rust,ignore
-use synaptic_mcp::HttpConnection;
+use synaptic::mcp::HttpConnection;
 use std::collections::HashMap;
 
 let connection = HttpConnection {
@@ -31,7 +31,7 @@ Both tool discovery (`tools/list`) and tool invocation (`tools/call`) send a JSO
 
 ```rust,ignore
 use std::collections::HashMap;
-use synaptic_mcp::{MultiServerMcpClient, McpConnection, HttpConnection};
+use synaptic::mcp::{MultiServerMcpClient, McpConnection, HttpConnection};
 
 let mut servers = HashMap::new();
 servers.insert(

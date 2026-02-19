@@ -18,7 +18,7 @@ The first agent in the list is the entry point.
 ## API
 
 ```rust,ignore
-use synaptic_graph::{create_swarm, SwarmAgent, SwarmOptions};
+use synaptic::graph::{create_swarm, SwarmAgent, SwarmOptions};
 
 pub fn create_swarm(
     agents: Vec<SwarmAgent>,
@@ -46,8 +46,8 @@ pub fn create_swarm(
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{ChatModel, Message, Tool};
-use synaptic_graph::{create_swarm, MessageState, SwarmAgent, SwarmOptions};
+use synaptic::core::{ChatModel, Message, Tool};
+use synaptic::graph::{create_swarm, MessageState, SwarmAgent, SwarmOptions};
 
 // Assume `model` implements ChatModel and *_tools are Vec<Arc<dyn Tool>>.
 
@@ -97,9 +97,9 @@ Test swarm graphs without API keys by scripting each agent's model:
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{ChatResponse, Message, ToolCall};
-use synaptic_models::ScriptedChatModel;
-use synaptic_graph::{create_swarm, MessageState, SwarmAgent, SwarmOptions};
+use synaptic::core::{ChatResponse, Message, ToolCall};
+use synaptic::models::ScriptedChatModel;
+use synaptic::graph::{create_swarm, MessageState, SwarmAgent, SwarmOptions};
 
 // Triage model: transfers to billing
 let triage_model = Arc::new(ScriptedChatModel::new(vec![

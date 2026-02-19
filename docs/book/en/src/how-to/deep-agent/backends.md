@@ -7,7 +7,7 @@ A Deep Agent backend controls how filesystem tools interact with the outside wor
 An entirely in-memory backend. Files are stored in a `HashMap<String, String>` keyed by normalized paths and never touch the real filesystem. Directories are inferred from path prefixes rather than stored as explicit entries. This is the default for tests and sandboxed demos.
 
 ```rust,ignore
-use synaptic_deep::backend::StateBackend;
+use synaptic::deep::backend::StateBackend;
 use std::sync::Arc;
 
 let backend = Arc::new(StateBackend::new());
@@ -29,8 +29,8 @@ let content = backend.read_file("/hello.txt", 0, 2000).await?;
 Persists files through Synaptic's `Store` trait. Each file is stored as an item with `key=path` and `value={"content": "..."}`. All items share a configurable namespace prefix. This lets you back the agent's workspace with any store implementation -- `InMemoryStore` for development, or a custom database-backed store for production.
 
 ```rust,ignore
-use synaptic_deep::backend::StoreBackend;
-use synaptic_store::InMemoryStore;
+use synaptic::deep::backend::StoreBackend;
+use synaptic::store::InMemoryStore;
 use std::sync::Arc;
 
 let store = Arc::new(InMemoryStore::new());
@@ -52,7 +52,7 @@ The second argument is a `Vec<String>` namespace. All file keys are stored under
 Reads and writes real files on the host operating system. This is the backend you want for coding assistants and local automation.
 
 ```rust,ignore
-use synaptic_deep::backend::FilesystemBackend;
+use synaptic::deep::backend::FilesystemBackend;
 use std::sync::Arc;
 
 let backend = Arc::new(FilesystemBackend::new("/home/user/project"));
@@ -65,20 +65,21 @@ The path you provide becomes the agent's root directory. All tool paths are reso
 
 `FilesystemBackend` is the only built-in backend that supports shell command execution. Commands run via `sh -c` in the root directory with an optional timeout. When this backend is used, `create_filesystem_tools` automatically includes the `execute` tool.
 
-> **Feature gate:** `FilesystemBackend` requires the `filesystem` Cargo feature:
+> **Feature gate:** `FilesystemBackend` requires the `filesystem` Cargo feature on `synaptic-deep`. The `synaptic` facade does not forward this feature, so add `synaptic-deep` as an explicit dependency:
 >
 > ```toml
-> synaptic-deep = { path = "../crates/synaptic-deep", features = ["filesystem"] }
+> synaptic = { version = "0.2", features = ["deep"] }
+> synaptic-deep = { version = "0.2", features = ["filesystem"] }
 > ```
 
 **When to use:** Local CLI tools, coding assistants, any scenario where the agent must interact with real files.
 
 ## Implementing a Custom Backend
 
-All three backends implement the `Backend` trait from `synaptic_deep::backend`:
+All three backends implement the `Backend` trait from `synaptic::deep::backend`:
 
 ```rust,ignore
-use synaptic_deep::backend::{Backend, DirEntry, ExecResult, GrepOutputMode};
+use synaptic::deep::backend::{Backend, DirEntry, ExecResult, GrepOutputMode};
 
 #[async_trait]
 pub trait Backend: Send + Sync {
@@ -127,10 +128,10 @@ Use `StateBackend` with `ScriptedChatModel` to test deep agents without API keys
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_core::{ChatResponse, Message, ToolCall};
-use synaptic_models::ScriptedChatModel;
-use synaptic_deep::{create_deep_agent, DeepAgentOptions};
-use synaptic_deep::backend::StateBackend;
+use synaptic::core::{ChatResponse, Message, ToolCall};
+use synaptic::models::ScriptedChatModel;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions};
+use synaptic::deep::backend::StateBackend;
 
 // Script the model to write a file then finish
 let model = Arc::new(ScriptedChatModel::new(vec![

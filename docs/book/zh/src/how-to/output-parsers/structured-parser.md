@@ -7,9 +7,9 @@
 定义一个派生了 `Deserialize` 的结构体，然后为它创建解析器：
 
 ```rust
-use synaptic_parsers::StructuredOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::StructuredOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -37,9 +37,9 @@ assert_eq!(result.age, 30);
 如果输入字符串不是有效的 JSON 或不匹配结构体的 schema，解析器返回 `Err(SynapticError::Parsing(...))`：
 
 ```rust
-use synaptic_parsers::StructuredOutputParser;
-use synaptic_runnables::Runnable;
-use synaptic_core::RunnableConfig;
+use synaptic::parsers::StructuredOutputParser;
+use synaptic::runnables::Runnable;
+use synaptic::core::RunnableConfig;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -65,7 +65,7 @@ assert!(err.to_string().contains("structured parse error"));
 `StructuredOutputParser<T>` 实现了 `FormatInstructions` trait。在提示词中包含这些指令，以引导模型生成正确形状的 JSON：
 
 ```rust
-use synaptic_parsers::{StructuredOutputParser, FormatInstructions};
+use synaptic::parsers::{StructuredOutputParser, FormatInstructions};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -84,9 +84,9 @@ let instructions = parser.get_format_instructions();
 在链中，`StructuredOutputParser` 通常跟在 `StrOutputParser` 步骤之后，或直接接收字符串内容。以下是一个完整示例：
 
 ```rust
-use synaptic_parsers::StructuredOutputParser;
-use synaptic_runnables::{Runnable, RunnableLambda};
-use synaptic_core::{Message, RunnableConfig};
+use synaptic::parsers::StructuredOutputParser;
+use synaptic::runnables::{Runnable, RunnableLambda};
+use synaptic::core::{Message, RunnableConfig};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]

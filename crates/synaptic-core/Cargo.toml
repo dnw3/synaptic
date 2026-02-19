@@ -4,6 +4,7 @@ description = "Core traits and types for Synaptic: ChatModel, Message, Tool, Syn
 edition.workspace = true
 version.workspace = true
 license.workspace = true
+readme.workspace = true
 authors.workspace = true
 rust-version.workspace = true
 repository.workspace = true

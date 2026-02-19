@@ -7,7 +7,7 @@
 使用 `ChatPromptTemplate::from_messages()`（或 `new()`）配合 `MessageTemplate` 变体的向量：
 
 ```rust
-use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic::prompts::{ChatPromptTemplate, MessageTemplate};
 
 let template = ChatPromptTemplate::from_messages(vec![
     MessageTemplate::system("You are a {{ role }} assistant."),
@@ -22,7 +22,7 @@ let template = ChatPromptTemplate::from_messages(vec![
 ```rust
 use std::collections::HashMap;
 use serde_json::json;
-use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic::prompts::{ChatPromptTemplate, MessageTemplate};
 
 let template = ChatPromptTemplate::from_messages(vec![
     MessageTemplate::system("You are a {{ role }} assistant."),
@@ -46,9 +46,9 @@ let messages = template.format(&values).unwrap();
 ```rust
 use std::collections::HashMap;
 use serde_json::json;
-use synaptic_core::RunnableConfig;
-use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
-use synaptic_runnables::Runnable;
+use synaptic::core::RunnableConfig;
+use synaptic::prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic::runnables::Runnable;
 
 let template = ChatPromptTemplate::from_messages(vec![
     MessageTemplate::system("You are a {{ role }} assistant."),
@@ -83,7 +83,7 @@ let messages = template.invoke(values, &config).await?;
 ```rust
 use std::collections::HashMap;
 use serde_json::json;
-use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic::prompts::{ChatPromptTemplate, MessageTemplate};
 
 let template = ChatPromptTemplate::from_messages(vec![
     MessageTemplate::system("You are helpful."),
@@ -115,11 +115,11 @@ let messages = template.format(&values).unwrap();
 ```rust
 use std::collections::HashMap;
 use serde_json::json;
-use synaptic_core::{ChatModel, ChatResponse, Message, RunnableConfig};
-use synaptic_models::ScriptedChatModel;
-use synaptic_prompts::{ChatPromptTemplate, MessageTemplate};
-use synaptic_parsers::StrOutputParser;
-use synaptic_runnables::Runnable;
+use synaptic::core::{ChatModel, ChatResponse, Message, RunnableConfig};
+use synaptic::models::ScriptedChatModel;
+use synaptic::prompts::{ChatPromptTemplate, MessageTemplate};
+use synaptic::parsers::StrOutputParser;
+use synaptic::runnables::Runnable;
 
 let model = ScriptedChatModel::new(vec![
     ChatResponse {

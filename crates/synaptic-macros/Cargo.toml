@@ -3,6 +3,7 @@ name = "synaptic-macros"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+readme.workspace = true
 repository.workspace = true
 homepage.workspace = true
 keywords.workspace = true

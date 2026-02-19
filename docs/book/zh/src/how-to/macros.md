@@ -23,7 +23,7 @@
 
 ## `#[tool]` -- 从函数定义工具
 
-将一个异步函数转换为实现 `synaptic_core::Tool` trait 的结构体。宏会自动完成以下工作：
+将一个异步函数转换为实现 `synaptic::core::Tool` trait 的结构体。宏会自动完成以下工作：
 
 1. 生成一个名为 `{PascalCase}Tool` 的结构体（例如 `search` -> `SearchTool`）。
 2. 根据函数签名自动构建 JSON Schema，供 LLM 调用时使用。
@@ -33,7 +33,7 @@
 
 ```rust
 use synaptic::tool;
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 
 /// 在网络上搜索信息。
 #[tool]
@@ -195,7 +195,7 @@ async fn search(query: String) -> Result<String, SynapticError> {
 | `#[inject(tool_call_id)]` | 当前工具调用的 ID (`String`)，从 `ToolRuntime.tool_call_id` 获取 |
 
 ```rust
-use synaptic_core::{SynapticError, ToolRuntime};
+use synaptic::core::{SynapticError, ToolRuntime};
 use serde_json::Value;
 
 /// 保存数据到存储。
@@ -229,7 +229,7 @@ let tool = save_note();
 
 ```rust
 use synaptic::chain;
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 use serde_json::Value;
 
 #[chain]
@@ -284,7 +284,7 @@ let pipeline = step_a() | step_b();
 
 ## `#[entrypoint]` -- 工作流入口点
 
-定义 LangGraph 风格的工作流入口。宏将异步函数转换为返回 `synaptic_core::Entrypoint` 的工厂函数。
+定义 LangGraph 风格的工作流入口。宏将异步函数转换为返回 `synaptic::core::Entrypoint` 的工厂函数。
 
 函数必须：
 - 是 `async` 的
@@ -295,7 +295,7 @@ let pipeline = step_a() | step_b();
 
 ```rust
 use synaptic::entrypoint;
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 use serde_json::Value;
 
 #[entrypoint]
@@ -359,7 +359,7 @@ let ep = my_agent();
 
 ```rust
 use synaptic::task;
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 
 #[task]
 async fn fetch_weather(city: String) -> Result<String, SynapticError> {
@@ -402,7 +402,7 @@ async fn fetch_weather(city: String) -> Result<String, SynapticError> {
 Synaptic 提供了 7 个中间件宏，分别对应 Agent 执行生命周期中的不同钩子点。每个宏的生成模式一致：
 
 1. 生成一个名为 `{PascalCase}Middleware` 的结构体（例如 `setup` -> `SetupMiddleware`）。
-2. 为该结构体实现 `synaptic_middleware::AgentMiddleware` trait，仅重写对应的钩子方法。
+2. 为该结构体实现 `synaptic::middleware::AgentMiddleware` trait，仅重写对应的钩子方法。
 3. 生成与函数同名的工厂函数，返回 `Arc<dyn AgentMiddleware>`。
 
 ### `#[before_agent]`
@@ -411,7 +411,7 @@ Synaptic 提供了 7 个中间件宏，分别对应 Agent 执行生命周期中�
 
 ```rust
 use synaptic::before_agent;
-use synaptic_core::{Message, SynapticError};
+use synaptic::core::{Message, SynapticError};
 
 #[before_agent]
 async fn setup(messages: &mut Vec<Message>) -> Result<(), SynapticError> {
@@ -428,8 +428,8 @@ let mw = setup(); // Arc<dyn AgentMiddleware>
 
 ```rust
 use synaptic::before_model;
-use synaptic_middleware::ModelRequest;
-use synaptic_core::SynapticError;
+use synaptic::middleware::ModelRequest;
+use synaptic::core::SynapticError;
 
 #[before_model]
 async fn add_context(request: &mut ModelRequest) -> Result<(), SynapticError> {
@@ -448,8 +448,8 @@ let mw = add_context(); // Arc<dyn AgentMiddleware>
 
 ```rust
 use synaptic::after_model;
-use synaptic_middleware::{ModelRequest, ModelResponse};
-use synaptic_core::SynapticError;
+use synaptic::middleware::{ModelRequest, ModelResponse};
+use synaptic::core::SynapticError;
 
 #[after_model]
 async fn log_response(
@@ -469,7 +469,7 @@ let mw = log_response(); // Arc<dyn AgentMiddleware>
 
 ```rust
 use synaptic::after_agent;
-use synaptic_core::{Message, SynapticError};
+use synaptic::core::{Message, SynapticError};
 
 #[after_agent]
 async fn cleanup(messages: &mut Vec<Message>) -> Result<(), SynapticError> {
@@ -488,8 +488,8 @@ let mw = cleanup(); // Arc<dyn AgentMiddleware>
 
 ```rust
 use synaptic::wrap_model_call;
-use synaptic_middleware::{ModelRequest, ModelResponse, ModelCaller};
-use synaptic_core::SynapticError;
+use synaptic::middleware::{ModelRequest, ModelResponse, ModelCaller};
+use synaptic::core::SynapticError;
 
 #[wrap_model_call]
 async fn retry_on_failure(
@@ -514,8 +514,8 @@ let mw = retry_on_failure(); // Arc<dyn AgentMiddleware>
 
 ```rust
 use synaptic::wrap_tool_call;
-use synaptic_middleware::{ToolCallRequest, ToolCaller};
-use synaptic_core::SynapticError;
+use synaptic::middleware::{ToolCallRequest, ToolCaller};
+use synaptic::core::SynapticError;
 use serde_json::Value;
 
 #[wrap_tool_call]
@@ -542,7 +542,7 @@ let mw = log_tool(); // Arc<dyn AgentMiddleware>
 
 ```rust
 use synaptic::dynamic_prompt;
-use synaptic_core::Message;
+use synaptic::core::Message;
 
 #[dynamic_prompt]
 fn context_aware_prompt(messages: &[Message]) -> String {
@@ -555,6 +555,34 @@ fn context_aware_prompt(messages: &[Message]) -> String {
 
 let mw = context_aware_prompt(); // Arc<dyn AgentMiddleware>
 ```
+
+> **为什么 `#[dynamic_prompt]` 是同步的？**
+>
+> 与其他中间件宏不同，`#[dynamic_prompt]` 要求使用普通的 `fn` 而非 `async fn`。
+> 这是一个刻意的设计选择：
+>
+> 1. **纯计算操作** — 动态提示词生成通常只涉及检查消息列表和拼接字符串，属于
+>    纯 CPU 操作（模式匹配、字符串格式化），不涉及任何 I/O。将其定义为
+>    async 会引入不必要的开销（Future 状态机、poll 机制），却毫无收益。
+>
+> 2. **简洁性** — 同步函数更容易编写和理解，无需 `.await`、无需处理 Pin 和
+>    Send/Sync 约束。
+>
+> 3. **内部异步包装** — 宏在生成代码时会将你的同步函数包装在一个 `before_model`
+>    异步钩子中调用。钩子本身是 async 的（这是 `AgentMiddleware` trait 的要求），
+>    但你的函数不需要是 async 的。
+>
+> 如果你需要在提示词生成过程中执行异步操作（如从数据库获取上下文或调用外部 API），
+> 请直接使用 `#[before_model]` 并手动设置 `request.system_prompt`：
+>
+> ```rust,ignore
+> #[before_model]
+> async fn async_prompt(request: &mut ModelRequest) -> Result<(), SynapticError> {
+>     let context = fetch_from_database().await?;  // 异步 I/O
+>     request.system_prompt = Some(format!("上下文: {}", context));
+>     Ok(())
+> }
+> ```
 
 > 所有中间件宏均不接受属性参数。
 
@@ -624,6 +652,146 @@ async fn secure_request(
 ) -> Result<String, SynapticError> {
     // 只有 endpoint 会被记录
     Ok("ok".into())
+}
+```
+
+---
+
+## 完整示例
+
+以下三个端到端场景展示了各种宏在实际应用中的协作方式。
+
+### 场景 A：带自定义工具的天气 Agent
+
+本示例演示如何使用 `#[tool]` 定义一个带 `#[field]` API 密钥的工具，注册该工具并使用 `create_react_agent` 创建 ReAct Agent，然后执行查询。
+
+```rust,ignore
+use synaptic::core::{ChatModel, Message, SynapticError};
+use synaptic::graph::{create_react_agent, MessageState, GraphResult};
+use synaptic::models::ScriptedChatModel;
+use std::sync::Arc;
+
+/// 获取指定城市的当前天气。
+#[tool]
+async fn get_weather(
+    #[field] api_key: String,
+    /// 要查询的城市名称
+    city: String,
+) -> Result<String, SynapticError> {
+    // 生产环境中，使用 api_key 调用真实的天气 API
+    Ok(format!("{}：22°C，晴", city))
+}
+
+#[tokio::main]
+async fn main() -> Result<(), SynapticError> {
+    let tool = get_weather("sk-fake-key".into());
+    let tools: Vec<Arc<dyn synaptic::core::Tool>> = vec![tool];
+
+    let model: Arc<dyn ChatModel> = Arc::new(ScriptedChatModel::new(vec![/* ... */]));
+    let agent = create_react_agent(model, tools).compile()?;
+
+    let state = MessageState::from_messages(vec![
+        Message::human("东京现在天气怎么样？"),
+    ]);
+
+    let result = agent.invoke(state, None).await?;
+    println!("{:?}", result.into_state().messages);
+    Ok(())
+}
+```
+
+### 场景 B：使用 Chain 宏构建数据处理流水线
+
+本示例将多个 `#[chain]` 步骤组合成一个处理流水线，依次执行文本提取、规范化和词数统计。
+
+```rust,ignore
+use synaptic::core::{RunnableConfig, SynapticError};
+use synaptic::runnables::Runnable;
+use serde_json::{json, Value};
+
+#[chain]
+async fn extract_text(input: Value) -> Result<Value, SynapticError> {
+    let text = input["content"].as_str().unwrap_or("");
+    Ok(json!(text.to_string()))
+}
+
+#[chain]
+async fn normalize(input: Value) -> Result<Value, SynapticError> {
+    let text = input.as_str().unwrap_or("").to_lowercase().trim().to_string();
+    Ok(json!(text))
+}
+
+#[chain]
+async fn word_count(input: Value) -> Result<Value, SynapticError> {
+    let text = input.as_str().unwrap_or("");
+    let count = text.split_whitespace().count();
+    Ok(json!({"text": text, "word_count": count}))
+}
+
+#[tokio::main]
+async fn main() -> Result<(), SynapticError> {
+    let pipeline = extract_text() | normalize() | word_count();
+    let config = RunnableConfig::default();
+
+    let input = json!({"content": "  Hello World  from Synaptic!  "});
+    let result = pipeline.invoke(input, &config).await?;
+
+    println!("结果: {}", result);
+    // {"text": "hello world from synaptic!", "word_count": 4}
+    Ok(())
+}
+```
+
+### 场景 C：带中间件栈的 Agent
+
+本示例展示如何将多个中间件宏组合成一个完整的 Agent 中间件栈，包含日志记录、重试和动态提示词功能。
+
+```rust,ignore
+use synaptic::core::{Message, SynapticError};
+use synaptic::middleware::{AgentMiddleware, MiddlewareChain, ModelRequest, ModelResponse, ModelCaller};
+use std::sync::Arc;
+
+// 记录每次模型调用
+#[after_model]
+async fn log_response(request: &ModelRequest, response: &mut ModelResponse) -> Result<(), SynapticError> {
+    println!("[日志] 模型返回了 {} 个字符",
+        response.message.content().len());
+    Ok(())
+}
+
+// 模型调用失败时最多重试 2 次
+#[wrap_model_call]
+async fn retry_model(
+    #[field] max_retries: usize,
+    request: ModelRequest,
+    next: &dyn ModelCaller,
+) -> Result<ModelResponse, SynapticError> {
+    let mut last_err = None;
+    for _ in 0..=max_retries {
+        match next.call(request.clone()).await {
+            Ok(resp) => return Ok(resp),
+            Err(e) => last_err = Some(e),
+        }
+    }
+    Err(last_err.unwrap())
+}
+
+// 根据对话长度动态调整系统提示词
+#[dynamic_prompt]
+fn adaptive_prompt(messages: &[Message]) -> String {
+    if messages.len() > 20 {
+        "请简洁回答，总结而非展开。".into()
+    } else {
+        "你是一个有用的助手，请详细回答。".into()
+    }
+}
+
+fn build_middleware_stack() -> Vec<Arc<dyn AgentMiddleware>> {
+    vec![
+        adaptive_prompt(),
+        retry_model(2),
+        log_response(),
+    ]
 }
 ```
 

@@ -10,8 +10,8 @@ This guide shows how to use `RunnableRetry` with `RetryPolicy` to automatically 
 
 ```rust
 use std::time::Duration;
-use synaptic_runnables::{Runnable, RunnableRetry, RetryPolicy, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableRetry, RetryPolicy, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 let flaky_step = RunnableLambda::new(|x: String| async move {
     // Imagine this sometimes fails due to network issues
@@ -33,7 +33,7 @@ assert_eq!(result, "HELLO");
 
 ```rust
 use std::time::Duration;
-use synaptic_runnables::RetryPolicy;
+use synaptic::runnables::RetryPolicy;
 
 let policy = RetryPolicy::default()
     .with_max_attempts(5)               // Up to 5 total attempts (1 initial + 4 retries)
@@ -73,8 +73,8 @@ For the defaults (100ms base, 10s max):
 By default, all errors trigger a retry. Use `with_retry_on()` to specify a predicate that decides which errors are worth retrying:
 
 ```rust
-use synaptic_runnables::RetryPolicy;
-use synaptic_core::SynapticError;
+use synaptic::runnables::RetryPolicy;
+use synaptic::core::SynapticError;
 
 let policy = RetryPolicy::default()
     .with_max_attempts(4)
@@ -99,7 +99,7 @@ pub struct RunnableRetry<I: Send + Clone + 'static, O: Send + 'static> { ... }
 `RunnableRetry` implements `Runnable<I, O>`, so it works with the pipe operator:
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableRetry, RetryPolicy, RunnableLambda};
+use synaptic::runnables::{Runnable, RunnableRetry, RetryPolicy, RunnableLambda};
 
 let preprocess = RunnableLambda::new(|x: String| async move {
     Ok(x.trim().to_string())
@@ -118,7 +118,7 @@ let chain = preprocess.boxed() | retrying_model.boxed();
 For maximum resilience, wrap a retrying runnable with fallbacks. The primary is retried up to its limit; if it still fails, the fallback is tried:
 
 ```rust
-use synaptic_runnables::{RunnableRetry, RetryPolicy, RunnableWithFallbacks};
+use synaptic::runnables::{RunnableRetry, RetryPolicy, RunnableWithFallbacks};
 
 let retrying_primary = RunnableRetry::new(
     primary_model.boxed(),
@@ -137,8 +137,8 @@ let resilient = RunnableWithFallbacks::new(
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
-use synaptic_runnables::{Runnable, RunnableRetry, RetryPolicy, RunnableLambda};
-use synaptic_core::{RunnableConfig, SynapticError};
+use synaptic::runnables::{Runnable, RunnableRetry, RetryPolicy, RunnableLambda};
+use synaptic::core::{RunnableConfig, SynapticError};
 
 // Simulate a flaky service that fails twice then succeeds
 let call_count = Arc::new(AtomicUsize::new(0));

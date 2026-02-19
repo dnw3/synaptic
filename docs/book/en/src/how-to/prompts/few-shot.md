@@ -8,7 +8,7 @@ Create the template with a list of `FewShotExample` values and a suffix `PromptT
 
 ```rust
 use std::collections::HashMap;
-use synaptic_prompts::{
+use synaptic::prompts::{
     FewShotChatMessagePromptTemplate, FewShotExample, PromptTemplate,
 };
 
@@ -51,7 +51,7 @@ Use `with_prefix()` to prepend a system message before the examples:
 
 ```rust
 use std::collections::HashMap;
-use synaptic_prompts::{
+use synaptic::prompts::{
     FewShotChatMessagePromptTemplate, FewShotExample, PromptTemplate,
 };
 
@@ -81,11 +81,11 @@ The prefix template supports `{{ variable }}` interpolation, so you can paramete
 
 ```rust
 use std::collections::HashMap;
-use synaptic_core::RunnableConfig;
-use synaptic_prompts::{
+use synaptic::core::RunnableConfig;
+use synaptic::prompts::{
     FewShotChatMessagePromptTemplate, FewShotExample, PromptTemplate,
 };
-use synaptic_runnables::Runnable;
+use synaptic::runnables::Runnable;
 
 let template = FewShotChatMessagePromptTemplate::new(
     vec![FewShotExample {

@@ -15,7 +15,7 @@ Synaptic 通过 `synaptic_core` 中定义的 `ChatModel` trait 支持多种 LLM 
 
 ```rust
 use std::sync::Arc;
-use synaptic_models::{OpenAiChatModel, OpenAiConfig, HttpBackend};
+use synaptic::models::{OpenAiChatModel, OpenAiConfig, HttpBackend};
 
 let config = OpenAiConfig::new("sk-...", "gpt-4o");
 let backend = Arc::new(HttpBackend::new());
@@ -41,7 +41,7 @@ Synaptic 提供可组合的包装器，为任意 `ChatModel` 添加额外行为�
 
 ```rust
 use std::sync::Arc;
-use synaptic_models::{RetryChatModel, RetryPolicy, RateLimitedChatModel};
+use synaptic::models::{RetryChatModel, RetryPolicy, RateLimitedChatModel};
 
 let model: Arc<dyn ChatModel> = Arc::new(base_model);
 let with_retry = Arc::new(RetryChatModel::new(model, RetryPolicy::default()));

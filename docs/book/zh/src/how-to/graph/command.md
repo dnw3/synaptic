@@ -20,7 +20,7 @@
 一个"分诊"节点检查输入并路由到不同的处理器：
 
 ```rust,ignore
-use synaptic_graph::{Command, FnNode, NodeOutput, State, StateGraph, END};
+use synaptic::graph::{Command, FnNode, NodeOutput, State, StateGraph, END};
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -105,7 +105,7 @@ let guard = FnNode::new(|state: TicketState| async move {
 `Command::send()` 将工作分发到多个目标。每个 `Send` 携带一个节点名称和一个 JSON 负载：
 
 ```rust,ignore
-use synaptic_graph::Send;
+use synaptic::graph::Send;
 
 let targets = vec![
     Send::new("worker", serde_json::json!({"chunk": "part1"})),

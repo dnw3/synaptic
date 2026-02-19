@@ -5,7 +5,7 @@
 ## 构造函数
 
 ```rust,ignore
-use synaptic_middleware::ModelFallbackMiddleware;
+use synaptic::middleware::ModelFallbackMiddleware;
 
 let mw = ModelFallbackMiddleware::new(vec![
     fallback_model_1,  // Arc<dyn ChatModel>
@@ -19,9 +19,9 @@ let mw = ModelFallbackMiddleware::new(vec![
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_models::{OpenAiChatModel, AnthropicChatModel};
-use synaptic_middleware::ModelFallbackMiddleware;
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::models::{OpenAiChatModel, AnthropicChatModel};
+use synaptic::middleware::ModelFallbackMiddleware;
 
 let primary = Arc::new(OpenAiChatModel::new("gpt-4o"));
 let fallback = Arc::new(AnthropicChatModel::new("claude-sonnet-4-20250514"));

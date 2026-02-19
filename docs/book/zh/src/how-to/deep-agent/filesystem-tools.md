@@ -7,8 +7,8 @@ Deep Agent 内置了六个文件系统工具，外加一个条件性的第七个
 如果你需要在 `DeepAgent` 之外使用这些工具（例如在自定义图中），可以使用工厂函数：
 
 ```rust,ignore
-use synaptic_deep::tools::create_filesystem_tools;
-use synaptic_deep::backend::FilesystemBackend;
+use synaptic::deep::tools::create_filesystem_tools;
+use synaptic::deep::backend::FilesystemBackend;
 use std::sync::Arc;
 
 let backend = Arc::new(FilesystemBackend::new("/workspace"));

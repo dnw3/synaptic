@@ -24,7 +24,7 @@ Each loader returns `Vec<Document>`. A `Document` has three fields:
 Wraps a string of text into a single `Document`. Useful when you already have content in memory.
 
 ```rust
-use synaptic_loaders::{TextLoader, Loader};
+use synaptic::loaders::{TextLoader, Loader};
 
 let loader = TextLoader::new("doc-1", "Rust is a systems programming language.");
 let docs = loader.load().await?;
@@ -40,7 +40,7 @@ The first argument is the document ID; the second is the content.
 Reads a file from disk using `tokio::fs::read_to_string` and returns a single `Document`. The file path is used as the document ID, and a `source` metadata key is set to the file path.
 
 ```rust
-use synaptic_loaders::{FileLoader, Loader};
+use synaptic::loaders::{FileLoader, Loader};
 
 let loader = FileLoader::new("data/notes.txt");
 let docs = loader.load().await?;
@@ -53,7 +53,7 @@ assert_eq!(docs[0].metadata["source"], "data/notes.txt");
 Loads documents from a JSON string. If the JSON is an array of objects, each object becomes a `Document`. If it is a single object, one `Document` is produced.
 
 ```rust
-use synaptic_loaders::{JsonLoader, Loader};
+use synaptic::loaders::{JsonLoader, Loader};
 
 let json_data = r#"[
     {"id": "1", "content": "First document"},
@@ -80,7 +80,7 @@ let loader = JsonLoader::new(json_data)
 Loads documents from CSV data. Each row becomes a `Document`. All columns are stored as metadata.
 
 ```rust
-use synaptic_loaders::{CsvLoader, Loader};
+use synaptic::loaders::{CsvLoader, Loader};
 
 let csv_data = "title,body,author\nIntro,Hello world,Alice\nChapter 1,Once upon a time,Bob";
 
@@ -103,7 +103,7 @@ If no `content_column` is specified, all columns are concatenated. If no `id_col
 Loads all files from a directory, each file becoming a `Document`. Use `with_glob` to filter by extension and `with_recursive` to include subdirectories.
 
 ```rust
-use synaptic_loaders::{DirectoryLoader, Loader};
+use synaptic::loaders::{DirectoryLoader, Loader};
 
 let loader = DirectoryLoader::new("./docs")
     .with_glob("*.txt")
@@ -120,7 +120,7 @@ Document IDs are the relative file paths from the base directory.
 Reads a markdown file and returns it as a single `Document` with `format: "markdown"` in metadata.
 
 ```rust
-use synaptic_loaders::{MarkdownLoader, Loader};
+use synaptic::loaders::{MarkdownLoader, Loader};
 
 let loader = MarkdownLoader::new("docs/guide.md");
 let docs = loader.load().await?;
@@ -133,7 +133,7 @@ assert_eq!(docs[0].metadata["format"], "markdown");
 Fetches content from a URL via HTTP GET and returns a single `Document`. Metadata includes `source` (the URL) and `content_type` (from the response header).
 
 ```rust
-use synaptic_loaders::{WebBaseLoader, Loader};
+use synaptic::loaders::{WebBaseLoader, Loader};
 
 let loader = WebBaseLoader::new("https://example.com/page.html");
 let docs = loader.load().await?;
@@ -147,7 +147,7 @@ Every `Loader` also provides a `lazy_load()` method that returns a `Stream` of d
 
 ```rust
 use futures::StreamExt;
-use synaptic_loaders::{DirectoryLoader, Loader};
+use synaptic::loaders::{DirectoryLoader, Loader};
 
 let loader = DirectoryLoader::new("./data").with_glob("*.txt");
 let mut stream = loader.lazy_load();

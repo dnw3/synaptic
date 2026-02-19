@@ -25,8 +25,8 @@ tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 将 `src/main.rs` 替换为以下内容：
 
 ```rust
-use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
-use synaptic_models::ScriptedChatModel;
+use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
+use synaptic::models::ScriptedChatModel;
 
 #[tokio::main]
 async fn main() -> Result<(), SynapticError> {
@@ -85,7 +85,7 @@ cargo run
 要连接 OpenAI 等真实 LLM 提供商，只需替换模型实例：
 
 ```rust
-use synaptic_models::OpenAiChatModel;
+use synaptic::models::OpenAiChatModel;
 
 let model = OpenAiChatModel::new("gpt-4o");
 ```

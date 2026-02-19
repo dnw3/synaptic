@@ -10,7 +10,7 @@ Synaptic 提供两个层级的提示词模板：
 ## 快速示例
 
 ```rust
-use synaptic_prompts::{PromptTemplate, ChatPromptTemplate, MessageTemplate};
+use synaptic::prompts::{PromptTemplate, ChatPromptTemplate, MessageTemplate};
 
 // Simple string template
 let pt = PromptTemplate::new("Hello, {{ name }}!");

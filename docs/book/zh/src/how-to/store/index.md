@@ -5,7 +5,7 @@
 ## Store Trait
 
 ```rust,ignore
-use synaptic_store::Store;
+use synaptic::store::Store;
 
 #[async_trait]
 pub trait Store: Send + Sync {
@@ -33,7 +33,7 @@ pub struct Item {
 ## InMemoryStore
 
 ```rust,ignore
-use synaptic_store::InMemoryStore;
+use synaptic::store::InMemoryStore;
 
 let store = InMemoryStore::new();
 store.put(&["users", "prefs"], "theme", json!("dark")).await?;
@@ -46,8 +46,8 @@ let item = store.get(&["users", "prefs"], "theme").await?;
 当配置了嵌入模型后，`InMemoryStore` 在 `search()` 查询时使用余弦相似度而非子字符串匹配。搜索结果按相关性排序，`Item::score` 会被填充。
 
 ```rust,ignore
-use synaptic_store::InMemoryStore;
-use synaptic_embeddings::OpenAiEmbeddings;
+use synaptic::store::InMemoryStore;
+use synaptic::embeddings::OpenAiEmbeddings;
 
 let embeddings = Arc::new(OpenAiEmbeddings::new("text-embedding-3-small"));
 let store = InMemoryStore::new().with_embeddings(embeddings);
@@ -67,8 +67,8 @@ assert!(results[0].score.unwrap() > results[1].score.unwrap());
 ## 与 Agent 配合使用
 
 ```rust,ignore
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_store::InMemoryStore;
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::store::InMemoryStore;
 
 let store = Arc::new(InMemoryStore::new());
 let options = AgentOptions {

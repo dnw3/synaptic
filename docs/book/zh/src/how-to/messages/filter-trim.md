@@ -7,7 +7,7 @@
 `filter_messages` 函数根据消息的类型（角色）、名称或 ID 筛选消息。它支持包含和排除两种过滤方式。
 
 ```rust
-use synaptic_core::{filter_messages, Message};
+use synaptic::core::{filter_messages, Message};
 ```
 
 ### 按类型过滤
@@ -108,7 +108,7 @@ let result = filter_messages(
 `trim_messages` 函数将消息列表裁剪至 token 预算范围内。它支持两种策略：保留最前面的消息或保留最后面的消息。
 
 ```rust
-use synaptic_core::{trim_messages, TrimStrategy, Message};
+use synaptic::core::{trim_messages, TrimStrategy, Message};
 ```
 
 ### 保留最后的消息（最常见）

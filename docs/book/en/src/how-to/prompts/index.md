@@ -10,7 +10,7 @@ Both template types implement the `Runnable` trait, so they compose directly wit
 ## Quick Example
 
 ```rust
-use synaptic_prompts::{PromptTemplate, ChatPromptTemplate, MessageTemplate};
+use synaptic::prompts::{PromptTemplate, ChatPromptTemplate, MessageTemplate};
 
 // Simple string template
 let pt = PromptTemplate::new("Hello, {{ name }}!");

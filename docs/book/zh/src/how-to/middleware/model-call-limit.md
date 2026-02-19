@@ -5,7 +5,7 @@
 ## 构造函数
 
 ```rust,ignore
-use synaptic_middleware::ModelCallLimitMiddleware;
+use synaptic::middleware::ModelCallLimitMiddleware;
 
 let mw = ModelCallLimitMiddleware::new(10); // max 10 model calls
 ```
@@ -16,8 +16,8 @@ let mw = ModelCallLimitMiddleware::new(10); // max 10 model calls
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_middleware::ModelCallLimitMiddleware;
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::middleware::ModelCallLimitMiddleware;
 
 let options = AgentOptions {
     middleware: vec![

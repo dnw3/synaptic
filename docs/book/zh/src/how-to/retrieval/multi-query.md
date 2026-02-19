@@ -16,7 +16,7 @@
 
 ```rust
 use std::sync::Arc;
-use synaptic_retrieval::{MultiQueryRetriever, Retriever};
+use synaptic::retrieval::{MultiQueryRetriever, Retriever};
 
 let base_retriever: Arc<dyn Retriever> = Arc::new(/* any retriever */);
 let model: Arc<dyn ChatModel> = Arc::new(/* any ChatModel */);
@@ -69,10 +69,10 @@ What makes Rust a good choice for software development?
 
 ```rust
 use std::sync::Arc;
-use synaptic_retrieval::{MultiQueryRetriever, Retriever};
-use synaptic_vectorstores::{InMemoryVectorStore, VectorStoreRetriever, VectorStore};
-use synaptic_embeddings::FakeEmbeddings;
-use synaptic_retrieval::Document;
+use synaptic::retrieval::{MultiQueryRetriever, Retriever};
+use synaptic::vectorstores::{InMemoryVectorStore, VectorStoreRetriever, VectorStore};
+use synaptic::embeddings::FakeEmbeddings;
+use synaptic::retrieval::Document;
 
 // Set up vector store
 let embeddings = Arc::new(FakeEmbeddings::new(128));

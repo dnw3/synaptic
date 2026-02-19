@@ -27,8 +27,8 @@ Tools give LLMs the ability to take actions in the world -- calling APIs, queryi
 use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{Tool, SynapticError};
-use synaptic_tools::{ToolRegistry, SerialToolExecutor};
+use synaptic::core::{Tool, SynapticError};
+use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 
 struct AddTool;
 

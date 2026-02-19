@@ -9,8 +9,8 @@
 ## 基本用法
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableEach, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableEach, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 let upper = RunnableLambda::new(|s: String| async move {
     Ok(s.to_uppercase())
@@ -32,8 +32,8 @@ assert_eq!(result, vec!["HELLO", "WORLD"]);
 如果内部 `runnable` 在任何元素上失败，`RunnableEach` 会立即停止并返回该错误。失败之前已处理的元素会被丢弃：
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableEach, RunnableLambda};
-use synaptic_core::{RunnableConfig, SynapticError};
+use synaptic::runnables::{Runnable, RunnableEach, RunnableLambda};
+use synaptic::core::{RunnableConfig, SynapticError};
 
 let must_be_short = RunnableLambda::new(|s: String| async move {
     if s.len() > 5 {
@@ -59,8 +59,8 @@ assert!(result.is_err()); // 在 "toolong" 上失败
 空的输入向量会产生空的输出向量：
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableEach, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableEach, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 let identity = RunnableLambda::new(|s: String| async move { Ok(s) });
 let each = RunnableEach::new(identity.boxed());
@@ -75,7 +75,7 @@ assert!(result.is_empty());
 `RunnableEach` 实现了 `Runnable<Vec<I>, Vec<O>>`，因此可以与管道操作符组合使用。一个常见的模式是将输入拆分为多个部分，用 `RunnableEach` 处理每个部分，然后合并结果：
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableEach, RunnableLambda};
+use synaptic::runnables::{Runnable, RunnableEach, RunnableLambda};
 
 // 步骤 1：将字符串拆分为单词
 let split = RunnableLambda::new(|s: String| async move {

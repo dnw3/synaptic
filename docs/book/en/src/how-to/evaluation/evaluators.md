@@ -7,7 +7,7 @@ Synaptic provides five built-in evaluators, ranging from simple string matching 
 Checks whether the prediction exactly matches the reference string:
 
 ```rust
-use synaptic_eval::{ExactMatchEvaluator, Evaluator};
+use synaptic::eval::{ExactMatchEvaluator, Evaluator};
 
 // Case-sensitive (default)
 let eval = ExactMatchEvaluator::new();
@@ -31,7 +31,7 @@ On failure, the reasoning field shows what was expected versus what was received
 Checks whether the prediction is valid JSON. The reference and input are ignored:
 
 ```rust
-use synaptic_eval::{JsonValidityEvaluator, Evaluator};
+use synaptic::eval::{JsonValidityEvaluator, Evaluator};
 
 let eval = JsonValidityEvaluator::new();
 
@@ -50,7 +50,7 @@ This is useful for validating that an LLM produced well-formed JSON output.
 Checks whether the prediction matches a regular expression pattern:
 
 ```rust
-use synaptic_eval::{RegexMatchEvaluator, Evaluator};
+use synaptic::eval::{RegexMatchEvaluator, Evaluator};
 
 // Match a date pattern
 let eval = RegexMatchEvaluator::new(r"\d{4}-\d{2}-\d{2}")?;
@@ -69,8 +69,8 @@ The constructor returns a `Result` because the regex pattern is validated at cre
 Computes cosine similarity between the embeddings of the prediction and reference. The score equals the cosine similarity, and the evaluation passes if the similarity meets or exceeds the threshold:
 
 ```rust
-use synaptic_eval::{EmbeddingDistanceEvaluator, Evaluator};
-use synaptic_embeddings::FakeEmbeddings;
+use synaptic::eval::{EmbeddingDistanceEvaluator, Evaluator};
+use synaptic::embeddings::FakeEmbeddings;
 use std::sync::Arc;
 
 let embeddings = Arc::new(FakeEmbeddings::new());
@@ -92,8 +92,8 @@ Parameters:
 Uses an LLM to judge the quality of a prediction on a 0-10 scale. The score is normalized to 0.0-1.0:
 
 ```rust
-use synaptic_eval::{LLMJudgeEvaluator, Evaluator};
-use synaptic_models::OpenAiChatModel;
+use synaptic::eval::{LLMJudgeEvaluator, Evaluator};
+use synaptic::models::OpenAiChatModel;
 use std::sync::Arc;
 
 let model = Arc::new(OpenAiChatModel::new("gpt-4o"));

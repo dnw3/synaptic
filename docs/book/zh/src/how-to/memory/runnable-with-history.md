@@ -6,9 +6,9 @@
 
 ```rust
 use std::sync::Arc;
-use synaptic_memory::{RunnableWithMessageHistory, InMemoryStore};
-use synaptic_core::{MemoryStore, Message, RunnableConfig};
-use synaptic_runnables::Runnable;
+use synaptic::memory::{RunnableWithMessageHistory, InMemoryStore};
+use synaptic::core::{MemoryStore, Message, RunnableConfig};
+use synaptic::runnables::Runnable;
 
 let store = Arc::new(InMemoryStore::new());
 
@@ -77,7 +77,7 @@ with_history.invoke("Hi, I'm Bob.".to_string(), &config_b).await?;
 由于 `RunnableWithMessageHistory` 接受任意 `Arc<dyn MemoryStore>`，你可以传入记忆策略来控制历史的管理方式：
 
 ```rust
-use synaptic_memory::{ConversationWindowMemory, InMemoryStore, RunnableWithMessageHistory};
+use synaptic::memory::{ConversationWindowMemory, InMemoryStore, RunnableWithMessageHistory};
 use std::sync::Arc;
 
 let store = Arc::new(InMemoryStore::new());

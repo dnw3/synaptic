@@ -19,8 +19,8 @@ The `StateGraph` builder provides two interrupt modes:
 A common pattern is to interrupt before a tool execution node so a human can review the tool calls the agent proposed:
 
 ```rust
-use synaptic_graph::{StateGraph, FnNode, MessageState, MemorySaver, CheckpointConfig, END};
-use synaptic_core::Message;
+use synaptic::graph::{StateGraph, FnNode, MessageState, MemorySaver, CheckpointConfig, END};
+use synaptic::core::Message;
 use std::sync::Arc;
 
 let agent_node = FnNode::new(|mut state: MessageState| async move {
@@ -111,7 +111,7 @@ println!("Final messages: {}", state.messages.len());
 For more control, nodes can call the `interrupt()` function to pause execution with a custom value. This is useful when the decision to interrupt depends on runtime state:
 
 ```rust
-use synaptic_graph::{interrupt, Node, NodeOutput, MessageState};
+use synaptic::graph::{interrupt, Node, NodeOutput, MessageState};
 
 struct ApprovalNode;
 
@@ -151,7 +151,7 @@ if result.is_interrupted() {
 Nodes can also use `Command` to override the normal edge-based routing:
 
 ```rust
-use synaptic_graph::{Command, NodeOutput};
+use synaptic::graph::{Command, NodeOutput};
 
 // Route to a specific node, skipping normal edges
 Ok(NodeOutput::Command(Command::goto("summary")))

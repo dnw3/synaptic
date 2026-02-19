@@ -12,8 +12,8 @@
 
 ```rust
 use serde_json::Value;
-use synaptic_runnables::{Runnable, RunnableParallel, RunnableLambda};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableParallel, RunnableLambda};
+use synaptic::core::RunnableConfig;
 
 let parallel = RunnableParallel::new(vec![
     (
@@ -83,8 +83,8 @@ let chain = analyze.boxed() | format_report.boxed();
 ### 基本用法
 
 ```rust
-use synaptic_runnables::{Runnable, RunnableBranch, RunnableLambda, BoxRunnable};
-use synaptic_core::RunnableConfig;
+use synaptic::runnables::{Runnable, RunnableBranch, RunnableLambda, BoxRunnable};
+use synaptic::core::RunnableConfig;
 
 let branch = RunnableBranch::new(
     vec![

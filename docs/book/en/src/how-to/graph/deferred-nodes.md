@@ -7,7 +7,7 @@
 Use `add_deferred_node()` on `StateGraph` instead of `add_node()`:
 
 ```rust,ignore
-use synaptic_graph::{FnNode, State, StateGraph, END};
+use synaptic::graph::{FnNode, State, StateGraph, END};
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -68,7 +68,7 @@ The count includes fixed edges (`add_edge`) and conditional edge path-map entrie
 Deferred nodes are designed as the aggregation target after `Command::send()` fans out work:
 
 ```rust,ignore
-use synaptic_graph::{Command, NodeOutput, Send};
+use synaptic::graph::{Command, NodeOutput, Send};
 
 let dispatcher = FnNode::new(|_state: AggState| async move {
     let targets = vec![

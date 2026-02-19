@@ -22,8 +22,8 @@
 
 ```rust
 use std::sync::Arc;
-use synaptic_retrieval::{ParentDocumentRetriever, Document, Retriever};
-use synaptic_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
+use synaptic::retrieval::{ParentDocumentRetriever, Document, Retriever};
+use synaptic::splitters::{RecursiveCharacterTextSplitter, TextSplitter};
 
 // 创建子检索器（任意 Retriever 实现）
 let child_retriever: Arc<dyn Retriever> = Arc::new(/* vector store retriever */);
@@ -75,10 +75,10 @@ let results = parent_retriever.retrieve("ownership borrowing", 3).await?;
 
 ```rust
 use std::sync::Arc;
-use synaptic_retrieval::{ParentDocumentRetriever, Document, Retriever};
-use synaptic_vectorstores::{InMemoryVectorStore, VectorStoreRetriever, VectorStore};
-use synaptic_embeddings::FakeEmbeddings;
-use synaptic_splitters::{RecursiveCharacterTextSplitter, TextSplitter};
+use synaptic::retrieval::{ParentDocumentRetriever, Document, Retriever};
+use synaptic::vectorstores::{InMemoryVectorStore, VectorStoreRetriever, VectorStore};
+use synaptic::embeddings::FakeEmbeddings;
+use synaptic::splitters::{RecursiveCharacterTextSplitter, TextSplitter};
 
 // 为子块设置嵌入和向量存储
 let embeddings = Arc::new(FakeEmbeddings::new(128));

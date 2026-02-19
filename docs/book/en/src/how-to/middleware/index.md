@@ -40,7 +40,7 @@ after_agent(messages)
 `MiddlewareChain` composes multiple middlewares and executes them in registration order for `before_*` hooks, and in reverse order for `after_*` hooks.
 
 ```rust,ignore
-use synaptic_middleware::MiddlewareChain;
+use synaptic::middleware::MiddlewareChain;
 
 let chain = MiddlewareChain::new(vec![
     Arc::new(ModelCallLimitMiddleware::new(10)),
@@ -53,8 +53,8 @@ let chain = MiddlewareChain::new(vec![
 Pass middlewares through `AgentOptions::middleware`. The agent graph wires them into both the model node and the tool node automatically.
 
 ```rust,ignore
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_middleware::{ModelCallLimitMiddleware, ToolRetryMiddleware};
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::middleware::{ModelCallLimitMiddleware, ToolRetryMiddleware};
 
 let options = AgentOptions {
     middleware: vec![
@@ -85,7 +85,7 @@ let graph = create_agent(model, tools, options)?;
 Implement `AgentMiddleware` for your struct and override the hooks you need.
 
 ```rust,ignore
-use synaptic_middleware::{AgentMiddleware, ModelRequest};
+use synaptic::middleware::{AgentMiddleware, ModelRequest};
 
 struct LoggingMiddleware;
 

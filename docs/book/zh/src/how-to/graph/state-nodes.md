@@ -20,8 +20,8 @@ pub trait State: Clone + Send + Sync + 'static {
 对于常见的对话式 Agent 场景，Synaptic 提供了 `MessageState`：
 
 ```rust
-use synaptic_graph::MessageState;
-use synaptic_core::Message;
+use synaptic::graph::MessageState;
+use synaptic::core::Message;
 
 // Create an empty state
 let state = MessageState::new();
@@ -53,7 +53,7 @@ fn merge(&mut self, other: Self) {
 你可以为非对话式图定义自己的状态类型：
 
 ```rust
-use synaptic_graph::State;
+use synaptic::graph::State;
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -81,9 +81,9 @@ Node 是任何实现了 `Node<S>` 的类型：
 
 ```rust
 use async_trait::async_trait;
-use synaptic_core::SynapticError;
-use synaptic_graph::{Node, NodeOutput, MessageState};
-use synaptic_core::Message;
+use synaptic::core::SynapticError;
+use synaptic::graph::{Node, NodeOutput, MessageState};
+use synaptic::core::Message;
 
 struct GreeterNode;
 
@@ -108,8 +108,8 @@ Node 是 `Send + Sync` 的，因此可以安全地持有共享引用（例如 `A
 对于简单逻辑，`FnNode` 将异步闭包包装为节点，无需定义单独的结构体：
 
 ```rust
-use synaptic_graph::{FnNode, MessageState};
-use synaptic_core::Message;
+use synaptic::graph::{FnNode, MessageState};
+use synaptic::core::Message;
 
 let greeter = FnNode::new(|mut state: MessageState| async move {
     state.messages.push(Message::ai("Hello from a closure!"));
@@ -124,8 +124,8 @@ let greeter = FnNode::new(|mut state: MessageState| async move {
 Node 通过字符串名称添加到 `StateGraph` 中。名称用于在边和条件路由中引用该节点：
 
 ```rust
-use synaptic_graph::{StateGraph, FnNode, MessageState, END};
-use synaptic_core::Message;
+use synaptic::graph::{StateGraph, FnNode, MessageState, END};
+use synaptic::core::Message;
 
 let node_a = FnNode::new(|mut state: MessageState| async move {
     state.messages.push(Message::ai("Step A"));

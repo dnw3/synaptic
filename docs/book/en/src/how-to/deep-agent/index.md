@@ -46,10 +46,10 @@ A Deep Agent is assembled from layers that wrap a core ReAct agent graph:
 ## Minimal Example
 
 ```rust,ignore
-use synaptic_deep::{create_deep_agent, DeepAgentOptions, backend::FilesystemBackend};
-use synaptic_graph::MessageState;
-use synaptic_models::OpenAiChatModel;
-use synaptic_core::Message;
+use synaptic::deep::{create_deep_agent, DeepAgentOptions, backend::FilesystemBackend};
+use synaptic::graph::MessageState;
+use synaptic::models::OpenAiChatModel;
+use synaptic::core::Message;
 use std::sync::Arc;
 
 let model = Arc::new(OpenAiChatModel::new("gpt-4o"));

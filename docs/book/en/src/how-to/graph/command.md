@@ -20,7 +20,7 @@ Nodes return `NodeOutput<S>` -- either `NodeOutput::State(S)` for a regular stat
 A "triage" node inspects the input and routes to different handlers:
 
 ```rust,ignore
-use synaptic_graph::{Command, FnNode, NodeOutput, State, StateGraph, END};
+use synaptic::graph::{Command, FnNode, NodeOutput, State, StateGraph, END};
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -105,7 +105,7 @@ let guard = FnNode::new(|state: TicketState| async move {
 `Command::send()` dispatches work to multiple targets. Each `Send` carries a node name and a JSON payload:
 
 ```rust,ignore
-use synaptic_graph::Send;
+use synaptic::graph::Send;
 
 let targets = vec![
     Send::new("worker", serde_json::json!({"chunk": "part1"})),

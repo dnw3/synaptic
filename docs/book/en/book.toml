@@ -22,6 +22,9 @@ additional-js = ["lang-switcher.js"]
 enable = true
 level = 1
 
+[output.html.playground]
+runnable = false
+
 [output.html.search]
 enable = true
 limit-results = 20

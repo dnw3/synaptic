@@ -5,7 +5,7 @@
 ## 构造函数
 
 ```rust,ignore
-use synaptic_middleware::ToolCallLimitMiddleware;
+use synaptic::middleware::ToolCallLimitMiddleware;
 
 let mw = ToolCallLimitMiddleware::new(20); // max 20 tool calls
 ```
@@ -16,8 +16,8 @@ let mw = ToolCallLimitMiddleware::new(20); // max 20 tool calls
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_middleware::ToolCallLimitMiddleware;
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::middleware::ToolCallLimitMiddleware;
 
 let options = AgentOptions {
     middleware: vec![
@@ -43,7 +43,7 @@ let graph = create_agent(model, tools, options)?;
 两种限制可以同时应用，以防范不同的故障模式：
 
 ```rust,ignore
-use synaptic_middleware::{ModelCallLimitMiddleware, ToolCallLimitMiddleware};
+use synaptic::middleware::{ModelCallLimitMiddleware, ToolCallLimitMiddleware};
 
 let options = AgentOptions {
     middleware: vec![
@@ -63,7 +63,7 @@ let graph = create_agent(model, tools, options)?;
 当超过限制时，Middleware 返回 `SynapticError::MaxStepsExceeded`。你可以捕获此错误以提供优雅的降级处理：
 
 ```rust,ignore
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 
 let mut state = MessageState::new();
 state.messages.push(Message::human("Do something complex."));

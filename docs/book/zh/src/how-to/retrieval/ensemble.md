@@ -12,7 +12,7 @@
 
 ```rust
 use std::sync::Arc;
-use synaptic_retrieval::{EnsembleRetriever, Retriever};
+use synaptic::retrieval::{EnsembleRetriever, Retriever};
 
 let retriever_a: Arc<dyn Retriever> = Arc::new(/* vector retriever */);
 let retriever_b: Arc<dyn Retriever> = Arc::new(/* BM25 retriever */);
@@ -33,9 +33,9 @@ let results = ensemble.retrieve("query", 5).await?;
 
 ```rust
 use std::sync::Arc;
-use synaptic_retrieval::{BM25Retriever, EnsembleRetriever, Document, Retriever};
-use synaptic_vectorstores::{InMemoryVectorStore, VectorStoreRetriever, VectorStore};
-use synaptic_embeddings::FakeEmbeddings;
+use synaptic::retrieval::{BM25Retriever, EnsembleRetriever, Document, Retriever};
+use synaptic::vectorstores::{InMemoryVectorStore, VectorStoreRetriever, VectorStore};
+use synaptic::embeddings::FakeEmbeddings;
 
 let docs = vec![
     Document::new("1", "Rust provides memory safety through ownership"),

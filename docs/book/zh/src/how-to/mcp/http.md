@@ -5,7 +5,7 @@ HTTP 传输使用标准的 HTTP POST 请求和 JSON-RPC 载荷连接到 MCP 服�
 ## 配置
 
 ```rust,ignore
-use synaptic_mcp::HttpConnection;
+use synaptic::mcp::HttpConnection;
 use std::collections::HashMap;
 
 let connection = HttpConnection {
@@ -31,7 +31,7 @@ let connection = HttpConnection {
 
 ```rust,ignore
 use std::collections::HashMap;
-use synaptic_mcp::{MultiServerMcpClient, McpConnection, HttpConnection};
+use synaptic::mcp::{MultiServerMcpClient, McpConnection, HttpConnection};
 
 let mut servers = HashMap::new();
 servers.insert(

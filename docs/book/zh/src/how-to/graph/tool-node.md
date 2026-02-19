@@ -19,9 +19,9 @@
 通过提供一个已注册工具的 `SerialToolExecutor` 来创建 `ToolNode`：
 
 ```rust
-use synaptic_graph::ToolNode;
-use synaptic_tools::{ToolRegistry, SerialToolExecutor};
-use synaptic_core::{Tool, ToolDefinition, SynapticError};
+use synaptic::graph::ToolNode;
+use synaptic::tools::{ToolRegistry, SerialToolExecutor};
+use synaptic::core::{Tool, ToolDefinition, SynapticError};
 use async_trait::async_trait;
 use serde_json::Value;
 use std::sync::Arc;
@@ -64,8 +64,8 @@ let tool_node = ToolNode::new(executor);
 `ToolNode` 实现了 `Node<MessageState>`，因此可以直接添加到 `StateGraph` 中：
 
 ```rust
-use synaptic_graph::{StateGraph, FnNode, MessageState, END};
-use synaptic_core::{Message, ToolCall};
+use synaptic::graph::{StateGraph, FnNode, MessageState, END};
+use synaptic::core::{Message, ToolCall};
 
 // 一个产生工具调用的代理节点
 let agent = FnNode::new(|mut state: MessageState| async move {
@@ -97,7 +97,7 @@ let result = graph.invoke(MessageState::new()).await?.into_state();
 Synaptic 提供了一个 `tools_condition` 函数，实现了标准的路由逻辑：如果最后一条消息包含工具调用则返回 `"tools"`，否则返回 `END`。这样就不需要编写自定义路由闭包了：
 
 ```rust
-use synaptic_graph::{StateGraph, MessageState, tools_condition, END};
+use synaptic::graph::{StateGraph, MessageState, tools_condition, END};
 
 let graph = StateGraph::new()
     .add_node("agent", agent_node)
@@ -114,7 +114,7 @@ let graph = StateGraph::new()
 
 ```rust
 use std::collections::HashMap;
-use synaptic_graph::{StateGraph, MessageState, END};
+use synaptic::graph::{StateGraph, MessageState, END};
 
 let graph = StateGraph::new()
     .add_node("agent", agent_node)
@@ -147,7 +147,7 @@ let graph = StateGraph::new()
 为了方便使用，Synaptic 提供了一个工厂函数来组装标准的 ReAct 代理图：
 
 ```rust
-use synaptic_graph::create_react_agent;
+use synaptic::graph::create_react_agent;
 
 let graph = create_react_agent(model, tools);
 ```
@@ -159,8 +159,8 @@ let graph = create_react_agent(model, tools);
 `ToolNode` 支持 `RuntimeAwareTool` 实例，这些实例通过 `ToolRuntime` 接收当前的图状态、存储引用和工具调用 ID。使用 `with_runtime_tool()` 注册运行时感知工具：
 
 ```rust
-use synaptic_graph::ToolNode;
-use synaptic_core::{RuntimeAwareTool, ToolRuntime};
+use synaptic::graph::ToolNode;
+use synaptic::core::{RuntimeAwareTool, ToolRuntime};
 
 let tool_node = ToolNode::new(executor)
     .with_store(store)            // 将 store 注入到 ToolRuntime 中

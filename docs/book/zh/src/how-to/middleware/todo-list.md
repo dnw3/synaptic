@@ -5,7 +5,7 @@
 ## 构造函数
 
 ```rust,ignore
-use synaptic_middleware::TodoListMiddleware;
+use synaptic::middleware::TodoListMiddleware;
 
 let mw = TodoListMiddleware::new();
 ```
@@ -34,8 +34,8 @@ let items = mw.items().await;
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_middleware::TodoListMiddleware;
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::middleware::TodoListMiddleware;
 
 let todo = Arc::new(TodoListMiddleware::new());
 todo.add("Gather user requirements").await;

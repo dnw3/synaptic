@@ -5,7 +5,7 @@ Limits the number of tool invocations during a single agent run. Use this to cap
 ## Constructor
 
 ```rust,ignore
-use synaptic_middleware::ToolCallLimitMiddleware;
+use synaptic::middleware::ToolCallLimitMiddleware;
 
 let mw = ToolCallLimitMiddleware::new(20); // max 20 tool calls
 ```
@@ -16,8 +16,8 @@ The middleware exposes `call_count()` and `reset()` for inspection and manual re
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic_graph::{create_agent, AgentOptions};
-use synaptic_middleware::ToolCallLimitMiddleware;
+use synaptic::graph::{create_agent, AgentOptions};
+use synaptic::middleware::ToolCallLimitMiddleware;
 
 let options = AgentOptions {
     middleware: vec![
@@ -43,7 +43,7 @@ The counter tracks individual tool calls, not agent steps. If a single model res
 Both limits can be applied simultaneously to guard against different failure modes:
 
 ```rust,ignore
-use synaptic_middleware::{ModelCallLimitMiddleware, ToolCallLimitMiddleware};
+use synaptic::middleware::{ModelCallLimitMiddleware, ToolCallLimitMiddleware};
 
 let options = AgentOptions {
     middleware: vec![
@@ -63,7 +63,7 @@ The agent stops as soon as either limit is hit.
 When the limit is exceeded, the middleware returns `SynapticError::MaxStepsExceeded`. You can catch this to provide a graceful fallback:
 
 ```rust,ignore
-use synaptic_core::SynapticError;
+use synaptic::core::SynapticError;
 
 let mut state = MessageState::new();
 state.messages.push(Message::human("Do something complex."));
