@@ -73,30 +73,33 @@ let def = ToolDefinition {
 };
 ```
 
-## Extras in Tool Implementations
+## Extras with `#[tool]` Macro Tools
 
-When implementing the `Tool` trait, return extras from `as_tool_definition()`:
+The `#[tool]` macro does not support `extras` directly -- extras are a property of the `ToolDefinition`, not the tool function itself. Define your tool with the macro, then add extras to the generated definition:
 
 ```rust,ignore
-use synaptic::core::Tool;
+use std::collections::HashMap;
+use serde_json::{json, Value};
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
 
-impl Tool for MyTool {
-    fn name(&self) -> &'static str { "my_tool" }
-    fn description(&self) -> &'static str { "Does something" }
-
-    fn as_tool_definition(&self) -> ToolDefinition {
-        ToolDefinition {
-            name: self.name().to_string(),
-            description: self.description().to_string(),
-            parameters: self.parameters().unwrap_or(json!({"type": "object", "properties": {}})),
-            extras: Some(HashMap::from([
-                ("cache_control".to_string(), json!({"type": "ephemeral"})),
-            ])),
-        }
-    }
-
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        Ok(json!("done"))
-    }
+/// Does something useful.
+#[tool]
+async fn my_tool(
+    /// The input query
+    query: String,
+) -> Result<Value, SynapticError> {
+    Ok(json!("done"))
 }
+
+// Get the tool definition and add extras
+let tool = my_tool();
+let mut def = tool.as_tool_definition();
+def.extras = Some(HashMap::from([
+    ("cache_control".to_string(), json!({"type": "ephemeral"})),
+]));
+
+// Use `def` when building the ChatRequest
 ```
+
+This approach works with any tool -- whether defined via `#[tool]` or by implementing the `Tool` trait manually.

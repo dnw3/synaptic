@@ -15,7 +15,7 @@ Tools give LLMs the ability to take actions in the world -- calling APIs, queryi
 
 ## How It Works
 
-1. You define tools by implementing the `Tool` trait.
+1. You define tools using the `#[tool]` macro (or by implementing the `Tool` trait manually).
 2. Register them in a `ToolRegistry`.
 3. Convert them to `ToolDefinition` values and attach them to a `ChatRequest` so the model knows what tools are available.
 4. When the model responds with `ToolCall` entries, dispatch them through `SerialToolExecutor` to get results.
@@ -23,28 +23,25 @@ Tools give LLMs the ability to take actions in the world -- calling APIs, queryi
 
 ## Quick Example
 
-```rust
-use std::sync::Arc;
-use async_trait::async_trait;
+```rust,ignore
 use serde_json::{json, Value};
-use synaptic::core::{Tool, SynapticError};
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
 use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 
-struct AddTool;
-
-#[async_trait]
-impl Tool for AddTool {
-    fn name(&self) -> &'static str { "add" }
-    fn description(&self) -> &'static str { "Add two numbers" }
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let a = args["a"].as_f64().unwrap_or(0.0);
-        let b = args["b"].as_f64().unwrap_or(0.0);
-        Ok(json!({"result": a + b}))
-    }
+/// Add two numbers.
+#[tool]
+async fn add(
+    /// First number
+    a: f64,
+    /// Second number
+    b: f64,
+) -> Result<Value, SynapticError> {
+    Ok(json!({"result": a + b}))
 }
 
 let registry = ToolRegistry::new();
-registry.register(Arc::new(AddTool))?;
+registry.register(add())?;  // add() returns Arc<dyn Tool>
 
 let executor = SerialToolExecutor::new(registry);
 let result = executor.execute("add", json!({"a": 3, "b": 4})).await?;

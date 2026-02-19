@@ -73,30 +73,35 @@ let def = ToolDefinition {
 };
 ```
 
-## 在 Tool 实现中使用 Extras
+## 在宏工具中使用 Extras
 
-在实现 `Tool` trait 时，从 `as_tool_definition()` 返回 extras：
+`#[tool]` 宏目前不直接支持设置 `extras`。推荐的做法是先用宏定义工具，然后通过 `as_tool_definition()` 获取定义，再手动修改 `extras` 字段：
 
 ```rust,ignore
-use synaptic::core::Tool;
+use std::collections::HashMap;
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
+use serde_json::{json, Value};
 
-impl Tool for MyTool {
-    fn name(&self) -> &'static str { "my_tool" }
-    fn description(&self) -> &'static str { "Does something" }
-
-    fn as_tool_definition(&self) -> ToolDefinition {
-        ToolDefinition {
-            name: self.name().to_string(),
-            description: self.description().to_string(),
-            parameters: self.parameters().unwrap_or(json!({"type": "object", "properties": {}})),
-            extras: Some(HashMap::from([
-                ("cache_control".to_string(), json!({"type": "ephemeral"})),
-            ])),
-        }
-    }
-
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        Ok(json!("done"))
-    }
+/// 搜索网页内容。
+#[tool]
+async fn search(
+    /// 搜索查询
+    query: String,
+) -> Result<Value, SynapticError> {
+    Ok(json!({"results": []}))
 }
+
+// 获取宏生成的工具定义
+let tool = search();
+let mut tool_def = tool.as_tool_definition();
+
+// 手动添加 extras（例如 Anthropic prompt 缓存）
+let mut extras = HashMap::new();
+extras.insert("cache_control".to_string(), json!({"type": "ephemeral"}));
+tool_def.extras = Some(extras);
+
+// 将修改后的 tool_def 附加到 ChatRequest
 ```
+
+> **注意：** `#[tool]` 宏不支持在属性中直接指定 `extras`。如果需要在 `as_tool_definition()` 中自动返回 extras，请使用手动 `impl Tool` 的方式（参见[自定义工具](custom-tool.md)中的手动实现部分）。

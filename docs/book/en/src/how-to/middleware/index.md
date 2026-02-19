@@ -82,19 +82,17 @@ let graph = create_agent(model, tools, options)?;
 
 ## Writing a Custom Middleware
 
-Implement `AgentMiddleware` for your struct and override the hooks you need.
+The easiest way to define a middleware is with the corresponding macro. Each lifecycle hook has its own macro (`#[before_agent]`, `#[before_model]`, `#[after_model]`, `#[after_agent]`, `#[wrap_model_call]`, `#[wrap_tool_call]`, `#[dynamic_prompt]`). The macro generates the struct, `AgentMiddleware` trait implementation, and a factory function automatically.
 
 ```rust,ignore
-use synaptic::middleware::{AgentMiddleware, ModelRequest};
+use synaptic::macros::before_model;
+use synaptic::middleware::ModelRequest;
+use synaptic::core::SynapticError;
 
-struct LoggingMiddleware;
-
-#[async_trait]
-impl AgentMiddleware for LoggingMiddleware {
-    async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError> {
-        println!("Model call with {} messages", request.messages.len());
-        Ok(())
-    }
+#[before_model]
+async fn log_model_call(request: &mut ModelRequest) -> Result<(), SynapticError> {
+    println!("Model call with {} messages", request.messages.len());
+    Ok(())
 }
 ```
 
@@ -102,8 +100,10 @@ Then add it to your agent:
 
 ```rust,ignore
 let options = AgentOptions {
-    middleware: vec![Arc::new(LoggingMiddleware)],
+    middleware: vec![log_model_call()],
     ..Default::default()
 };
 let graph = create_agent(model, tools, options)?;
 ```
+
+> **Note:** The `log_model_call()` factory function returns `Arc<dyn AgentMiddleware>`. For stateful middleware, use `#[field]` parameters on the function. See [Procedural Macros](../macros.md#middleware-macros) for the full reference, including all seven middleware macros and stateful middleware with `#[field]`.

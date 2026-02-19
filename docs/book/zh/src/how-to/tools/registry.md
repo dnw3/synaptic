@@ -8,26 +8,22 @@
 
 ### 创建和注册工具
 
-```rust
-use std::sync::Arc;
-use async_trait::async_trait;
-use serde_json::{json, Value};
-use synaptic::core::{Tool, SynapticError};
+```rust,ignore
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
 use synaptic::tools::ToolRegistry;
+use serde_json::{json, Value};
 
-struct EchoTool;
-
-#[async_trait]
-impl Tool for EchoTool {
-    fn name(&self) -> &'static str { "echo" }
-    fn description(&self) -> &'static str { "Echo back the input" }
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        Ok(json!({"echo": args}))
-    }
+/// 将输入原样返回。
+#[tool]
+async fn echo(
+    #[args] args: Value,
+) -> Result<Value, SynapticError> {
+    Ok(json!({"echo": args}))
 }
 
 let registry = ToolRegistry::new();
-registry.register(Arc::new(EchoTool))?;
+registry.register(echo())?;
 ```
 
 如果注册两个同名工具，第二次注册会替换第一次。
@@ -81,44 +77,39 @@ assert!(matches!(err, synaptic::core::SynapticError::ToolNotFound(name) if name 
 
 以下是一个注册多个工具并执行它们的完整示例：
 
-```rust
-use std::sync::Arc;
-use async_trait::async_trait;
-use serde_json::{json, Value};
-use synaptic::core::{Tool, SynapticError};
+```rust,ignore
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
 use synaptic::tools::{ToolRegistry, SerialToolExecutor};
+use serde_json::{json, Value};
 
-struct AddTool;
-
-#[async_trait]
-impl Tool for AddTool {
-    fn name(&self) -> &'static str { "add" }
-    fn description(&self) -> &'static str { "Add two numbers" }
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let a = args["a"].as_f64().unwrap_or(0.0);
-        let b = args["b"].as_f64().unwrap_or(0.0);
-        Ok(json!({"result": a + b}))
-    }
+/// 两数相加。
+#[tool]
+async fn add(
+    /// 第一个数
+    a: f64,
+    /// 第二个数
+    b: f64,
+) -> Result<Value, SynapticError> {
+    Ok(json!({"result": a + b}))
 }
 
-struct MultiplyTool;
-
-#[async_trait]
-impl Tool for MultiplyTool {
-    fn name(&self) -> &'static str { "multiply" }
-    fn description(&self) -> &'static str { "Multiply two numbers" }
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let a = args["a"].as_f64().unwrap_or(0.0);
-        let b = args["b"].as_f64().unwrap_or(0.0);
-        Ok(json!({"result": a * b}))
-    }
+/// 两数相乘。
+#[tool]
+async fn multiply(
+    /// 第一个数
+    a: f64,
+    /// 第二个数
+    b: f64,
+) -> Result<Value, SynapticError> {
+    Ok(json!({"result": a * b}))
 }
 
 #[tokio::main]
 async fn main() -> Result<(), SynapticError> {
     let registry = ToolRegistry::new();
-    registry.register(Arc::new(AddTool))?;
-    registry.register(Arc::new(MultiplyTool))?;
+    registry.register(add())?;
+    registry.register(multiply())?;
 
     let executor = SerialToolExecutor::new(registry);
 

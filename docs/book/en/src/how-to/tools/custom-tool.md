@@ -1,119 +1,80 @@
 # Custom Tools
 
-Every tool in Synaptic implements the `Tool` trait from `synaptic-core`. This page shows how to define your own tools.
+Every tool in Synaptic implements the `Tool` trait from `synaptic-core`. The recommended way to define tools is with the `#[tool]` attribute macro, which generates all the boilerplate for you.
 
-## The Tool Trait
+## Defining a Tool with `#[tool]`
 
-The `Tool` trait requires three methods:
+The `#[tool]` macro converts an async function into a full `Tool` implementation. Doc comments on the function become the tool description, and doc comments on parameters become JSON Schema descriptions:
 
-```rust
-use async_trait::async_trait;
-use serde_json::Value;
+```rust,ignore
+use synaptic::macros::tool;
 use synaptic::core::SynapticError;
-
-#[async_trait]
-pub trait Tool: Send + Sync {
-    /// Unique name used to identify this tool in registries and tool calls.
-    fn name(&self) -> &'static str;
-
-    /// Human-readable description sent to the model so it understands what this tool does.
-    fn description(&self) -> &'static str;
-
-    /// Execute the tool with the given JSON arguments and return a JSON result.
-    async fn call(&self, args: Value) -> Result<Value, SynapticError>;
-}
-```
-
-## Implementing a Tool
-
-Here is a complete example of a weather tool:
-
-```rust
-use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic::core::{Tool, SynapticError};
 
-struct WeatherTool;
-
-#[async_trait]
-impl Tool for WeatherTool {
-    fn name(&self) -> &'static str {
-        "get_weather"
-    }
-
-    fn description(&self) -> &'static str {
-        "Get the current weather for a location"
-    }
-
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let location = args["location"]
-            .as_str()
-            .unwrap_or("unknown");
-
-        // In production, call a real weather API here
-        Ok(json!({
-            "location": location,
-            "temperature": 22,
-            "condition": "sunny"
-        }))
-    }
+/// Get the current weather for a location.
+#[tool]
+async fn get_weather(
+    /// The city name
+    location: String,
+) -> Result<Value, SynapticError> {
+    // In production, call a real weather API here
+    Ok(json!({
+        "location": location,
+        "temperature": 22,
+        "condition": "sunny"
+    }))
 }
+
+// `get_weather()` returns Arc<dyn Tool>
+let tool = get_weather();
+assert_eq!(tool.name(), "get_weather");
 ```
 
 Key points:
 
-- The `#[async_trait]` attribute is required because `Tool` is an async trait.
-- `name()` returns a `&'static str` -- this is the identifier the model uses when making tool calls.
-- `description()` tells the model what the tool does. Write clear, concise descriptions so the model knows when to use this tool.
-- `call()` receives arguments as a `serde_json::Value` (typically a JSON object) and returns a `Value` result.
+- The function name becomes the tool name (override with `#[tool(name = "custom_name")]`).
+- The doc comment on the function becomes the tool description.
+- Each parameter becomes a JSON Schema property; doc comments on parameters become `"description"` fields in the schema.
+- `String`, `i64`, `f64`, `bool`, `Vec<T>`, and `Option<T>` types are mapped to JSON Schema types automatically.
+- The factory function (`get_weather()`) returns `Arc<dyn Tool>`.
 
 ## Error Handling
 
-Return `SynapticError::Tool(...)` for tool-specific errors:
+Return `SynapticError::Tool(...)` for tool-specific errors. The macro handles parameter validation automatically, but you can add your own domain-specific checks:
 
-```rust
-use async_trait::async_trait;
+```rust,ignore
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
 use serde_json::{json, Value};
-use synaptic::core::{Tool, SynapticError};
 
-struct DivisionTool;
-
-#[async_trait]
-impl Tool for DivisionTool {
-    fn name(&self) -> &'static str {
-        "divide"
+/// Divide two numbers.
+#[tool]
+async fn divide(
+    /// The numerator
+    a: f64,
+    /// The denominator
+    b: f64,
+) -> Result<Value, SynapticError> {
+    if b == 0.0 {
+        return Err(SynapticError::Tool("division by zero".to_string()));
     }
 
-    fn description(&self) -> &'static str {
-        "Divide two numbers"
-    }
-
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let a = args["a"].as_f64()
-            .ok_or_else(|| SynapticError::Tool("missing argument 'a'".to_string()))?;
-        let b = args["b"].as_f64()
-            .ok_or_else(|| SynapticError::Tool("missing argument 'b'".to_string()))?;
-
-        if b == 0.0 {
-            return Err(SynapticError::Tool("division by zero".to_string()));
-        }
-
-        Ok(json!({"result": a / b}))
-    }
+    Ok(json!({"result": a / b}))
 }
 ```
 
+Note that the macro auto-generates validation for missing or invalid parameters (returning `SynapticError::Tool` errors), so you no longer need manual `args["a"].as_f64().ok_or_else(...)` checks.
+
 ## Registering and Using
 
-Once defined, wrap the tool in an `Arc` and register it:
+The `#[tool]` macro factory returns `Arc<dyn Tool>`, which you register directly:
 
-```rust
-use std::sync::Arc;
+```rust,ignore
 use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 use serde_json::json;
 
 let registry = ToolRegistry::new();
-registry.register(Arc::new(WeatherTool))?;
+registry.register(get_weather())?;
 
 let executor = SerialToolExecutor::new(registry);
 let result = executor.execute("get_weather", json!({"location": "Tokyo"})).await?;
@@ -124,27 +85,26 @@ See the [Tool Registry](registry.md) page for more on registration and execution
 
 ## Full ReAct Agent Loop
 
-Here is a complete offline example that defines tools, registers them, and wires them into a ReAct agent with `ScriptedChatModel`:
+Here is a complete offline example that defines tools with `#[tool]`, then wires them into a ReAct agent with `ScriptedChatModel`:
 
 ```rust,ignore
 use std::sync::Arc;
 use serde_json::{json, Value};
+use synaptic::macros::tool;
 use synaptic::core::{ChatModel, ChatResponse, Message, Tool, ToolCall, SynapticError};
 use synaptic::models::ScriptedChatModel;
 use synaptic::graph::{create_react_agent, MessageState};
 
-// 1. Define tools (using the trait)
-struct AddTool;
-
-#[async_trait::async_trait]
-impl Tool for AddTool {
-    fn name(&self) -> &'static str { "add" }
-    fn description(&self) -> &'static str { "Add two numbers" }
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let a = args["a"].as_f64().unwrap_or(0.0);
-        let b = args["b"].as_f64().unwrap_or(0.0);
-        Ok(json!({"result": a + b}))
-    }
+// 1. Define tools with the macro
+/// Add two numbers.
+#[tool]
+async fn add(
+    /// First number
+    a: f64,
+    /// Second number
+    b: f64,
+) -> Result<Value, SynapticError> {
+    Ok(json!({"result": a + b}))
 }
 
 // 2. Script the model to call the tool and then respond
@@ -166,8 +126,8 @@ let model: Arc<dyn ChatModel> = Arc::new(ScriptedChatModel::new(vec![
     },
 ]));
 
-// 3. Build the agent
-let tools: Vec<Arc<dyn Tool>> = vec![Arc::new(AddTool)];
+// 3. Build the agent -- add() returns Arc<dyn Tool>
+let tools: Vec<Arc<dyn Tool>> = vec![add()];
 let agent = create_react_agent(model, tools)?;
 
 // 4. Run it
@@ -209,40 +169,7 @@ let request = ChatRequest::new(vec![
 
 The `parameters` field follows the JSON Schema format that LLM providers expect.
 
-## Using the `#[tool]` Macro
-
-Instead of manually implementing the `Tool` trait, you can use the `#[tool]`
-attribute macro from `synaptic-macros` to generate the boilerplate:
-
-```rust,ignore
-use synaptic::macros::tool;
-use synaptic::core::SynapticError;
-use serde_json::{json, Value};
-
-/// Get the current weather for a location.
-#[tool]
-async fn get_weather(
-    /// The city name
-    location: String,
-) -> Result<Value, SynapticError> {
-    Ok(json!({
-        "location": location,
-        "temperature": 22,
-        "condition": "sunny"
-    }))
-}
-
-// `get_weather()` returns Arc<dyn Tool>
-let tool = get_weather();
-assert_eq!(tool.name(), "get_weather");
-```
-
-The macro generates the struct, `impl Tool`, JSON Schema from parameter types,
-and a factory function — all from a single annotated function. Doc comments on
-the function become the tool description; doc comments on parameters become
-schema descriptions.
-
-### Optional and Default Parameters
+## Optional and Default Parameters
 
 ```rust,ignore
 #[tool]
@@ -260,7 +187,7 @@ async fn search(
 }
 ```
 
-### Stateful Tools with `#[field]`
+## Stateful Tools with `#[field]`
 
 Tools that need to hold state (database connections, API clients, etc.) can use
 `#[field]` to create struct fields that are hidden from the LLM schema:
@@ -284,3 +211,46 @@ let tool = db_query(pool.clone());
 
 For the full macro reference including `#[inject]`, `#[default]`, and middleware
 macros, see the [Procedural Macros](../macros.md) page.
+
+## Manual Implementation
+
+For advanced cases that the macro cannot handle (custom `parameters()` overrides, conditional logic in `name()` or `description()`, or implementing both `Tool` and other traits on the same struct), you can implement the `Tool` trait directly:
+
+```rust
+use async_trait::async_trait;
+use serde_json::{json, Value};
+use synaptic::core::{Tool, SynapticError};
+
+struct WeatherTool;
+
+#[async_trait]
+impl Tool for WeatherTool {
+    fn name(&self) -> &'static str {
+        "get_weather"
+    }
+
+    fn description(&self) -> &'static str {
+        "Get the current weather for a location"
+    }
+
+    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
+        let location = args["location"]
+            .as_str()
+            .unwrap_or("unknown");
+
+        Ok(json!({
+            "location": location,
+            "temperature": 22,
+            "condition": "sunny"
+        }))
+    }
+}
+```
+
+The trait requires three methods:
+
+- `name()` -- a `&'static str` identifier the model uses when making tool calls.
+- `description()` -- tells the model what the tool does.
+- `call()` -- receives arguments as a `serde_json::Value` and returns a `Value` result.
+
+Wrap manual implementations in `Arc::new(WeatherTool)` when registering them.

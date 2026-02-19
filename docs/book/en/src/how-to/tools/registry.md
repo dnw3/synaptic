@@ -8,26 +8,22 @@
 
 ### Creating and Registering Tools
 
-```rust
-use std::sync::Arc;
-use async_trait::async_trait;
+```rust,ignore
 use serde_json::{json, Value};
-use synaptic::core::{Tool, SynapticError};
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
 use synaptic::tools::ToolRegistry;
 
-struct EchoTool;
-
-#[async_trait]
-impl Tool for EchoTool {
-    fn name(&self) -> &'static str { "echo" }
-    fn description(&self) -> &'static str { "Echo back the input" }
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        Ok(json!({"echo": args}))
-    }
+/// Echo back the input.
+#[tool]
+async fn echo(
+    #[args] args: Value,
+) -> Result<Value, SynapticError> {
+    Ok(json!({"echo": args}))
 }
 
 let registry = ToolRegistry::new();
-registry.register(Arc::new(EchoTool))?;
+registry.register(echo())?;  // echo() returns Arc<dyn Tool>
 ```
 
 If you register two tools with the same name, the second registration replaces the first.
@@ -81,44 +77,39 @@ assert!(matches!(err, synaptic::core::SynapticError::ToolNotFound(name) if name 
 
 Here is a full example that registers multiple tools and executes them:
 
-```rust
-use std::sync::Arc;
-use async_trait::async_trait;
+```rust,ignore
 use serde_json::{json, Value};
-use synaptic::core::{Tool, SynapticError};
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
 use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 
-struct AddTool;
-
-#[async_trait]
-impl Tool for AddTool {
-    fn name(&self) -> &'static str { "add" }
-    fn description(&self) -> &'static str { "Add two numbers" }
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let a = args["a"].as_f64().unwrap_or(0.0);
-        let b = args["b"].as_f64().unwrap_or(0.0);
-        Ok(json!({"result": a + b}))
-    }
+/// Add two numbers.
+#[tool]
+async fn add(
+    /// First number
+    a: f64,
+    /// Second number
+    b: f64,
+) -> Result<Value, SynapticError> {
+    Ok(json!({"result": a + b}))
 }
 
-struct MultiplyTool;
-
-#[async_trait]
-impl Tool for MultiplyTool {
-    fn name(&self) -> &'static str { "multiply" }
-    fn description(&self) -> &'static str { "Multiply two numbers" }
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let a = args["a"].as_f64().unwrap_or(0.0);
-        let b = args["b"].as_f64().unwrap_or(0.0);
-        Ok(json!({"result": a * b}))
-    }
+/// Multiply two numbers.
+#[tool]
+async fn multiply(
+    /// First number
+    a: f64,
+    /// Second number
+    b: f64,
+) -> Result<Value, SynapticError> {
+    Ok(json!({"result": a * b}))
 }
 
 #[tokio::main]
 async fn main() -> Result<(), SynapticError> {
     let registry = ToolRegistry::new();
-    registry.register(Arc::new(AddTool))?;
-    registry.register(Arc::new(MultiplyTool))?;
+    registry.register(add())?;
+    registry.register(multiply())?;
 
     let executor = SerialToolExecutor::new(registry);
 

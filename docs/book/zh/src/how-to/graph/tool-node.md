@@ -21,39 +21,23 @@
 ```rust
 use synaptic::graph::ToolNode;
 use synaptic::tools::{ToolRegistry, SerialToolExecutor};
-use synaptic::core::{Tool, ToolDefinition, SynapticError};
-use async_trait::async_trait;
-use serde_json::Value;
+use synaptic::core::SynapticError;
+use synaptic::macros::tool;
 use std::sync::Arc;
 
-// 定义一个工具
-struct CalculatorTool;
-
-#[async_trait]
-impl Tool for CalculatorTool {
-    fn definition(&self) -> ToolDefinition {
-        ToolDefinition {
-            name: "calculator".to_string(),
-            description: "Evaluates math expressions".to_string(),
-            parameters: serde_json::json!({
-                "type": "object",
-                "properties": {
-                    "expression": { "type": "string" }
-                },
-                "required": ["expression"]
-            }),
-        }
-    }
-
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let expr = args["expression"].as_str().unwrap_or("0");
-        Ok(Value::String(format!("Result: {expr}")))
-    }
+// 使用 #[tool] 宏定义工具——文档注释会作为工具描述发送给 LLM
+/// 计算数学表达式
+#[tool(name = "calculator")]
+async fn calculator(
+    /// 要计算的表达式
+    expression: String,
+) -> Result<String, SynapticError> {
+    Ok(format!("Result: {expression}"))
 }
 
 // 注册并创建执行器
 let registry = ToolRegistry::new();
-registry.register(Arc::new(CalculatorTool)).await?;
+registry.register(calculator()).await?;  // calculator() 返回 Arc<dyn Tool>
 
 let executor = SerialToolExecutor::new(registry);
 let tool_node = ToolNode::new(executor);

@@ -88,6 +88,8 @@ let double = RunnableLambda::new(|x: i64| async move {
 let result = double.invoke(21, &config).await?; // 42
 ```
 
+> **提示：** 如果你的转换逻辑是独立的异步函数而非闭包，可以使用 `#[chain]` 宏直接生成 `BoxRunnable` 工厂函数，省去手动包装的步骤。参见[过程宏](../how-to/macros.md#chain----创建可运行链)。
+
 ### RunnableSequence
 
 将两个 `Runnable` 串联为一个序列。通常你不需要直接使用它——管道运算符 `|` 会自动创建 `RunnableSequence`。

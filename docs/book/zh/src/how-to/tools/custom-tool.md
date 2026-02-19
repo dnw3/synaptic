@@ -1,32 +1,177 @@
 # 自定义工具
 
-Synaptic 中的每个工具都实现了 `synaptic-core` 中的 `Tool` trait。本页展示如何定义你自己的工具。
+Synaptic 中的每个工具都实现了 `synaptic-core` 中的 `Tool` trait。推荐使用 `#[tool]` 宏来定义工具，它会自动生成结构体、trait 实现和 JSON Schema。
 
-## Tool Trait
+## 使用 `#[tool]` 宏定义工具
 
-`Tool` trait 要求实现三个方法：
+`#[tool]` 宏从一个带注解的异步函数生成完整的 `Tool` 实现。函数上的文档注释成为工具描述；参数上的文档注释成为 JSON Schema 描述。
 
-```rust
-use async_trait::async_trait;
-use serde_json::Value;
+```rust,ignore
+use synaptic::macros::tool;
 use synaptic::core::SynapticError;
+use serde_json::{json, Value};
 
-#[async_trait]
-pub trait Tool: Send + Sync {
-    /// Unique name used to identify this tool in registries and tool calls.
-    fn name(&self) -> &'static str;
+/// 获取指定地点的当前天气。
+#[tool]
+async fn get_weather(
+    /// 城市名称
+    location: String,
+) -> Result<Value, SynapticError> {
+    // 实际应用中，在此处调用真实的天气 API
+    Ok(json!({
+        "location": location,
+        "temperature": 22,
+        "condition": "sunny"
+    }))
+}
 
-    /// Human-readable description sent to the model so it understands what this tool does.
-    fn description(&self) -> &'static str;
+// `get_weather()` 返回 Arc<dyn Tool>
+let tool = get_weather();
+assert_eq!(tool.name(), "get_weather");
+```
 
-    /// Execute the tool with the given JSON arguments and return a JSON result.
-    async fn call(&self, args: Value) -> Result<Value, SynapticError>;
+要点：
+
+- 函数上的 `///` 文档注释成为 `description()`，告诉模型这个工具的功能。
+- 参数上的 `///` 文档注释成为 JSON Schema 中的字段描述。
+- 函数名自动成为 `name()`（也可以用 `#[tool(name = "xxx")]` 覆盖）。
+- 宏自动从参数类型生成 JSON Schema（`String` → `"string"`、`i64` → `"integer"` 等）。
+- 工厂函数返回 `Arc<dyn Tool>`，可直接注册到 `ToolRegistry`。
+
+## 错误处理
+
+对于工具特定的错误，返回 `SynapticError::Tool(...)`：
+
+```rust,ignore
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
+use serde_json::{json, Value};
+
+/// 两数相除。
+#[tool]
+async fn divide(
+    /// 被除数
+    a: f64,
+    /// 除数
+    b: f64,
+) -> Result<Value, SynapticError> {
+    if b == 0.0 {
+        return Err(SynapticError::Tool("除数不能为零".to_string()));
+    }
+    Ok(json!({"result": a / b}))
 }
 ```
 
-## 实现一个工具
+宏自动处理参数的反序列化。如果模型传入了缺失或类型错误的参数，框架会返回相应的错误。
 
-下面是一个天气工具的完整示例：
+## 注册和使用
+
+工厂函数返回 `Arc<dyn Tool>`，可直接注册到 `ToolRegistry`：
+
+```rust,ignore
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
+use synaptic::tools::{ToolRegistry, SerialToolExecutor};
+use serde_json::{json, Value};
+
+/// 获取指定地点的当前天气。
+#[tool]
+async fn get_weather(
+    /// 城市名称
+    location: String,
+) -> Result<Value, SynapticError> {
+    Ok(json!({
+        "location": location,
+        "temperature": 22,
+        "condition": "sunny"
+    }))
+}
+
+let registry = ToolRegistry::new();
+registry.register(get_weather())?;
+
+let executor = SerialToolExecutor::new(registry);
+let result = executor.execute("get_weather", json!({"location": "Tokyo"})).await?;
+// result = {"location": "Tokyo", "temperature": 22, "condition": "sunny"}
+```
+
+有关注册和执行的更多信息，请参阅[工具注册表](registry.md)页面。
+
+## 模型的工具定义
+
+宏生成的工具实现了 `as_tool_definition()` 方法，可以自动生成包含完整 JSON Schema 的 `ToolDefinition`。将其附加到 `ChatRequest` 上，告知模型可用的工具：
+
+```rust,ignore
+use synaptic::core::{ChatRequest, Message};
+
+let tool = get_weather();
+let tool_def = tool.as_tool_definition();
+
+let request = ChatRequest::new(vec![
+    Message::human("What is the weather in Tokyo?"),
+])
+.with_tools(vec![tool_def]);
+```
+
+也可以手动构建 `ToolDefinition`，`parameters` 字段遵循 LLM 提供商期望的 JSON Schema 格式。
+
+## 可选参数和默认值
+
+```rust,ignore
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
+
+/// 搜索内容。
+#[tool]
+async fn search(
+    /// 搜索查询
+    query: String,
+    /// 最大结果数（默认 10）
+    #[default = 10]
+    max_results: i64,
+    /// 语言过滤
+    language: Option<String>,
+) -> Result<String, SynapticError> {
+    let lang = language.unwrap_or_else(|| "en".into());
+    Ok(format!("搜索 '{}' (最多 {} 条, 语言 {})", query, max_results, lang))
+}
+```
+
+- `Option<T>` 参数在 schema 中不是 required，缺失时反序列化为 `None`。
+- `#[default = value]` 提供编译时默认值，同样不是 required，默认值记录在 schema 的 `"default"` 字段中。
+
+## 使用 `#[field]` 的有状态工具
+
+需要持有状态的工具（数据库连接、API 客户端等）可以使用 `#[field]` 创建对 LLM schema 隐藏的结构体字段：
+
+```rust,ignore
+use std::sync::Arc;
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
+use serde_json::Value;
+
+/// 执行数据库查询。
+#[tool]
+async fn db_query(
+    #[field] pool: Arc<DbPool>,
+    /// 要执行的 SQL 查询
+    query: String,
+) -> Result<Value, SynapticError> {
+    let result = pool.execute(&query).await?;
+    Ok(serde_json::to_value(result).unwrap())
+}
+
+// 工厂函数需要提供 field 参数
+let tool = db_query(pool.clone());
+```
+
+`#[field]` 参数在构造时提供，对 LLM 完全隐藏。有关 `#[inject]`、`#[default]` 和中间件宏的完整宏参考，请参阅[过程宏](../macros.md)页面。
+
+---
+
+## 手动实现（参考）
+
+如果需要更精细的控制，也可以手动实现 `Tool` trait。`Tool` trait 要求实现三个方法：`name()`、`description()` 和 `call()`：
 
 ```rust
 use async_trait::async_trait;
@@ -50,7 +195,6 @@ impl Tool for WeatherTool {
             .as_str()
             .unwrap_or("unknown");
 
-        // In production, call a real weather API here
         Ok(json!({
             "location": location,
             "temperature": 22,
@@ -60,165 +204,4 @@ impl Tool for WeatherTool {
 }
 ```
 
-要点：
-
-- 由于 `Tool` 是异步 trait，需要 `#[async_trait]` 属性。
-- `name()` 返回 `&'static str` -- 这是模型在进行工具调用时使用的标识符。
-- `description()` 告诉模型这个工具的功能。编写清晰简洁的描述，让模型知道何时使用此工具。
-- `call()` 接收 `serde_json::Value` 类型的参数（通常是 JSON 对象）并返回 `Value` 结果。
-
-## 错误处理
-
-对于工具特定的错误，返回 `SynapticError::Tool(...)`：
-
-```rust
-use async_trait::async_trait;
-use serde_json::{json, Value};
-use synaptic::core::{Tool, SynapticError};
-
-struct DivisionTool;
-
-#[async_trait]
-impl Tool for DivisionTool {
-    fn name(&self) -> &'static str {
-        "divide"
-    }
-
-    fn description(&self) -> &'static str {
-        "Divide two numbers"
-    }
-
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let a = args["a"].as_f64()
-            .ok_or_else(|| SynapticError::Tool("missing argument 'a'".to_string()))?;
-        let b = args["b"].as_f64()
-            .ok_or_else(|| SynapticError::Tool("missing argument 'b'".to_string()))?;
-
-        if b == 0.0 {
-            return Err(SynapticError::Tool("division by zero".to_string()));
-        }
-
-        Ok(json!({"result": a / b}))
-    }
-}
-```
-
-## 注册和使用
-
-定义完成后，将工具包装在 `Arc` 中并注册：
-
-```rust
-use std::sync::Arc;
-use synaptic::tools::{ToolRegistry, SerialToolExecutor};
-use serde_json::json;
-
-let registry = ToolRegistry::new();
-registry.register(Arc::new(WeatherTool))?;
-
-let executor = SerialToolExecutor::new(registry);
-let result = executor.execute("get_weather", json!({"location": "Tokyo"})).await?;
-// result = {"location": "Tokyo", "temperature": 22, "condition": "sunny"}
-```
-
-有关注册和执行的更多信息，请参阅[工具注册表](registry.md)页面。
-
-## 模型的工具定义
-
-要告知聊天模型可用的工具，创建 `ToolDefinition` 值并附加到 `ChatRequest`：
-
-```rust
-use serde_json::json;
-use synaptic::core::{ChatRequest, Message, ToolDefinition};
-
-let tool_def = ToolDefinition {
-    name: "get_weather".to_string(),
-    description: "Get the current weather for a location".to_string(),
-    parameters: json!({
-        "type": "object",
-        "properties": {
-            "location": {
-                "type": "string",
-                "description": "The city name"
-            }
-        },
-        "required": ["location"]
-    }),
-};
-
-let request = ChatRequest::new(vec![
-    Message::human("What is the weather in Tokyo?"),
-])
-.with_tools(vec![tool_def]);
-```
-
-`parameters` 字段遵循 LLM 提供商期望的 JSON Schema 格式。
-
-## 使用 `#[tool]` 宏
-
-除了手动实现 `Tool` trait，你还可以使用 `synaptic-macros` 中的 `#[tool]` 属性宏来生成样板代码：
-
-```rust,ignore
-use synaptic::macros::tool;
-use synaptic::core::SynapticError;
-use serde_json::{json, Value};
-
-/// Get the current weather for a location.
-#[tool]
-async fn get_weather(
-    /// The city name
-    location: String,
-) -> Result<Value, SynapticError> {
-    Ok(json!({
-        "location": location,
-        "temperature": 22,
-        "condition": "sunny"
-    }))
-}
-
-// `get_weather()` returns Arc<dyn Tool>
-let tool = get_weather();
-assert_eq!(tool.name(), "get_weather");
-```
-
-该宏从一个带注解的函数生成结构体、`impl Tool`、参数类型的 JSON Schema 以及工厂函数。函数上的文档注释成为工具描述；参数上的文档注释成为 schema 描述。
-
-### 可选参数和默认值
-
-```rust,ignore
-#[tool]
-async fn search(
-    /// The search query
-    query: String,
-    /// Maximum results (default 10)
-    #[default = 10]
-    max_results: i64,
-    /// Language filter
-    language: Option<String>,
-) -> Result<String, SynapticError> {
-    let lang = language.unwrap_or_else(|| "en".into());
-    Ok(format!("Searching '{}' (max {}, lang {})", query, max_results, lang))
-}
-```
-
-### 使用 `#[field]` 的有状态工具
-
-需要持有状态的工具（数据库连接、API 客户端等）可以使用 `#[field]` 创建对 LLM schema 隐藏的结构体字段：
-
-```rust,ignore
-use std::sync::Arc;
-
-#[tool]
-async fn db_query(
-    #[field] pool: Arc<DbPool>,
-    /// SQL query to execute
-    query: String,
-) -> Result<Value, SynapticError> {
-    let result = pool.execute(&query).await?;
-    Ok(serde_json::to_value(result).unwrap())
-}
-
-// Factory requires the field parameter
-let tool = db_query(pool.clone());
-```
-
-有关 `#[inject]`、`#[default]` 和中间件宏的完整宏参考，请参阅[过程宏](../macros.md)页面。
+手动实现适用于需要自定义 `as_tool_definition()`（例如添加 `extras`）或无法使用宏的场景。大多数情况下推荐使用 `#[tool]` 宏。

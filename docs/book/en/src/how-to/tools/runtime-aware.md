@@ -24,71 +24,54 @@ pub struct ToolRuntime {
 | `tool_call_id` | The ID of the tool call being executed |
 | `config` | Runnable config with tags, metadata, and run ID |
 
-## Implementing `RuntimeAwareTool`
+## Implementing with `#[tool]` and `#[inject]`
 
-The trait requires `name()`, `description()`, and `call_with_runtime()`. Optionally override `parameters()` to provide a JSON schema:
+The recommended way to define a runtime-aware tool is with the `#[tool]` macro. Use `#[inject(store)]`, `#[inject(state)]`, or `#[inject(tool_call_id)]` on parameters to receive runtime context. These injected parameters are hidden from the LLM schema. Using any `#[inject]` attribute automatically switches the generated impl to `RuntimeAwareTool`:
 
 ```rust,ignore
-use async_trait::async_trait;
+use std::sync::Arc;
 use serde_json::{json, Value};
-use synaptic::core::{RuntimeAwareTool, ToolRuntime, SynapticError};
+use synaptic::macros::tool;
+use synaptic::core::{Store, SynapticError};
 
-struct SaveNoteTool;
+/// Save a note to the store.
+#[tool]
+async fn save_note(
+    /// The note key
+    key: String,
+    /// The note text
+    text: String,
+    #[inject(store)] store: Arc<dyn Store>,
+) -> Result<Value, SynapticError> {
+    store.put(
+        &["notes"],
+        &key,
+        json!({"text": text}),
+    ).await?;
 
-#[async_trait]
-impl RuntimeAwareTool for SaveNoteTool {
-    fn name(&self) -> &'static str { "save_note" }
-    fn description(&self) -> &'static str { "Save a note to the store" }
-
-    fn parameters(&self) -> Option<Value> {
-        Some(json!({
-            "type": "object",
-            "properties": {
-                "key": { "type": "string" },
-                "text": { "type": "string" }
-            },
-            "required": ["key", "text"]
-        }))
-    }
-
-    async fn call_with_runtime(
-        &self,
-        args: Value,
-        runtime: ToolRuntime,
-    ) -> Result<Value, SynapticError> {
-        let key = args["key"].as_str().unwrap_or("default");
-        let text = args["text"].as_str().unwrap_or("");
-
-        if let Some(store) = &runtime.store {
-            store.put(
-                &["notes"],
-                key,
-                json!({"text": text}),
-            ).await?;
-        }
-
-        Ok(json!({"saved": key}))
-    }
+    Ok(json!({"saved": key}))
 }
+
+// save_note() returns Arc<dyn RuntimeAwareTool>
+let tool = save_note();
 ```
+
+The `#[inject(store)]` parameter receives the `Arc<dyn Store>` from the `ToolRuntime` at execution time. Only `key` and `text` appear in the JSON Schema sent to the model.
 
 ## Using with `ToolNode` in a Graph
 
 `ToolNode` automatically injects runtime context into registered `RuntimeAwareTool` instances. Register them with `with_runtime_tool()` and optionally attach a store with `with_store()`:
 
 ```rust,ignore
-use std::sync::Arc;
 use synaptic::graph::ToolNode;
 use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 
 let registry = ToolRegistry::new();
 let executor = SerialToolExecutor::new(registry);
 
-let save_tool: Arc<dyn RuntimeAwareTool> = Arc::new(SaveNoteTool);
-
 let tool_node = ToolNode::new(executor)
     .with_store(store.clone())
-    .with_runtime_tool(save_tool);
+    .with_runtime_tool(save_note());  // save_note() returns Arc<dyn RuntimeAwareTool>
 ```
 
 When the graph executes this tool node and encounters a tool call matching `"save_note"`, it builds a `ToolRuntime` populated with the current graph state, the store, and the tool call ID, then calls `call_with_runtime()`.
@@ -101,7 +84,7 @@ If you need to use a `RuntimeAwareTool` in a context that expects the standard `
 use std::sync::Arc;
 use synaptic::core::{RuntimeAwareTool, RuntimeAwareToolAdapter, ToolRuntime};
 
-let tool: Arc<dyn RuntimeAwareTool> = Arc::new(SaveNoteTool);
+let tool = save_note();  // Arc<dyn RuntimeAwareTool>
 let adapter = RuntimeAwareToolAdapter::new(tool);
 
 // Optionally inject a runtime before calling

@@ -4,7 +4,7 @@
 
 ## 你将学到什么
 
-- 实现自定义 `Tool` trait
+- 使用 `#[tool]` 宏定义工具
 - 使用 `create_react_agent` 创建 ReAct Agent
 - 理解 ReAct 循环的工作原理
 
@@ -29,6 +29,7 @@ use async_trait::async_trait;
 use serde_json::json;
 use synaptic::core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError, Tool, ToolCall};
 use synaptic::graph::{create_react_agent, MessageState};
+use synaptic::macros::tool;
 
 // 自定义模型（演示用，模拟 LLM 的工具调用行为）
 struct DemoModel;
@@ -62,31 +63,23 @@ impl ChatModel for DemoModel {
     }
 }
 
-// 加法工具
-struct AddTool;
-
-#[async_trait]
-impl Tool for AddTool {
-    fn name(&self) -> &'static str {
-        "add"
-    }
-
-    fn description(&self) -> &'static str {
-        "Adds two numbers."
-    }
-
-    async fn call(&self, args: serde_json::Value) -> Result<serde_json::Value, SynapticError> {
-        let a = args["a"].as_i64().unwrap_or_default();
-        let b = args["b"].as_i64().unwrap_or_default();
-        Ok(json!({ "value": a + b }))
-    }
+// 使用 #[tool] 宏定义加法工具
+/// 将两个数字相加。
+#[tool(name = "add")]
+async fn add(
+    /// 第一个加数
+    a: i64,
+    /// 第二个加数
+    b: i64,
+) -> Result<serde_json::Value, SynapticError> {
+    Ok(json!({ "value": a + b }))
 }
 
 #[tokio::main]
 async fn main() -> Result<(), SynapticError> {
     // 1. 创建模型和工具
     let model = Arc::new(DemoModel);
-    let tools: Vec<Arc<dyn Tool>> = vec![Arc::new(AddTool)];
+    let tools: Vec<Arc<dyn Tool>> = vec![add()];  // add() 返回 Arc<dyn Tool>
 
     // 2. 创建 ReAct Agent
     let graph = create_react_agent(model, tools)?;
@@ -114,33 +107,31 @@ answer: The result is 12.
 
 ## 逐步解析
 
-### 1. 实现 Tool trait
+### 1. 使用 `#[tool]` 宏定义工具
 
 ```rust
-struct AddTool;
+use synaptic::macros::tool;
 
-#[async_trait]
-impl Tool for AddTool {
-    fn name(&self) -> &'static str { "add" }
-    fn description(&self) -> &'static str { "Adds two numbers." }
-    async fn call(&self, args: serde_json::Value) -> Result<serde_json::Value, SynapticError> {
-        let a = args["a"].as_i64().unwrap_or_default();
-        let b = args["b"].as_i64().unwrap_or_default();
-        Ok(json!({ "value": a + b }))
-    }
+/// 将两个数字相加。
+#[tool(name = "add")]
+async fn add(a: i64, b: i64) -> Result<serde_json::Value, SynapticError> {
+    Ok(json!({ "value": a + b }))
 }
 ```
 
-每个工具需要实现三个方法：
-- `name()` -- 工具名称，LLM 通过此名称调用工具
-- `description()` -- 工具描述，帮助 LLM 理解何时使用此工具
-- `call()` -- 实际执行逻辑，接收 JSON 参数，返回 JSON 结果
+`#[tool]` 宏会自动生成完整的 `Tool` trait 实现：
+- **函数名** -- 用作默认工具名称（也可通过 `#[tool(name = "xxx")]` 覆盖）
+- **文档注释** -- 作为工具描述，帮助 LLM 理解何时使用此工具
+- **函数参数** -- 自动生成 JSON Schema，参数文档注释成为 schema 描述
+- **`call()`** -- 宏在内部将 JSON 反序列化为函数参数，你只需编写逻辑
+
+> **提示：** 也可以手动实现 `Tool` trait。参见[自定义工具](../how-to/tools/custom-tool.md)和[过程宏](../how-to/macros.md#tool----从函数定义工具)。
 
 ### 2. 创建 ReAct Agent
 
 ```rust
 let model = Arc::new(DemoModel);
-let tools: Vec<Arc<dyn Tool>> = vec![Arc::new(AddTool)];
+let tools: Vec<Arc<dyn Tool>> = vec![add()];  // add() 是宏生成的工厂函数
 let graph = create_react_agent(model, tools)?;
 ```
 

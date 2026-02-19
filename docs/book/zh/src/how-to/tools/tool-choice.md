@@ -106,63 +106,44 @@ let request = ChatRequest::new(vec![
 
 以下是一个完整示例，创建工具、强制调用特定工具并处理结果：
 
-```rust
-use std::sync::Arc;
-use async_trait::async_trait;
-use serde_json::{json, Value};
+```rust,ignore
+use synaptic::macros::tool;
 use synaptic::core::{
-    ChatModel, ChatRequest, Message, SynapticError, Tool,
-    ToolChoice, ToolDefinition,
+    ChatModel, ChatRequest, Message, SynapticError,
+    ToolChoice,
 };
 use synaptic::tools::{ToolRegistry, SerialToolExecutor};
+use serde_json::{json, Value};
 
-// Define the tool
-struct CalculatorTool;
-
-#[async_trait]
-impl Tool for CalculatorTool {
-    fn name(&self) -> &'static str { "calculator" }
-    fn description(&self) -> &'static str { "Perform arithmetic calculations" }
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let expr = args["expression"].as_str().unwrap_or("");
-        // Simplified: in production, parse and evaluate the expression
-        Ok(json!({"result": expr}))
-    }
+/// 执行算术计算。
+#[tool]
+async fn calculator(
+    /// 要计算的算术表达式
+    expression: String,
+) -> Result<Value, SynapticError> {
+    // 简化实现：实际应用中需要解析和计算表达式
+    Ok(json!({"result": expression}))
 }
 
-// Register tools
+// 注册工具
 let registry = ToolRegistry::new();
-registry.register(Arc::new(CalculatorTool))?;
+let calc_tool = calculator();
+let calc_def = calc_tool.as_tool_definition();
+registry.register(calc_tool)?;
 
-// Build the tool definition for the model
-let calc_def = ToolDefinition {
-    name: "calculator".to_string(),
-    description: "Perform arithmetic calculations".to_string(),
-    parameters: json!({
-        "type": "object",
-        "properties": {
-            "expression": {
-                "type": "string",
-                "description": "The arithmetic expression to evaluate"
-            }
-        },
-        "required": ["expression"]
-    }),
-};
-
-// Build a request that forces the calculator tool
+// 构建强制使用 calculator 工具的请求
 let request = ChatRequest::new(vec![
     Message::human("What is 42 * 17?"),
 ])
 .with_tools(vec![calc_def])
 .with_tool_choice(ToolChoice::Specific("calculator".to_string()));
 
-// Send to the model, then execute the returned tool calls
+// 发送给模型，然后执行返回的工具调用
 let response = model.chat(request).await?;
 for tc in response.message.tool_calls() {
     let executor = SerialToolExecutor::new(registry.clone());
     let result = executor.execute(&tc.name, tc.arguments.clone()).await?;
-    println!("Tool {} returned: {}", tc.name, result);
+    println!("工具 {} 返回: {}", tc.name, result);
 }
 ```
 

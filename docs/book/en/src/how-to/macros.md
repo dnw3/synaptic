@@ -1104,6 +1104,385 @@ fn build_middleware_stack() -> Vec<Arc<dyn AgentMiddleware>> {
 }
 ```
 
+### Scenario D: Store-Backed Note Manager with Typed Input
+
+This example combines `#[inject]` for runtime access and `schemars` for rich
+JSON Schema generation. A `save_note` tool accepts a custom `NoteInput` struct
+whose full schema (title, content, tags) is visible to the LLM, while the
+shared store and tool call ID are injected transparently by the agent runtime.
+
+**Cargo.toml** -- enable the `agent`, `store`, and `schemars` features:
+
+```toml
+[dependencies]
+synaptic = { version = "0.1", features = ["agent", "store", "schemars"] }
+schemars = { version = "0.8", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+```
+
+**Full example:**
+
+```rust,ignore
+use std::sync::Arc;
+use schemars::JsonSchema;
+use serde::Deserialize;
+use serde_json::json;
+use synaptic::core::{Store, SynapticError};
+use synaptic::macros::tool;
+
+// --- Custom input type with schemars ---
+// Deriving JsonSchema gives the LLM a complete description of every field,
+// including the nested Vec<String> for tags.
+
+#[derive(Deserialize, JsonSchema)]
+struct NoteInput {
+    /// Title of the note
+    title: String,
+    /// Body content of the note (Markdown supported)
+    content: String,
+    /// Tags for categorisation (e.g. ["work", "urgent"])
+    tags: Vec<String>,
+}
+
+// --- What the LLM sees (with schemars enabled) ---
+//
+// The generated JSON Schema for the `note` parameter looks like:
+//
+// {
+//   "type": "object",
+//   "properties": {
+//     "title":   { "type": "string", "description": "Title of the note" },
+//     "content": { "type": "string", "description": "Body content of the note (Markdown supported)" },
+//     "tags":    { "type": "array",  "items": { "type": "string" },
+//                  "description": "Tags for categorisation (e.g. [\"work\", \"urgent\"])" }
+//   },
+//   "required": ["title", "content", "tags"]
+// }
+//
+// --- Without schemars, the same parameter would produce only: ---
+//
+// { "type": "object" }
+//
+// ...giving the LLM no guidance about the expected fields.
+
+/// Save a note to the shared store.
+#[tool]
+async fn save_note(
+    /// The note to save (title, content, and tags)
+    note: NoteInput,
+    /// Injected: persistent key-value store
+    #[inject(store)]
+    store: Arc<dyn Store>,
+    /// Injected: the current tool call ID for traceability
+    #[inject(tool_call_id)]
+    call_id: String,
+) -> Result<String, SynapticError> {
+    // Build a unique key from the tool call ID
+    let key = format!("note:{}", call_id);
+
+    // Persist the note as a JSON item in the store
+    let value = json!({
+        "title":   note.title,
+        "content": note.content,
+        "tags":    note.tags,
+        "call_id": call_id,
+    });
+
+    store.put("notes", &key, value.clone()).await?;
+
+    Ok(format!(
+        "Saved note '{}' with {} tag(s) [key={}]",
+        note.title,
+        note.tags.len(),
+        key,
+    ))
+}
+
+// Usage:
+//   let tool = save_note();          // Arc<dyn RuntimeAwareTool>
+//   assert_eq!(tool.name(), "save_note");
+//
+// The LLM sees only the `note` parameter in the schema.
+// `store` and `call_id` are injected by ToolNode at runtime.
+```
+
+**Key takeaways:**
+
+- `NoteInput` derives both `Deserialize` (for runtime deserialization) and
+  `JsonSchema` (for compile-time schema generation). The `schemars` feature
+  must be enabled in `Cargo.toml` for the `#[tool]` macro to pick up the
+  derived schema.
+- `#[inject(store)]` gives the tool direct access to the shared `Store`
+  without exposing it to the LLM. The `ToolNode` populates the store from
+  `ToolRuntime` before each call.
+- `#[inject(tool_call_id)]` provides a unique identifier for the current
+  invocation, useful for creating deterministic storage keys or audit trails.
+- Because `#[inject]` is present, the macro generates a `RuntimeAwareTool`
+  (not a plain `Tool`). The factory function returns
+  `Arc<dyn RuntimeAwareTool>`.
+
+### Scenario E: Workflow with Entrypoint, Tasks, and Tracing
+
+This scenario demonstrates `#[entrypoint]`, `#[task]`, and `#[traceable]`
+working together to build an instrumented data pipeline.
+
+```rust,ignore
+use synaptic::core::SynapticError;
+use synaptic::macros::{entrypoint, task, traceable};
+use serde_json::{json, Value};
+
+// A helper that calls an external API. The #[traceable] macro wraps it
+// in a tracing span. We skip the api_key so it never appears in logs.
+#[traceable(name = "external_api_call", skip = "api_key")]
+async fn call_external_api(
+    url: String,
+    api_key: String,
+) -> Result<Value, SynapticError> {
+    // In production: reqwest::get(...).await
+    Ok(json!({"status": "ok", "data": [1, 2, 3]}))
+}
+
+// Each #[task] gets a stable name used by streaming and tracing.
+#[task(name = "fetch")]
+async fn fetch_data(source: String) -> Result<Value, SynapticError> {
+    let api_key = std::env::var("API_KEY").unwrap_or_default();
+    let result = call_external_api(source, api_key).await?;
+    Ok(result)
+}
+
+#[task(name = "transform")]
+async fn transform_data(raw: Value) -> Result<Value, SynapticError> {
+    let items = raw["data"].as_array().cloned().unwrap_or_default();
+    let doubled: Vec<Value> = items
+        .iter()
+        .filter_map(|v| v.as_i64())
+        .map(|n| json!(n * 2))
+        .collect();
+    Ok(json!({"transformed": doubled}))
+}
+
+// The entrypoint ties the workflow together with a name and checkpointer.
+#[entrypoint(name = "data_pipeline", checkpointer = "memory")]
+async fn run_pipeline(input: Value) -> Result<Value, SynapticError> {
+    let source = input["source"].as_str().unwrap_or("default").to_string();
+
+    let raw = fetch_data(source).await?;
+    let result = transform_data(raw).await?;
+
+    Ok(result)
+}
+
+#[tokio::main]
+async fn main() -> Result<(), SynapticError> {
+    // Set up tracing to see the spans emitted by #[traceable] and #[task]:
+    //   tracing_subscriber::fmt()
+    //       .with_max_level(tracing::Level::INFO)
+    //       .init();
+
+    let ep = run_pipeline();
+    let output = (ep.run)(json!({"source": "https://api.example.com/data"})).await?;
+    println!("Pipeline output: {}", output);
+    Ok(())
+}
+```
+
+**Key takeaways:**
+
+- `#[task]` gives each step a stable name (`"fetch"`, `"transform"`) that
+  appears in streaming events and tracing spans, making it easy to identify
+  which step is running or failed.
+- `#[traceable]` instruments any function with an automatic tracing span.
+  Use `skip = "api_key"` to keep secrets out of your traces.
+- `#[entrypoint]` ties the workflow together with a logical name and an
+  optional `checkpointer` hint for state persistence.
+- These macros are composable -- use them in any combination. A `#[task]`
+  can call a `#[traceable]` helper, and an `#[entrypoint]` can orchestrate
+  any number of `#[task]` functions.
+
+### Scenario F: Tool Permission Gating with Audit Logging
+
+This scenario demonstrates `#[wrap_tool_call]` with an allowlist field for
+permission gating, plus `#[before_agent]` and `#[after_agent]` for lifecycle
+audit logging.
+
+```rust,ignore
+use std::sync::Arc;
+use synaptic::core::{Message, SynapticError};
+use synaptic::macros::{before_agent, after_agent, wrap_tool_call};
+use synaptic::middleware::{AgentMiddleware, ToolCallRequest, ToolCaller};
+use serde_json::Value;
+
+// --- Permission gating ---
+// Only allow tools whose names appear in the allowlist.
+// If the LLM tries to call a tool not in the list, return an error.
+
+#[wrap_tool_call]
+async fn permission_gate(
+    #[field] allowed_tools: Vec<String>,
+    request: ToolCallRequest,
+    next: &dyn ToolCaller,
+) -> Result<Value, SynapticError> {
+    if !allowed_tools.contains(&request.call.name) {
+        return Err(SynapticError::Tool(format!(
+            "Tool '{}' is not in the allowed list: {:?}",
+            request.call.name, allowed_tools,
+        )));
+    }
+    next.call(request).await
+}
+
+// --- Audit: before agent ---
+// Log the number of messages when the agent starts.
+
+#[before_agent]
+async fn audit_start(
+    #[field] label: String,
+    messages: &mut Vec<Message>,
+) -> Result<(), SynapticError> {
+    println!("[{}] Agent starting with {} messages", label, messages.len());
+    Ok(())
+}
+
+// --- Audit: after agent ---
+// Log the number of messages when the agent finishes.
+
+#[after_agent]
+async fn audit_end(
+    #[field] label: String,
+    messages: &mut Vec<Message>,
+) -> Result<(), SynapticError> {
+    println!("[{}] Agent completed with {} messages", label, messages.len());
+    Ok(())
+}
+
+// --- Assemble the middleware stack ---
+
+fn build_secured_stack() -> Vec<Arc<dyn AgentMiddleware>> {
+    let allowed = vec![
+        "web_search".to_string(),
+        "get_weather".to_string(),
+    ];
+
+    vec![
+        audit_start("prod-agent".into()),
+        permission_gate(allowed),
+        audit_end("prod-agent".into()),
+    ]
+}
+```
+
+**Key takeaways:**
+
+- `#[wrap_tool_call]` gives full control over tool execution. Check
+  permissions, transform arguments, or deny the call entirely by returning
+  an error instead of calling `next.call()`.
+- `#[before_agent]` and `#[after_agent]` bracket the entire agent lifecycle,
+  making them ideal for audit logging, metrics collection, or resource
+  setup/teardown.
+- `#[field]` makes each middleware configurable and reusable. The
+  `permission_gate` can be instantiated with different allowlists for
+  different agents, and the audit middleware accepts a label for log
+  disambiguation.
+
+### Scenario G: State-Aware Tool with Raw Arguments
+
+This scenario demonstrates `#[inject(state)]` for reading graph state and
+`#[args]` for accepting raw JSON payloads, plus a combination of both
+patterns with `#[field]`.
+
+```rust,ignore
+use std::sync::Arc;
+use serde::Deserialize;
+use serde_json::{json, Value};
+use synaptic::core::SynapticError;
+use synaptic::macros::tool;
+
+// --- State-aware tool ---
+// Reads the graph state to adjust its behavior. After 10 conversation
+// turns the tool switches to shorter replies.
+
+#[derive(Deserialize)]
+struct ConversationState {
+    turn_count: usize,
+}
+
+/// Generate a context-aware reply.
+#[tool]
+async fn smart_reply(
+    /// The user's latest message
+    message: String,
+    #[inject(state)]
+    state: ConversationState,
+) -> Result<String, SynapticError> {
+    if state.turn_count > 10 {
+        // After 10 turns, keep it short
+        Ok(format!("TL;DR: {}", &message[..message.len().min(50)]))
+    } else {
+        Ok(format!(
+            "Turn {}: Let me elaborate on '{}'...",
+            state.turn_count, message
+        ))
+    }
+}
+
+// --- Raw-args JSON proxy ---
+// Accepts any JSON payload and forwards it to a webhook endpoint.
+// No schema is generated -- the LLM sends whatever JSON it wants.
+
+/// Forward a JSON payload to an external webhook.
+#[tool(name = "webhook_forward")]
+async fn webhook_forward(#[args] payload: Value) -> Result<String, SynapticError> {
+    // In production: reqwest::Client::new().post(url).json(&payload).send().await
+    Ok(format!("Forwarded payload with {} keys", payload.as_object().map_or(0, |m| m.len())))
+}
+
+// --- Configurable API proxy ---
+// Combines #[field] for a base endpoint with #[args] for the request body.
+// Each instance points at a different API.
+
+/// Proxy arbitrary JSON to a configured API endpoint.
+#[tool(name = "api_proxy")]
+async fn api_proxy(
+    #[field] endpoint: String,
+    #[args] body: Value,
+) -> Result<String, SynapticError> {
+    // In production: reqwest::Client::new().post(&endpoint).json(&body).send().await
+    Ok(format!(
+        "POST {} with {} bytes",
+        endpoint,
+        body.to_string().len()
+    ))
+}
+
+fn main() {
+    // State-aware tool -- the LLM only sees "message" in the schema
+    let reply_tool = smart_reply();
+
+    // Raw-args tool -- parameters() returns None
+    let webhook_tool = webhook_forward();
+
+    // Configurable proxy -- each instance targets a different endpoint
+    let users_api = api_proxy("https://api.example.com/users".into());
+    let orders_api = api_proxy("https://api.example.com/orders".into());
+}
+```
+
+**Key takeaways:**
+
+- `#[inject(state)]` gives tools read access to the current graph state
+  without exposing it to the LLM. The state is deserialized from
+  `ToolRuntime::state` into your custom struct automatically.
+- `#[args]` bypasses schema generation entirely -- the tool accepts whatever
+  JSON the LLM sends. Use this for proxy/forwarding patterns or tools that
+  handle arbitrary payloads. `parameters()` returns `None` when `#[args]` is
+  the only non-field, non-inject parameter.
+- `#[field]` + `#[args]` combine naturally. The field is provided at
+  construction time (hidden from the LLM), while the raw JSON arrives at
+  call time. This makes it easy to create reusable tool templates that
+  differ only in configuration.
+
 ---
 
 ## Comparison with Python LangChain

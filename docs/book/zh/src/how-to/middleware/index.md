@@ -82,19 +82,18 @@ let graph = create_agent(model, tools, options)?;
 
 ## 编写自定义 Middleware
 
-为你的结构体实现 `AgentMiddleware`，并重写需要的钩子方法。
+使用中间件宏可以快速定义自定义 Middleware，无需手动实现 `AgentMiddleware` trait。每个宏对应一个钩子方法：
 
 ```rust,ignore
-use synaptic::middleware::{AgentMiddleware, ModelRequest};
+use synaptic::macros::before_model;
+use synaptic::middleware::ModelRequest;
+use synaptic::core::SynapticError;
 
-struct LoggingMiddleware;
-
-#[async_trait]
-impl AgentMiddleware for LoggingMiddleware {
-    async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError> {
-        println!("Model call with {} messages", request.messages.len());
-        Ok(())
-    }
+// 使用 #[before_model] 宏——函数会自动生成 LoggingMiddleware 结构体和 AgentMiddleware 实现
+#[before_model]
+async fn logging(request: &mut ModelRequest) -> Result<(), SynapticError> {
+    println!("模型调用，包含 {} 条消息", request.messages.len());
+    Ok(())
 }
 ```
 
@@ -102,8 +101,10 @@ impl AgentMiddleware for LoggingMiddleware {
 
 ```rust,ignore
 let options = AgentOptions {
-    middleware: vec![Arc::new(LoggingMiddleware)],
+    middleware: vec![logging()],  // logging() 返回 Arc<dyn AgentMiddleware>
     ..Default::default()
 };
 let graph = create_agent(model, tools, options)?;
 ```
+
+> **提示：** 除了 `#[before_model]`，还有 `#[after_model]`、`#[before_agent]`、`#[after_agent]`、`#[wrap_model_call]`、`#[wrap_tool_call]`、`#[dynamic_prompt]` 等宏，分别对应不同的钩子。详见[过程宏](../macros.md)。如果需要更精细的控制，也可以手动实现 `AgentMiddleware` trait。

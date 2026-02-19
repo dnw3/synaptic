@@ -106,49 +106,32 @@ let request = ChatRequest::new(vec![
 
 Here is a full example that creates tools, forces a specific tool call, and processes the result:
 
-```rust
-use std::sync::Arc;
-use async_trait::async_trait;
+```rust,ignore
 use serde_json::{json, Value};
+use synaptic::macros::tool;
 use synaptic::core::{
     ChatModel, ChatRequest, Message, SynapticError, Tool,
-    ToolChoice, ToolDefinition,
+    ToolChoice,
 };
 use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 
-// Define the tool
-struct CalculatorTool;
-
-#[async_trait]
-impl Tool for CalculatorTool {
-    fn name(&self) -> &'static str { "calculator" }
-    fn description(&self) -> &'static str { "Perform arithmetic calculations" }
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let expr = args["expression"].as_str().unwrap_or("");
-        // Simplified: in production, parse and evaluate the expression
-        Ok(json!({"result": expr}))
-    }
+/// Perform arithmetic calculations.
+#[tool]
+async fn calculator(
+    /// The arithmetic expression to evaluate
+    expression: String,
+) -> Result<Value, SynapticError> {
+    // Simplified: in production, parse and evaluate the expression
+    Ok(json!({"result": expression}))
 }
 
 // Register tools
 let registry = ToolRegistry::new();
-registry.register(Arc::new(CalculatorTool))?;
+let calc_tool = calculator();  // Arc<dyn Tool>
+registry.register(calc_tool.clone())?;
 
-// Build the tool definition for the model
-let calc_def = ToolDefinition {
-    name: "calculator".to_string(),
-    description: "Perform arithmetic calculations".to_string(),
-    parameters: json!({
-        "type": "object",
-        "properties": {
-            "expression": {
-                "type": "string",
-                "description": "The arithmetic expression to evaluate"
-            }
-        },
-        "required": ["expression"]
-    }),
-};
+// Build the tool definition from the tool itself
+let calc_def = calc_tool.as_tool_definition();
 
 // Build a request that forces the calculator tool
 let request = ChatRequest::new(vec![

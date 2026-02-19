@@ -51,6 +51,8 @@ Synaptic provides the following LCEL building blocks:
 | `RunnableEach` | Maps a runnable over each element in a `Vec` |
 | `RunnableGenerator` | Wraps a generator function for true streaming output |
 
+> **Tip:** For standalone async functions, you can also use the `#[chain]` macro to generate a `BoxRunnable` factory. This avoids writing `RunnableLambda::new(|x| async { ... }).boxed()` by hand. See [Procedural Macros](../macros.md#chain----create-runnable-chains).
+
 ## Guides
 
 - [Pipe Operator](pipe-operator.md) -- chain runnables with `|` to build sequential pipelines

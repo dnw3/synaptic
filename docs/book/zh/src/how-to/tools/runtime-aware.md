@@ -1,6 +1,6 @@
 # Runtime-Aware Tools
 
-`RuntimeAwareTool` 扩展了基本的 `Tool` trait，增加了运行时上下文——当前图状态、Store 引用、流写入器、工具调用 ID 和 Runnable 配置。当工具需要在执行过程中读取或修改图状态时，请实现此 trait。
+`RuntimeAwareTool` 扩展了基本的 `Tool` trait，增加了运行时上下文——当前图状态、Store 引用、流写入器、工具调用 ID 和 Runnable 配置。推荐使用 `#[tool]` 宏配合 `#[inject(...)]` 参数来定义此类工具。
 
 ## `ToolRuntime` 结构体
 
@@ -24,53 +24,50 @@ pub struct ToolRuntime {
 | `tool_call_id` | 正在执行的工具调用的 ID |
 | `config` | 包含标签、元数据和运行 ID 的 Runnable 配置 |
 
-## 实现 `RuntimeAwareTool`
+## 使用 `#[tool]` 宏定义 Runtime-Aware Tool
 
-该 trait 要求实现 `name()`、`description()` 和 `call_with_runtime()`。可选择性地覆写 `parameters()` 以提供 JSON schema：
+推荐使用 `#[tool]` 宏配合 `#[inject(...)]` 参数来定义 Runtime-Aware Tool。当函数中存在 `#[inject]` 参数时，宏会自动生成 `RuntimeAwareTool` 实现而非普通的 `Tool`。
+
+支持三种注入类型：
+
+| 注解 | 来源 | 典型类型 |
+|------|------|---------|
+| `#[inject(state)]` | `ToolRuntime::state`（反序列化为指定类型） | 自定义状态结构体或 `Value` |
+| `#[inject(store)]` | `ToolRuntime::store`（`Arc<dyn Store>`） | `Arc<dyn Store>` |
+| `#[inject(tool_call_id)]` | `ToolRuntime::tool_call_id` | `String` |
 
 ```rust,ignore
-use async_trait::async_trait;
+use std::sync::Arc;
+use synaptic::macros::tool;
+use synaptic::core::{Store, SynapticError};
 use serde_json::{json, Value};
-use synaptic::core::{RuntimeAwareTool, ToolRuntime, SynapticError};
 
-struct SaveNoteTool;
+/// 将笔记保存到 Store 中。
+#[tool]
+async fn save_note(
+    /// 笔记的键
+    key: String,
+    /// 笔记内容
+    text: String,
+    /// 注入：共享的键值存储
+    #[inject(store)]
+    store: Arc<dyn Store>,
+) -> Result<Value, SynapticError> {
+    store.put(
+        "notes",
+        &key,
+        json!({"text": text}),
+    ).await?;
 
-#[async_trait]
-impl RuntimeAwareTool for SaveNoteTool {
-    fn name(&self) -> &'static str { "save_note" }
-    fn description(&self) -> &'static str { "Save a note to the store" }
-
-    fn parameters(&self) -> Option<Value> {
-        Some(json!({
-            "type": "object",
-            "properties": {
-                "key": { "type": "string" },
-                "text": { "type": "string" }
-            },
-            "required": ["key", "text"]
-        }))
-    }
-
-    async fn call_with_runtime(
-        &self,
-        args: Value,
-        runtime: ToolRuntime,
-    ) -> Result<Value, SynapticError> {
-        let key = args["key"].as_str().unwrap_or("default");
-        let text = args["text"].as_str().unwrap_or("");
-
-        if let Some(store) = &runtime.store {
-            store.put(
-                &["notes"],
-                key,
-                json!({"text": text}),
-            ).await?;
-        }
-
-        Ok(json!({"saved": key}))
-    }
+    Ok(json!({"saved": key}))
 }
+
+// 工厂函数返回 Arc<dyn RuntimeAwareTool>
+let tool = save_note();
+assert_eq!(tool.name(), "save_note");
 ```
+
+LLM 只能看到 `key` 和 `text` 参数，`store` 由 Agent 运行时自动注入。
 
 ## 在图中与 `ToolNode` 配合使用
 
@@ -84,11 +81,10 @@ use synaptic::tools::{ToolRegistry, SerialToolExecutor};
 let registry = ToolRegistry::new();
 let executor = SerialToolExecutor::new(registry);
 
-let save_tool: Arc<dyn RuntimeAwareTool> = Arc::new(SaveNoteTool);
-
+// save_note() 返回 Arc<dyn RuntimeAwareTool>
 let tool_node = ToolNode::new(executor)
     .with_store(store.clone())
-    .with_runtime_tool(save_tool);
+    .with_runtime_tool(save_note());
 ```
 
 当图执行此工具节点并遇到匹配 `"save_note"` 的工具调用时，它会构建一个填充了当前图状态、Store 和工具调用 ID 的 `ToolRuntime`，然后调用 `call_with_runtime()`。
@@ -101,7 +97,7 @@ let tool_node = ToolNode::new(executor)
 use std::sync::Arc;
 use synaptic::core::{RuntimeAwareTool, RuntimeAwareToolAdapter, ToolRuntime};
 
-let tool: Arc<dyn RuntimeAwareTool> = Arc::new(SaveNoteTool);
+let tool = save_note(); // Arc<dyn RuntimeAwareTool>
 let adapter = RuntimeAwareToolAdapter::new(tool);
 
 // Optionally inject a runtime before calling

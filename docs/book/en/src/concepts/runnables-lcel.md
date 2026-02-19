@@ -75,6 +75,8 @@ let transform = RunnableLambda::new(|input: String| async move {
 }).boxed();
 ```
 
+> **Tip:** For named, reusable functions you can use the `#[chain]` macro instead of `RunnableLambda::new`. It generates a factory function that returns a `BoxRunnable` directly. See [Procedural Macros](../how-to/macros.md#chain----create-runnable-chains).
+
 ### RunnableSequence
 
 Created by the `|` operator. Executes steps in order, feeding each output as the next step's input. You rarely construct this directly.

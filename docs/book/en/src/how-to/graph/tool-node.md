@@ -21,43 +21,29 @@ Create a `ToolNode` by providing a `SerialToolExecutor` with registered tools:
 ```rust
 use synaptic::graph::ToolNode;
 use synaptic::tools::{ToolRegistry, SerialToolExecutor};
-use synaptic::core::{Tool, ToolDefinition, SynapticError};
-use async_trait::async_trait;
-use serde_json::Value;
+use synaptic::core::{Tool, SynapticError};
+use synaptic::macros::tool;
 use std::sync::Arc;
 
-// Define a tool
-struct CalculatorTool;
-
-#[async_trait]
-impl Tool for CalculatorTool {
-    fn definition(&self) -> ToolDefinition {
-        ToolDefinition {
-            name: "calculator".to_string(),
-            description: "Evaluates math expressions".to_string(),
-            parameters: serde_json::json!({
-                "type": "object",
-                "properties": {
-                    "expression": { "type": "string" }
-                },
-                "required": ["expression"]
-            }),
-        }
-    }
-
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let expr = args["expression"].as_str().unwrap_or("0");
-        Ok(Value::String(format!("Result: {expr}")))
-    }
+// Define a tool using the #[tool] macro
+/// Evaluates math expressions.
+#[tool(name = "calculator")]
+async fn calculator(
+    /// The math expression to evaluate
+    expression: String,
+) -> Result<String, SynapticError> {
+    Ok(format!("Result: {expression}"))
 }
 
 // Register and create the executor
 let registry = ToolRegistry::new();
-registry.register(Arc::new(CalculatorTool)).await?;
+registry.register(calculator()).await?;
 
 let executor = SerialToolExecutor::new(registry);
 let tool_node = ToolNode::new(executor);
 ```
+
+> **Note:** The `#[tool]` macro generates the struct, `Tool` trait implementation, and a factory function automatically. The doc comment becomes the tool description, and function parameters become the JSON Schema. See [Procedural Macros](../macros.md#tool----define-tools-from-functions) for full details.
 
 ## Using ToolNode in a Graph
 

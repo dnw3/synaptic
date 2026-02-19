@@ -15,7 +15,7 @@ Tool 赋予 LLM 在真实世界中采取行动的能力——调用 API、查询
 
 ## 工作原理
 
-1. 通过实现 `Tool` trait 来定义工具。
+1. 通过 `#[tool]` 宏（推荐）或手动实现 `Tool` trait 来定义工具。
 2. 将工具注册到 `ToolRegistry` 中。
 3. 将工具转换为 `ToolDefinition` 值，并附加到 `ChatRequest` 上，让模型知道有哪些可用工具。
 4. 当模型返回包含 `ToolCall` 条目的响应时，通过 `SerialToolExecutor` 分发执行以获取结果。
@@ -23,28 +23,25 @@ Tool 赋予 LLM 在真实世界中采取行动的能力——调用 API、查询
 
 ## 快速示例
 
-```rust
-use std::sync::Arc;
-use async_trait::async_trait;
-use serde_json::{json, Value};
-use synaptic::core::{Tool, SynapticError};
+```rust,ignore
+use synaptic::macros::tool;
+use synaptic::core::SynapticError;
 use synaptic::tools::{ToolRegistry, SerialToolExecutor};
+use serde_json::{json, Value};
 
-struct AddTool;
-
-#[async_trait]
-impl Tool for AddTool {
-    fn name(&self) -> &'static str { "add" }
-    fn description(&self) -> &'static str { "Add two numbers" }
-    async fn call(&self, args: Value) -> Result<Value, SynapticError> {
-        let a = args["a"].as_f64().unwrap_or(0.0);
-        let b = args["b"].as_f64().unwrap_or(0.0);
-        Ok(json!({"result": a + b}))
-    }
+/// 两数相加。
+#[tool]
+async fn add(
+    /// 第一个数
+    a: f64,
+    /// 第二个数
+    b: f64,
+) -> Result<Value, SynapticError> {
+    Ok(json!({"result": a + b}))
 }
 
 let registry = ToolRegistry::new();
-registry.register(Arc::new(AddTool))?;
+registry.register(add())?;
 
 let executor = SerialToolExecutor::new(registry);
 let result = executor.execute("add", json!({"a": 3, "b": 4})).await?;

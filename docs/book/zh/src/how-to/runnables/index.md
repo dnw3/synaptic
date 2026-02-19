@@ -62,3 +62,5 @@ Synaptic 提供以下 LCEL 构建模块：
 - [Retry](retry.md)——在瞬态故障时使用指数退避重试
 - [Generator](generator.md)——将流式生成器函数包装为 runnable
 - [Each](each.md)——对列表中的每个元素映射执行一个 runnable
+
+> **提示：** 对于独立的异步函数，也可以使用 `#[chain]` 宏生成 `BoxRunnable` 工厂函数。参见[过程宏](../macros.md#chain----创建可运行链)。
