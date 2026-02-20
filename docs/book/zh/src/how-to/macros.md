@@ -1,6 +1,6 @@
 # 过程宏
 
-`synaptic-macros` crate 提供了 **13 个属性宏 (attribute macros)**，用于消除构建 AI Agent 时常见的模板代码。它们涵盖工具定义、可运行链、工作流入口、任务追踪、中间件钩子和链路追踪六大场景。
+`synaptic-macros` crate 提供了 **12 个属性宏 (attribute macros)**，用于消除构建 AI Agent 时常见的模板代码。它们涵盖工具定义、可运行链、工作流入口、任务追踪、中间件钩子和链路追踪六大场景。
 
 所有宏均来自 `synaptic_macros` crate，通过 `synaptic` facade 重导出，因此可以直接使用：
 
