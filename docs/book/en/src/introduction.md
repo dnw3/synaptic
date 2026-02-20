@@ -29,7 +29,7 @@ Build production-grade AI agents, chains, and retrieval pipelines in Rust with t
 
 ## Quick Links
 
-- [What is Synaptic?](what-is-synapse.md) -- Concept mapping from LangChain Python to Synaptic Rust
+- [What is Synaptic?](what-is-synaptic.md) -- Concept mapping from LangChain Python to Synaptic Rust
 - [Architecture Overview](architecture-overview.md) -- Layered crate design and dependency graph
 - [Installation](installation.md) -- Add Synaptic to your project
 - [Quickstart](quickstart.md) -- Your first Synaptic program in 30 lines

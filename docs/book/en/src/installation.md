@@ -96,7 +96,7 @@ Synaptic reads API keys from environment variables. Set the ones you need for yo
 |---|---|
 | OpenAI | `OPENAI_API_KEY` |
 | Anthropic | `ANTHROPIC_API_KEY` |
-| Google Gemini | `GEMINI_API_KEY` |
+| Google Gemini | `GOOGLE_API_KEY` |
 | Ollama | No key required (runs locally) |
 
 For example, on a Unix shell:
@@ -104,7 +104,7 @@ For example, on a Unix shell:
 ```bash
 export OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
-export GEMINI_API_KEY="AI..."
+export GOOGLE_API_KEY="AI..."
 ```
 
 You do not need any API keys to run the [Quickstart](quickstart.md) example, which uses the `ScriptedChatModel` test double.

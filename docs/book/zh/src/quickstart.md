@@ -16,7 +16,7 @@ cd synaptic-quickstart
 ```toml
 [dependencies]
 synaptic = { version = "0.2", features = ["models"] }
-tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
 ## 第 3 步：编写代码

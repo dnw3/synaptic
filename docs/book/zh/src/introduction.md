@@ -29,7 +29,7 @@
 
 ## 快速链接
 
-- [什么是 Synaptic？](what-is-synapse.md) -- 从 LangChain Python 到 Synaptic Rust 的概念映射
+- [什么是 Synaptic？](what-is-synaptic.md) -- 从 LangChain Python 到 Synaptic Rust 的概念映射
 - [架构概览](architecture-overview.md) -- 分层 crate 设计和依赖关系图
 - [安装](installation.md) -- 将 Synaptic 添加到你的项目
 - [快速开始](quickstart.md) -- 用 30 行代码编写你的第一个 Synaptic 程序

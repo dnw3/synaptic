@@ -71,7 +71,7 @@ use synaptic::models::OpenAiChatModel;
 synaptic-core = "0.2"
 synaptic-models = "0.2"
 synaptic-runnables = "0.2"
-tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
 ### 常用依赖组合
@@ -83,7 +83,7 @@ tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 ```toml
 [dependencies]
 synaptic = { version = "0.2", features = ["models"] }
-tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
 **带工具调用的 Agent：**
@@ -91,7 +91,7 @@ tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
 ```toml
 [dependencies]
 synaptic = { version = "0.2", features = ["agent"] }
-tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 async-trait = "0.1"
 ```
 
@@ -100,7 +100,7 @@ async-trait = "0.1"
 ```toml
 [dependencies]
 synaptic = { version = "0.2", features = ["rag"] }
-tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
 ## 环境变量

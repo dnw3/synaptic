@@ -201,4 +201,4 @@ LLM 会根据问题自动选择合适的工具。
 
 - [构建 Graph 工作流](graph-workflow.md) -- 构建自定义状态机工作流
 - [Graph 概念](../concepts/graph.md) -- 深入了解 StateGraph 的工作原理
-- [什么是 Synaptic？](../what-is-synapse.md) -- 回顾 LangChain 到 Synaptic 的概念映射
+- [什么是 Synaptic？](../what-is-synaptic.md) -- 回顾 LangChain 到 Synaptic 的概念映射
