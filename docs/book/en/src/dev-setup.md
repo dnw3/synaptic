@@ -4,13 +4,13 @@ This page covers everything you need to build, test, and run Synaptic locally.
 
 ## Prerequisites
 
-- **Rust 1.78 or later** -- Install via [rustup](https://rustup.rs/):
+- **Rust 1.83 or later** -- Install via [rustup](https://rustup.rs/):
   ```bash
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
   ```
   Verify with:
   ```bash
-  rustc --version   # Should print 1.78.0 or later
+  rustc --version   # Should print 1.83.0 or later
   cargo --version
   ```
 

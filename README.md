@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/synaptic.svg)](https://crates.io/crates/synaptic)
 [![docs.rs](https://docs.rs/synaptic/badge.svg)](https://docs.rs/synaptic)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![MSRV](https://img.shields.io/badge/MSRV-1.78-orange.svg)](https://blog.rust-lang.org/2024/05/02/Rust-1.78.0.html)
+[![MSRV](https://img.shields.io/badge/MSRV-1.83-orange.svg)](https://blog.rust-lang.org/2024/11/28/Rust-1.83.0.html)
 
 A Rust agent framework with LangChain-compatible architecture and Rust-native async interfaces.
 

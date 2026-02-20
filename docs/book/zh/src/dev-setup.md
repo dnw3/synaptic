@@ -4,13 +4,13 @@
 
 ## 前置条件
 
-- **Rust 1.78 或更高版本** -- 通过 [rustup](https://rustup.rs/) 安装：
+- **Rust 1.83 或更高版本** -- 通过 [rustup](https://rustup.rs/) 安装：
   ```bash
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
   ```
   验证安装：
   ```bash
-  rustc --version   # Should print 1.78.0 or later
+  rustc --version   # Should print 1.83.0 or later
   cargo --version
   ```
 
