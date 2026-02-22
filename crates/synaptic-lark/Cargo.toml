@@ -23,11 +23,15 @@ synaptic-graph = { version = "0.2", path = "../synaptic-graph", optional = true 
 hmac = "0.12"
 sha2 = "0.10"
 urlencoding = "2"
+tokio-tungstenite = { version = "0.24", optional = true, features = ["native-tls"] }
+dashmap = { version = "6", optional = true }
+lru = { version = "0.12", optional = true }
 
 [features]
 default = []
 checkpointer = ["dep:synaptic-graph"]
 events = []
+bot = ["dep:tokio-tungstenite", "dep:dashmap", "dep:lru", "events"]
 
 [dev-dependencies]
 tokio.workspace = true

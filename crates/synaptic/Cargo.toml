@@ -138,6 +138,7 @@ xai = ["model-utils", "dep:synaptic-xai"]
 perplexity = ["model-utils", "dep:synaptic-perplexity"]
 flashrank = ["dep:synaptic-flashrank"]
 lark = ["dep:synaptic-lark"]
+lark-bot = ["dep:synaptic-lark", "synaptic-lark/bot"]
 
 # Convenience combinations
 models = ["openai", "anthropic", "gemini", "ollama", "bedrock", "cohere", "groq", "mistral", "deepseek", "together", "fireworks", "xai", "perplexity"]

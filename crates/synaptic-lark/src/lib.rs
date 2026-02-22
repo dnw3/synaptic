@@ -27,6 +27,8 @@
 //! ```
 
 mod auth;
+#[cfg(feature = "bot")]
+pub mod bot;
 pub mod events;
 pub mod loaders;
 pub mod store;
@@ -49,6 +51,9 @@ pub use tools::message::LarkMessageTool;
 pub use tools::ocr::LarkOcrTool;
 pub use tools::translate::LarkTranslateTool;
 pub use vector_store::LarkVectorStore;
+
+#[cfg(feature = "bot")]
+pub use bot::{LarkBotClient, LarkLongConnListener, LarkMessageEvent};
 
 // Re-export core traits for convenience
 pub use synaptic_core::{Loader, Tool};
