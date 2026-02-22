@@ -6,7 +6,7 @@ use crate::{auth::TokenCache, LarkConfig};
 
 /// Interact with Feishu/Lark Bitable (multi-dimensional tables) as an Agent tool.
 ///
-/// Supports **search**, **create**, and **update** operations on table records.
+/// Supports **search**, **create**, **update**, **delete**, **list_tables**, and **list_fields** operations on table records.
 ///
 /// # Tool call format
 ///
@@ -261,7 +261,7 @@ impl Tool for LarkBitableTool {
     }
 
     fn description(&self) -> &'static str {
-        "Interact with a Feishu/Lark Bitable (multi-dimensional table). Supports search, create, and update operations on records."
+        "Interact with a Feishu/Lark Bitable (multi-dimensional table). Supports search, create, update, delete, list_tables, and list_fields operations on records."
     }
 
     fn parameters(&self) -> Option<Value> {
