@@ -173,6 +173,74 @@ impl LarkBitableTool {
 
         Ok(json!({ "record_id": record_id, "status": "updated" }))
     }
+
+    async fn delete_record(
+        &self,
+        token: &str,
+        app_token: &str,
+        table_id: &str,
+        record_id: &str,
+    ) -> Result<Value, SynapticError> {
+        let url = format!(
+            "{}/bitable/v1/apps/{app_token}/tables/{table_id}/records/{record_id}",
+            self.base_url
+        );
+        let resp = self
+            .client
+            .delete(&url)
+            .bearer_auth(token)
+            .send()
+            .await
+            .map_err(|e| SynapticError::Tool(format!("Lark bitable delete: {e}")))?;
+        let body: Value = resp
+            .json()
+            .await
+            .map_err(|e| SynapticError::Tool(format!("Lark bitable delete parse: {e}")))?;
+        check_code(&body, "delete")?;
+        Ok(json!({ "record_id": record_id, "status": "deleted" }))
+    }
+
+    async fn list_tables(&self, token: &str, app_token: &str) -> Result<Value, SynapticError> {
+        let url = format!("{}/bitable/v1/apps/{app_token}/tables", self.base_url);
+        let resp = self
+            .client
+            .get(&url)
+            .bearer_auth(token)
+            .send()
+            .await
+            .map_err(|e| SynapticError::Tool(format!("Lark bitable list_tables: {e}")))?;
+        let body: Value = resp
+            .json()
+            .await
+            .map_err(|e| SynapticError::Tool(format!("Lark bitable list_tables parse: {e}")))?;
+        check_code(&body, "list_tables")?;
+        Ok(json!({ "tables": body["data"]["items"] }))
+    }
+
+    async fn list_fields(
+        &self,
+        token: &str,
+        app_token: &str,
+        table_id: &str,
+    ) -> Result<Value, SynapticError> {
+        let url = format!(
+            "{}/bitable/v1/apps/{app_token}/tables/{table_id}/fields",
+            self.base_url
+        );
+        let resp = self
+            .client
+            .get(&url)
+            .bearer_auth(token)
+            .send()
+            .await
+            .map_err(|e| SynapticError::Tool(format!("Lark bitable list_fields: {e}")))?;
+        let body: Value = resp
+            .json()
+            .await
+            .map_err(|e| SynapticError::Tool(format!("Lark bitable list_fields parse: {e}")))?;
+        check_code(&body, "list_fields")?;
+        Ok(json!({ "fields": body["data"]["items"] }))
+    }
 }
 
 fn check_code(body: &Value, ctx: &str) -> Result<(), SynapticError> {
@@ -202,8 +270,8 @@ impl Tool for LarkBitableTool {
             "properties": {
                 "action": {
                     "type": "string",
-                    "description": "Operation to perform: search | create | update",
-                    "enum": ["search", "create", "update"]
+                    "description": "Operation to perform: search | create | update | delete | list_tables | list_fields",
+                    "enum": ["search", "create", "update", "delete", "list_tables", "list_fields"]
                 },
                 "app_token": {
                     "type": "string",
@@ -228,7 +296,7 @@ impl Tool for LarkBitableTool {
                 },
                 "record_id": {
                     "type": "string",
-                    "description": "For 'update': the record ID to update (recXxx)"
+                    "description": "For 'update'/'delete': the record ID (recXxx)"
                 },
                 "fields": {
                     "type": "object",
@@ -266,9 +334,15 @@ impl Tool for LarkBitableTool {
                     return Err(SynapticError::Tool("missing 'fields'".to_string()));
                 }
             }
+            "delete" => {
+                if args["record_id"].as_str().is_none() {
+                    return Err(SynapticError::Tool("missing 'record_id'".to_string()));
+                }
+            }
+            "list_tables" | "list_fields" => {}
             other => {
                 return Err(SynapticError::Tool(format!(
-                    "unknown action '{other}': expected search | create | update"
+                    "unknown action '{other}': expected search | create | update | delete | list_tables | list_fields"
                 )));
             }
         }
@@ -290,6 +364,13 @@ impl Tool for LarkBitableTool {
                 self.update(&token, app_token, table_id, record_id, fields)
                     .await
             }
+            "delete" => {
+                let record_id = args["record_id"].as_str().unwrap();
+                self.delete_record(&token, app_token, table_id, record_id)
+                    .await
+            }
+            "list_tables" => self.list_tables(&token, app_token).await,
+            "list_fields" => self.list_fields(&token, app_token, table_id).await,
             _ => unreachable!(),
         }
     }

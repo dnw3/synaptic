@@ -45,7 +45,7 @@ async fn call_unknown_action() {
     let tool = LarkBitableTool::new(config);
     let err = tool
         .call(json!({
-            "action": "delete",
+            "action": "frobnicate",
             "app_token": "bascnXxx",
             "table_id": "tblXxx"
         }))
@@ -85,6 +85,63 @@ async fn call_update_missing_record_id() {
         .await
         .unwrap_err();
     assert!(err.to_string().contains("record_id"));
+}
+
+#[tokio::test]
+async fn call_delete_missing_record_id() {
+    let tool = LarkBitableTool::new(LarkConfig::new("a", "b"));
+    let err = tool
+        .call(json!({
+            "action": "delete",
+            "app_token": "bascnXxx",
+            "table_id": "tblXxx"
+            // missing record_id
+        }))
+        .await
+        .unwrap_err();
+    assert!(err.to_string().contains("record_id"));
+}
+
+#[tokio::test]
+async fn call_list_tables_accepted() {
+    let tool = LarkBitableTool::new(LarkConfig::new("a", "b"));
+    // validation passes (network call would fail, but args are valid)
+    // We check the action is recognized (not "unknown action")
+    let result = tool
+        .call(json!({
+            "action": "list_tables",
+            "app_token": "bascnXxx",
+            "table_id": "unused"
+        }))
+        .await;
+    // Should fail with network/auth error, NOT "unknown action"
+    let err_str = result.unwrap_err().to_string();
+    assert!(!err_str.contains("unknown action"), "got: {err_str}");
+}
+
+#[tokio::test]
+async fn call_list_fields_accepted() {
+    let tool = LarkBitableTool::new(LarkConfig::new("a", "b"));
+    let result = tool
+        .call(json!({
+            "action": "list_fields",
+            "app_token": "bascnXxx",
+            "table_id": "tblXxx"
+        }))
+        .await;
+    let err_str = result.unwrap_err().to_string();
+    assert!(!err_str.contains("unknown action"), "got: {err_str}");
+}
+
+#[test]
+fn parameters_include_new_actions() {
+    let tool = LarkBitableTool::new(LarkConfig::new("a", "b"));
+    let params = tool.parameters().unwrap();
+    let enum_vals = params["properties"]["action"]["enum"].as_array().unwrap();
+    let actions: Vec<&str> = enum_vals.iter().filter_map(|v| v.as_str()).collect();
+    assert!(actions.contains(&"delete"));
+    assert!(actions.contains(&"list_tables"));
+    assert!(actions.contains(&"list_fields"));
 }
 
 #[tokio::test]
