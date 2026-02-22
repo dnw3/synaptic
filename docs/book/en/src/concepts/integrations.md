@@ -108,6 +108,118 @@ synaptic = { version = "0.3", features = ["openai", "qdrant"] }
 
 Convenience combinations: `models` (all 6 LLM providers including bedrock and cohere), `agent` (includes openai), `rag` (includes openai + retrieval stack), `full` (everything).
 
+## Provider Selection Guide
+
+Choose a provider based on your requirements:
+
+| Provider | Auth | Streaming | Tool Calling | Embeddings | Best For |
+|----------|------|-----------|-------------|------------|----------|
+| **OpenAI** | API key (header) | SSE | Yes | Yes | General-purpose, widest model selection |
+| **Anthropic** | API key (`x-api-key`) | SSE | Yes | No | Long context, reasoning tasks |
+| **Gemini** | API key (query param) | SSE | Yes | No | Google ecosystem, multimodal |
+| **Ollama** | None (local) | NDJSON | Yes | Yes | Privacy-sensitive, offline, development |
+| **Bedrock** | AWS IAM | AWS SDK | Yes | No | Enterprise AWS environments |
+| **OpenAI-Compatible** | Varies | SSE | Varies | Varies | Cost optimization (Groq, DeepSeek, etc.) |
+
+**Deciding factors:**
+
+- **Privacy & compliance** — Ollama runs entirely locally; Bedrock keeps data within AWS
+- **Cost** — Ollama is free; OpenAI-compatible providers (Groq, DeepSeek) offer competitive pricing
+- **Latency** — Ollama has no network round-trip; Groq is optimized for speed
+- **Ecosystem** — OpenAI has the most third-party integrations; Bedrock integrates with AWS services
+
+## Vector Store Selection Guide
+
+| Store | Deployment | Managed | Filtering | Scaling | Best For |
+|-------|-----------|---------|-----------|---------|----------|
+| **Qdrant** | Self-hosted / Cloud | Yes (Qdrant Cloud) | Rich (payload filters) | Horizontal | General-purpose, production |
+| **pgvector** | Self-hosted | Via managed Postgres | SQL WHERE clauses | Vertical | Teams already using PostgreSQL |
+| **Pinecone** | Fully managed | Yes | Metadata filters | Automatic | Zero-ops, rapid prototyping |
+| **Chroma** | Self-hosted / Docker | No | Metadata filters | Single node | Development, small-medium datasets |
+| **MongoDB Atlas** | Fully managed | Yes | MQL filters | Automatic | Teams already using MongoDB |
+| **Elasticsearch** | Self-hosted / Cloud | Yes (Elastic Cloud) | Full query DSL | Horizontal | Hybrid text + vector search |
+| **InMemory** | In-process | N/A | None | N/A | Testing, prototyping |
+
+**Deciding factors:**
+
+- **Existing infrastructure** — Use pgvector if you have PostgreSQL, MongoDB Atlas if you use MongoDB, Elasticsearch if you already run an ES cluster
+- **Operational complexity** — Pinecone and MongoDB Atlas are fully managed; Qdrant and Elasticsearch require cluster management
+- **Query capabilities** — Elasticsearch excels at hybrid text + vector queries; Qdrant has the richest filtering
+- **Cost** — InMemory and Chroma are free; pgvector reuses existing database infrastructure
+
+## Cache Selection Guide
+
+| Cache | Persistence | Deployment | TTL Support | Best For |
+|-------|------------|-----------|-------------|----------|
+| **InMemory** | No (process lifetime) | In-process | Yes | Testing, single-process apps |
+| **Redis** | Yes (configurable) | External server | Yes | Multi-process, distributed |
+| **SQLite** | Yes (file-based) | In-process | Yes | Single-machine persistence |
+| **Semantic** | Depends on backing store | In-process | No | Fuzzy-match caching |
+
+## Complete RAG Pipeline Example
+
+This example combines multiple integrations into a full retrieval-augmented generation pipeline with caching and reranking:
+
+```rust,ignore
+use synaptic::core::{ChatModel, ChatRequest, Message, Embeddings};
+use synaptic::openai::{OpenAiChatModel, OpenAiConfig, OpenAiEmbeddings};
+use synaptic::qdrant::{QdrantConfig, QdrantVectorStore};
+use synaptic::cohere::{CohereReranker, CohereConfig};
+use synaptic::cache::{CachedChatModel, InMemoryCache};
+use synaptic::retrieval::ContextualCompressionRetriever;
+use synaptic::splitters::RecursiveCharacterTextSplitter;
+use synaptic::loaders::TextLoader;
+use synaptic::vectorstores::VectorStoreRetriever;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let backend = Arc::new(HttpBackend::new());
+
+// 1. Set up embeddings
+let embeddings = Arc::new(OpenAiEmbeddings::new(
+    OpenAiEmbeddings::config("text-embedding-3-small"),
+    backend.clone(),
+));
+
+// 2. Ingest documents into Qdrant
+let loader = TextLoader::new("knowledge-base.txt");
+let docs = loader.load().await?;
+let splitter = RecursiveCharacterTextSplitter::new(500, 50);
+let chunks = splitter.split_documents(&docs)?;
+
+let qdrant_config = QdrantConfig::new("http://localhost:6334", "knowledge", 1536);
+let store = QdrantVectorStore::new(qdrant_config, embeddings.clone()).await?;
+store.add_documents(&chunks).await?;
+
+// 3. Build retriever with Cohere reranking
+let base_retriever = Arc::new(VectorStoreRetriever::new(Arc::new(store)));
+let reranker = CohereReranker::new(CohereConfig::new(std::env::var("COHERE_API_KEY")?));
+let retriever = ContextualCompressionRetriever::new(base_retriever, Arc::new(reranker));
+
+// 4. Wrap the LLM with a cache
+let llm_config = OpenAiConfig::new(std::env::var("OPENAI_API_KEY")?, "gpt-4o");
+let base_model = OpenAiChatModel::new(llm_config, backend.clone());
+let cache = Arc::new(InMemoryCache::new());
+let model = CachedChatModel::new(Arc::new(base_model), cache);
+
+// 5. Retrieve and generate
+let relevant = retriever.retrieve("How does Synaptic handle streaming?").await?;
+let context = relevant.iter().map(|d| d.content.as_str()).collect::<Vec<_>>().join("\n\n");
+
+let request = ChatRequest::new(vec![
+    Message::system(&format!("Answer based on the following context:\n\n{context}")),
+    Message::human("How does Synaptic handle streaming?"),
+]);
+let response = model.chat(&request).await?;
+println!("{}", response.message.content().unwrap_or_default());
+```
+
+This pipeline demonstrates:
+- **Qdrant** for vector storage and retrieval
+- **Cohere** for reranking retrieved documents
+- **InMemoryCache** for caching LLM responses (swap with Redis/SQLite for persistence)
+- **OpenAI** for both embeddings and chat completion
+
 ## Adding a New Integration
 
 To add a new integration:

@@ -110,6 +110,118 @@ synaptic = { version = "0.2", features = ["openai", "qdrant"] }
 
 便捷组合：`models`（所有 LLM provider）、`agent`（包含 openai）、`rag`（包含 openai + 检索栈）、`full`（全部）。
 
+## Provider 选型指南
+
+根据需求选择合适的 LLM Provider：
+
+| Provider | 认证方式 | 流式传输 | 工具调用 | 嵌入 | 适用场景 |
+|----------|---------|---------|---------|------|---------|
+| **OpenAI** | API key (Header) | SSE | 支持 | 支持 | 通用场景，模型选择最广 |
+| **Anthropic** | API key (`x-api-key`) | SSE | 支持 | 不支持 | 长上下文、推理任务 |
+| **Gemini** | API key (查询参数) | SSE | 支持 | 不支持 | Google 生态、多模态 |
+| **Ollama** | 无需认证（本地） | NDJSON | 支持 | 支持 | 隐私敏感、离线、开发调试 |
+| **Bedrock** | AWS IAM | AWS SDK | 支持 | 不支持 | 企业 AWS 环境 |
+| **OpenAI 兼容** | 各异 | SSE | 部分支持 | 部分支持 | 降低成本（Groq、DeepSeek 等） |
+
+**决策因素：**
+
+- **隐私合规** — Ollama 完全本地运行；Bedrock 数据不出 AWS
+- **成本** — Ollama 免费；OpenAI 兼容 Provider（Groq、DeepSeek）价格有竞争力
+- **延迟** — Ollama 无网络往返；Groq 针对速度优化
+- **生态** — OpenAI 第三方集成最丰富；Bedrock 与 AWS 服务深度集成
+
+## 向量数据库选型指南
+
+| 存储 | 部署方式 | 托管服务 | 筛选能力 | 扩展性 | 适用场景 |
+|------|---------|---------|---------|-------|---------|
+| **Qdrant** | 自托管 / 云 | Qdrant Cloud | 丰富（payload 过滤） | 水平扩展 | 通用场景，生产环境 |
+| **pgvector** | 自托管 | 托管 PostgreSQL | SQL WHERE | 垂直扩展 | 已有 PostgreSQL 的团队 |
+| **Pinecone** | 全托管 | 内置 | 元数据过滤 | 自动扩展 | 零运维，快速原型 |
+| **Chroma** | 自托管 / Docker | 无 | 元数据过滤 | 单节点 | 开发环境，中小数据集 |
+| **MongoDB Atlas** | 全托管 | 内置 | MQL 过滤 | 自动扩展 | 已有 MongoDB 的团队 |
+| **Elasticsearch** | 自托管 / 云 | Elastic Cloud | 完整查询 DSL | 水平扩展 | 混合文本 + 向量搜索 |
+| **InMemory** | 进程内 | 不适用 | 无 | 不适用 | 测试、原型验证 |
+
+**决策因素：**
+
+- **现有基础设施** — 已有 PostgreSQL 用 pgvector，已有 MongoDB 用 Atlas，已有 ES 集群用 Elasticsearch
+- **运维复杂度** — Pinecone 和 MongoDB Atlas 全托管；Qdrant 和 Elasticsearch 需要集群管理
+- **查询能力** — Elasticsearch 擅长混合文本 + 向量查询；Qdrant 过滤能力最丰富
+- **成本** — InMemory 和 Chroma 免费；pgvector 复用现有数据库基础设施
+
+## 缓存选型指南
+
+| 缓存 | 持久化 | 部署方式 | TTL 支持 | 适用场景 |
+|------|-------|---------|---------|---------|
+| **InMemory** | 否（进程生命周期） | 进程内 | 支持 | 测试、单进程应用 |
+| **Redis** | 是（可配置） | 外部服务 | 支持 | 多进程、分布式 |
+| **SQLite** | 是（文件） | 进程内 | 支持 | 单机持久化 |
+| **Semantic** | 取决于底层存储 | 进程内 | 不支持 | 模糊匹配缓存 |
+
+## 完整 RAG 流水线示例
+
+以下示例将多个集成组合成完整的检索增强生成流水线，包含缓存和重排序：
+
+```rust,ignore
+use synaptic::core::{ChatModel, ChatRequest, Message, Embeddings};
+use synaptic::openai::{OpenAiChatModel, OpenAiConfig, OpenAiEmbeddings};
+use synaptic::qdrant::{QdrantConfig, QdrantVectorStore};
+use synaptic::cohere::{CohereReranker, CohereConfig};
+use synaptic::cache::{CachedChatModel, InMemoryCache};
+use synaptic::retrieval::ContextualCompressionRetriever;
+use synaptic::splitters::RecursiveCharacterTextSplitter;
+use synaptic::loaders::TextLoader;
+use synaptic::vectorstores::VectorStoreRetriever;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let backend = Arc::new(HttpBackend::new());
+
+// 1. 配置嵌入模型
+let embeddings = Arc::new(OpenAiEmbeddings::new(
+    OpenAiEmbeddings::config("text-embedding-3-small"),
+    backend.clone(),
+));
+
+// 2. 将文档导入 Qdrant
+let loader = TextLoader::new("knowledge-base.txt");
+let docs = loader.load().await?;
+let splitter = RecursiveCharacterTextSplitter::new(500, 50);
+let chunks = splitter.split_documents(&docs)?;
+
+let qdrant_config = QdrantConfig::new("http://localhost:6334", "knowledge", 1536);
+let store = QdrantVectorStore::new(qdrant_config, embeddings.clone()).await?;
+store.add_documents(&chunks).await?;
+
+// 3. 构建带 Cohere 重排序的检索器
+let base_retriever = Arc::new(VectorStoreRetriever::new(Arc::new(store)));
+let reranker = CohereReranker::new(CohereConfig::new(std::env::var("COHERE_API_KEY")?));
+let retriever = ContextualCompressionRetriever::new(base_retriever, Arc::new(reranker));
+
+// 4. 用缓存包装 LLM
+let llm_config = OpenAiConfig::new(std::env::var("OPENAI_API_KEY")?, "gpt-4o");
+let base_model = OpenAiChatModel::new(llm_config, backend.clone());
+let cache = Arc::new(InMemoryCache::new());
+let model = CachedChatModel::new(Arc::new(base_model), cache);
+
+// 5. 检索并生成回答
+let relevant = retriever.retrieve("Synaptic 如何处理流式传输？").await?;
+let context = relevant.iter().map(|d| d.content.as_str()).collect::<Vec<_>>().join("\n\n");
+
+let request = ChatRequest::new(vec![
+    Message::system(&format!("根据以下上下文回答问题：\n\n{context}")),
+    Message::human("Synaptic 如何处理流式传输？"),
+]);
+let response = model.chat(&request).await?;
+println!("{}", response.message.content().unwrap_or_default());
+```
+
+此流水线演示了：
+- **Qdrant** 用于向量存储和检索
+- **Cohere** 用于重排序检索结果
+- **InMemoryCache** 用于缓存 LLM 响应（可替换为 Redis/SQLite 实现持久化）
+- **OpenAI** 同时提供嵌入和聊天补全
+
 ## 添加新集成
 
 添加新集成的步骤：
