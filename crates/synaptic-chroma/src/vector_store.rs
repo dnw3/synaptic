@@ -254,7 +254,9 @@ impl VectorStore for ChromaVectorStore {
         k: usize,
         embeddings: &dyn Embeddings,
     ) -> Result<Vec<Document>, SynapticError> {
-        let results = self.similarity_search_with_score(query, k, embeddings).await?;
+        let results = self
+            .similarity_search_with_score(query, k, embeddings)
+            .await?;
         Ok(results.into_iter().map(|(doc, _)| doc).collect())
     }
 
@@ -394,10 +396,7 @@ impl ChromaVectorStore {
                 .map(|m| m.iter().map(|(k, v)| (k.clone(), v.clone())).collect())
                 .unwrap_or_default();
 
-            let distance = distances
-                .get(i)
-                .and_then(|v| v.as_f64())
-                .unwrap_or(0.0) as f32;
+            let distance = distances.get(i).and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
 
             // Convert distance to score (lower distance = higher score).
             let score = 1.0 / (1.0 + distance);

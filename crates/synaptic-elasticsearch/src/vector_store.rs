@@ -63,11 +63,7 @@ impl ElasticsearchConfig {
     }
 
     /// Set basic authentication credentials.
-    pub fn with_auth(
-        mut self,
-        username: impl Into<String>,
-        password: impl Into<String>,
-    ) -> Self {
+    pub fn with_auth(mut self, username: impl Into<String>, password: impl Into<String>) -> Self {
         self.username = Some(username.into());
         self.password = Some(password.into());
         self
@@ -115,10 +111,7 @@ impl ElasticsearchVectorStore {
     }
 
     /// Apply basic auth to a request builder if credentials are configured.
-    fn apply_auth(
-        &self,
-        builder: reqwest::RequestBuilder,
-    ) -> reqwest::RequestBuilder {
+    fn apply_auth(&self, builder: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
         if let (Some(ref user), Some(ref pass)) = (&self.config.username, &self.config.password) {
             builder.basic_auth(user, Some(pass))
         } else {
@@ -260,12 +253,14 @@ impl VectorStore for ElasticsearchVectorStore {
 
         // Check for item-level errors in the bulk response.
         let parsed: Value = serde_json::from_str(&text).map_err(|e| {
-            SynapticError::VectorStore(format!(
-                "failed to parse Elasticsearch bulk response: {e}"
-            ))
+            SynapticError::VectorStore(format!("failed to parse Elasticsearch bulk response: {e}"))
         })?;
 
-        if parsed.get("errors").and_then(|v| v.as_bool()).unwrap_or(false) {
+        if parsed
+            .get("errors")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+        {
             return Err(SynapticError::VectorStore(format!(
                 "Elasticsearch bulk operation had errors: {text}"
             )));
@@ -373,9 +368,10 @@ impl ElasticsearchVectorStore {
             .header("Content-Type", "application/json")
             .json(&search_body);
 
-        let resp = req.send().await.map_err(|e| {
-            SynapticError::VectorStore(format!("Elasticsearch search failed: {e}"))
-        })?;
+        let resp = req
+            .send()
+            .await
+            .map_err(|e| SynapticError::VectorStore(format!("Elasticsearch search failed: {e}")))?;
 
         let status = resp.status();
         let text = resp.text().await.map_err(|e| {
@@ -389,9 +385,7 @@ impl ElasticsearchVectorStore {
         }
 
         let parsed: Value = serde_json::from_str(&text).map_err(|e| {
-            SynapticError::VectorStore(format!(
-                "failed to parse Elasticsearch response: {e}"
-            ))
+            SynapticError::VectorStore(format!("failed to parse Elasticsearch response: {e}"))
         })?;
 
         let hits = parsed["hits"]["hits"]
@@ -408,14 +402,12 @@ impl ElasticsearchVectorStore {
                 .unwrap_or("")
                 .to_string();
 
-            let score = hit
-                .get("_score")
-                .and_then(|v| v.as_f64())
-                .unwrap_or(0.0) as f32;
+            let score = hit.get("_score").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
 
-            let source = hit.get("_source").cloned().unwrap_or(Value::Object(
-                serde_json::Map::new(),
-            ));
+            let source = hit
+                .get("_source")
+                .cloned()
+                .unwrap_or(Value::Object(serde_json::Map::new()));
 
             let content = source
                 .get(&self.config.content_field)
@@ -475,29 +467,25 @@ mod tests {
 
     #[test]
     fn config_with_url() {
-        let config = ElasticsearchConfig::new("idx", 768)
-            .with_url("https://es.example.com:9200");
+        let config = ElasticsearchConfig::new("idx", 768).with_url("https://es.example.com:9200");
         assert_eq!(config.url, "https://es.example.com:9200");
     }
 
     #[test]
     fn config_with_vector_field() {
-        let config = ElasticsearchConfig::new("idx", 768)
-            .with_vector_field("vec");
+        let config = ElasticsearchConfig::new("idx", 768).with_vector_field("vec");
         assert_eq!(config.vector_field, "vec");
     }
 
     #[test]
     fn config_with_content_field() {
-        let config = ElasticsearchConfig::new("idx", 768)
-            .with_content_field("text");
+        let config = ElasticsearchConfig::new("idx", 768).with_content_field("text");
         assert_eq!(config.content_field, "text");
     }
 
     #[test]
     fn config_with_auth() {
-        let config = ElasticsearchConfig::new("idx", 768)
-            .with_auth("elastic", "secret123");
+        let config = ElasticsearchConfig::new("idx", 768).with_auth("elastic", "secret123");
         assert_eq!(config.username.as_deref(), Some("elastic"));
         assert_eq!(config.password.as_deref(), Some("secret123"));
     }
@@ -532,13 +520,15 @@ mod tests {
         let config = ElasticsearchConfig::new("idx", 768);
         let store = ElasticsearchVectorStore::new(config);
         assert_eq!(store.url("/_bulk"), "http://localhost:9200/_bulk");
-        assert_eq!(store.url("/idx/_search"), "http://localhost:9200/idx/_search");
+        assert_eq!(
+            store.url("/idx/_search"),
+            "http://localhost:9200/idx/_search"
+        );
     }
 
     #[test]
     fn url_construction_trailing_slash() {
-        let config = ElasticsearchConfig::new("idx", 768)
-            .with_url("http://localhost:9200/");
+        let config = ElasticsearchConfig::new("idx", 768).with_url("http://localhost:9200/");
         let store = ElasticsearchVectorStore::new(config);
         assert_eq!(store.url("/_bulk"), "http://localhost:9200/_bulk");
     }

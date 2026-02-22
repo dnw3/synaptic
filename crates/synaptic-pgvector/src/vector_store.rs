@@ -68,7 +68,9 @@ impl PgVectorStore {
         sqlx::query(create_ext)
             .execute(&self.pool)
             .await
-            .map_err(|e| SynapticError::VectorStore(format!("failed to create pgvector extension: {e}")))?;
+            .map_err(|e| {
+                SynapticError::VectorStore(format!("failed to create pgvector extension: {e}"))
+            })?;
 
         let create_table = format!(
             r#"CREATE TABLE IF NOT EXISTS {table} (
@@ -139,8 +141,9 @@ impl VectorStore for PgVectorStore {
         let mut ids = Vec::with_capacity(docs.len());
         for (doc, vec) in docs.into_iter().zip(vectors) {
             let embedding = Vector::from(vec);
-            let metadata = serde_json::to_value(&doc.metadata)
-                .map_err(|e| SynapticError::VectorStore(format!("failed to serialize metadata: {e}")))?;
+            let metadata = serde_json::to_value(&doc.metadata).map_err(|e| {
+                SynapticError::VectorStore(format!("failed to serialize metadata: {e}"))
+            })?;
 
             sqlx::query(&upsert_sql)
                 .bind(&doc.id)
@@ -163,7 +166,9 @@ impl VectorStore for PgVectorStore {
         k: usize,
         embeddings: &dyn Embeddings,
     ) -> Result<Vec<Document>, SynapticError> {
-        let results = self.similarity_search_with_score(query, k, embeddings).await?;
+        let results = self
+            .similarity_search_with_score(query, k, embeddings)
+            .await?;
         Ok(results.into_iter().map(|(doc, _)| doc).collect())
     }
 
@@ -174,7 +179,9 @@ impl VectorStore for PgVectorStore {
         embeddings: &dyn Embeddings,
     ) -> Result<Vec<(Document, f32)>, SynapticError> {
         let query_vec = embeddings.embed_query(query).await?;
-        let raw = self.similarity_search_by_vector_with_score(&query_vec, k).await?;
+        let raw = self
+            .similarity_search_by_vector_with_score(&query_vec, k)
+            .await?;
         Ok(raw)
     }
 
@@ -183,7 +190,9 @@ impl VectorStore for PgVectorStore {
         embedding: &[f32],
         k: usize,
     ) -> Result<Vec<Document>, SynapticError> {
-        let results = self.similarity_search_by_vector_with_score(embedding, k).await?;
+        let results = self
+            .similarity_search_by_vector_with_score(embedding, k)
+            .await?;
         Ok(results.into_iter().map(|(doc, _)| doc).collect())
     }
 
@@ -245,7 +254,14 @@ impl PgVectorStore {
                     Value::Object(map) => map.into_iter().collect(),
                     _ => HashMap::new(),
                 };
-                (Document { id, content, metadata }, score)
+                (
+                    Document {
+                        id,
+                        content,
+                        metadata,
+                    },
+                    score,
+                )
             })
             .collect();
 

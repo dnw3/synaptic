@@ -143,10 +143,7 @@ impl Tool for TavilySearchTool {
             for (i, result) in results.iter().enumerate() {
                 let title = result.get("title").and_then(|t| t.as_str()).unwrap_or("");
                 let url = result.get("url").and_then(|u| u.as_str()).unwrap_or("");
-                let content = result
-                    .get("content")
-                    .and_then(|c| c.as_str())
-                    .unwrap_or("");
+                let content = result.get("content").and_then(|c| c.as_str()).unwrap_or("");
                 output.push_str(&format!(
                     "{}. {}\n   URL: {}\n   {}\n\n",
                     i + 1,

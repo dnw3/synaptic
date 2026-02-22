@@ -88,9 +88,7 @@ impl RedisStore {
         namespace.join(":")
     }
 
-    async fn get_connection(
-        &self,
-    ) -> Result<redis::aio::MultiplexedConnection, SynapticError> {
+    async fn get_connection(&self) -> Result<redis::aio::MultiplexedConnection, SynapticError> {
         self.client
             .get_multiplexed_async_connection()
             .await

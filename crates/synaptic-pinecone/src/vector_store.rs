@@ -170,7 +170,9 @@ impl VectorStore for PineconeVectorStore {
         k: usize,
         embeddings: &dyn Embeddings,
     ) -> Result<Vec<Document>, SynapticError> {
-        let results = self.similarity_search_with_score(query, k, embeddings).await?;
+        let results = self
+            .similarity_search_with_score(query, k, embeddings)
+            .await?;
         Ok(results.into_iter().map(|(doc, _)| doc).collect())
     }
 
@@ -242,10 +244,7 @@ impl PineconeVectorStore {
                 .unwrap_or("")
                 .to_string();
 
-            let score = m
-                .get("score")
-                .and_then(|v| v.as_f64())
-                .unwrap_or(0.0) as f32;
+            let score = m.get("score").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
 
             let metadata_obj = m
                 .get("metadata")
@@ -292,8 +291,8 @@ mod tests {
 
     #[test]
     fn config_with_namespace() {
-        let config = PineconeConfig::new("key", "https://host.pinecone.io")
-            .with_namespace("my-namespace");
+        let config =
+            PineconeConfig::new("key", "https://host.pinecone.io").with_namespace("my-namespace");
         assert_eq!(config.namespace.as_deref(), Some("my-namespace"));
     }
 
@@ -337,8 +336,8 @@ mod tests {
 
     #[test]
     fn with_namespace_adds_field() {
-        let config = PineconeConfig::new("key", "https://host.pinecone.io")
-            .with_namespace("test-ns");
+        let config =
+            PineconeConfig::new("key", "https://host.pinecone.io").with_namespace("test-ns");
         let store = PineconeVectorStore::new(config);
 
         let body = store.with_namespace(serde_json::json!({"vector": [1.0]}));

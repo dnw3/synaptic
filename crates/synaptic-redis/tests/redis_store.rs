@@ -56,8 +56,10 @@ fn cache_from_url_invalid_url() {
 #[cfg(test)]
 mod integration {
     use serde_json::json;
-    use synaptic_redis::{LlmCache, RedisCache, RedisCacheConfig, RedisStore, RedisStoreConfig, Store};
     use synaptic_core::{ChatResponse, Message};
+    use synaptic_redis::{
+        LlmCache, RedisCache, RedisCacheConfig, RedisStore, RedisStoreConfig, Store,
+    };
 
     const REDIS_URL: &str = "redis://127.0.0.1/";
 
@@ -80,7 +82,10 @@ mod integration {
     #[ignore = "requires running Redis"]
     async fn store_put_and_get() {
         let store = test_store();
-        store.put(&["ns", "test"], "key1", json!("hello")).await.unwrap();
+        store
+            .put(&["ns", "test"], "key1", json!("hello"))
+            .await
+            .unwrap();
 
         let item = store.get(&["ns", "test"], "key1").await.unwrap().unwrap();
         assert_eq!(item.key, "key1");
@@ -129,14 +134,26 @@ mod integration {
     #[ignore = "requires running Redis"]
     async fn store_search_with_query() {
         let store = test_store();
-        store.put(&["ns", "search"], "a", json!("apple pie")).await.unwrap();
-        store.put(&["ns", "search"], "b", json!("banana split")).await.unwrap();
-        store.put(&["ns", "search"], "c", json!("cherry tart")).await.unwrap();
+        store
+            .put(&["ns", "search"], "a", json!("apple pie"))
+            .await
+            .unwrap();
+        store
+            .put(&["ns", "search"], "b", json!("banana split"))
+            .await
+            .unwrap();
+        store
+            .put(&["ns", "search"], "c", json!("cherry tart"))
+            .await
+            .unwrap();
 
         let all = store.search(&["ns", "search"], None, 10).await.unwrap();
         assert_eq!(all.len(), 3);
 
-        let filtered = store.search(&["ns", "search"], Some("apple"), 10).await.unwrap();
+        let filtered = store
+            .search(&["ns", "search"], Some("apple"), 10)
+            .await
+            .unwrap();
         assert_eq!(filtered.len(), 1);
         assert_eq!(filtered[0].key, "a");
 
@@ -150,8 +167,14 @@ mod integration {
     #[ignore = "requires running Redis"]
     async fn store_list_namespaces() {
         let store = test_store();
-        store.put(&["ns", "list", "a"], "k1", json!(1)).await.unwrap();
-        store.put(&["ns", "list", "b"], "k2", json!(2)).await.unwrap();
+        store
+            .put(&["ns", "list", "a"], "k1", json!(1))
+            .await
+            .unwrap();
+        store
+            .put(&["ns", "list", "b"], "k2", json!(2))
+            .await
+            .unwrap();
         store.put(&["other", "ns"], "k3", json!(3)).await.unwrap();
 
         let all = store.list_namespaces(&[]).await.unwrap();
@@ -217,8 +240,8 @@ mod integration {
             prefix: "synaptic:test:ttl:".to_string(),
             ttl: Some(1), // 1 second TTL
         };
-        let cache =
-            RedisCache::from_url_with_config(REDIS_URL, config).expect("Redis client creation failed");
+        let cache = RedisCache::from_url_with_config(REDIS_URL, config)
+            .expect("Redis client creation failed");
 
         let response = ChatResponse {
             message: Message::ai("expires soon"),

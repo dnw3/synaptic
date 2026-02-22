@@ -10,15 +10,14 @@ fn config_new_sets_defaults() {
 
 #[test]
 fn config_with_namespace() {
-    let config = PineconeConfig::new("key", "https://host.pinecone.io")
-        .with_namespace("my-ns");
+    let config = PineconeConfig::new("key", "https://host.pinecone.io").with_namespace("my-ns");
     assert_eq!(config.namespace.as_deref(), Some("my-ns"));
 }
 
 #[test]
 fn config_builder_chain() {
-    let config = PineconeConfig::new("api-key-123", "https://idx.svc.pinecone.io")
-        .with_namespace("prod");
+    let config =
+        PineconeConfig::new("api-key-123", "https://idx.svc.pinecone.io").with_namespace("prod");
 
     assert_eq!(config.api_key, "api-key-123");
     assert_eq!(config.host, "https://idx.svc.pinecone.io");
@@ -34,8 +33,8 @@ fn store_new_creates_instance() {
 
 #[test]
 fn store_config_accessor() {
-    let config = PineconeConfig::new("secret", "https://my-idx.svc.pinecone.io")
-        .with_namespace("testing");
+    let config =
+        PineconeConfig::new("secret", "https://my-idx.svc.pinecone.io").with_namespace("testing");
     let store = PineconeVectorStore::new(config);
     assert_eq!(store.config().host, "https://my-idx.svc.pinecone.io");
     assert_eq!(store.config().namespace.as_deref(), Some("testing"));
@@ -89,11 +88,9 @@ mod integration {
     }
 
     fn setup_store() -> PineconeVectorStore {
-        let api_key =
-            std::env::var("PINECONE_API_KEY").expect("PINECONE_API_KEY must be set");
+        let api_key = std::env::var("PINECONE_API_KEY").expect("PINECONE_API_KEY must be set");
         let host = std::env::var("PINECONE_HOST").expect("PINECONE_HOST must be set");
-        let config = PineconeConfig::new(api_key, host)
-            .with_namespace("synaptic-test");
+        let config = PineconeConfig::new(api_key, host).with_namespace("synaptic-test");
         PineconeVectorStore::new(config)
     }
 

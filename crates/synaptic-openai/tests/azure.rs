@@ -53,9 +53,7 @@ fn build_request_uses_azure_url_and_api_key_header() {
 
     // URL pattern
     assert!(
-        provider_req
-            .url
-            .contains("my-resource.openai.azure.com"),
+        provider_req.url.contains("my-resource.openai.azure.com"),
         "URL should contain resource name: {}",
         provider_req.url
     );

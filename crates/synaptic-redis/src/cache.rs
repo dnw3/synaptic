@@ -60,9 +60,7 @@ impl RedisCache {
         format!("{}{key}", self.config.prefix)
     }
 
-    async fn get_connection(
-        &self,
-    ) -> Result<redis::aio::MultiplexedConnection, SynapticError> {
+    async fn get_connection(&self) -> Result<redis::aio::MultiplexedConnection, SynapticError> {
         self.client
             .get_multiplexed_async_connection()
             .await

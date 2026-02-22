@@ -65,17 +65,15 @@ impl Loader for PdfLoader {
         let split_pages = self.split_pages;
 
         // pdf_extract::extract_text is synchronous, so run it on a blocking thread
-        let text = tokio::task::spawn_blocking(move || {
-            pdf_extract::extract_text(&path)
-        })
-        .await
-        .map_err(|e| SynapticError::Loader(format!("task join error: {e}")))?
-        .map_err(|e| {
-            SynapticError::Loader(format!(
-                "failed to extract text from {}: {e}",
-                self.path.display()
-            ))
-        })?;
+        let text = tokio::task::spawn_blocking(move || pdf_extract::extract_text(&path))
+            .await
+            .map_err(|e| SynapticError::Loader(format!("task join error: {e}")))?
+            .map_err(|e| {
+                SynapticError::Loader(format!(
+                    "failed to extract text from {}: {e}",
+                    self.path.display()
+                ))
+            })?;
 
         let path_str = self.path.to_string_lossy().to_string();
 
@@ -119,7 +117,11 @@ impl Loader for PdfLoader {
                 Value::Number(serde_json::Number::from(total_pages)),
             );
 
-            Ok(vec![Document::with_metadata(path_str, text.trim(), metadata)])
+            Ok(vec![Document::with_metadata(
+                path_str,
+                text.trim(),
+                metadata,
+            )])
         }
     }
 }

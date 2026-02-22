@@ -13,29 +13,25 @@ fn config_new_sets_defaults() {
 
 #[test]
 fn config_with_index_name() {
-    let config = MongoVectorConfig::new("db", "col")
-        .with_index_name("custom_idx");
+    let config = MongoVectorConfig::new("db", "col").with_index_name("custom_idx");
     assert_eq!(config.index_name, "custom_idx");
 }
 
 #[test]
 fn config_with_vector_field() {
-    let config = MongoVectorConfig::new("db", "col")
-        .with_vector_field("vectors");
+    let config = MongoVectorConfig::new("db", "col").with_vector_field("vectors");
     assert_eq!(config.vector_field, "vectors");
 }
 
 #[test]
 fn config_with_content_field() {
-    let config = MongoVectorConfig::new("db", "col")
-        .with_content_field("text");
+    let config = MongoVectorConfig::new("db", "col").with_content_field("text");
     assert_eq!(config.content_field, "text");
 }
 
 #[test]
 fn config_with_num_candidates() {
-    let config = MongoVectorConfig::new("db", "col")
-        .with_num_candidates(300);
+    let config = MongoVectorConfig::new("db", "col").with_num_candidates(300);
     assert_eq!(config.num_candidates, Some(300));
 }
 
@@ -183,7 +179,10 @@ mod integration {
         let embeddings = FakeEmbeddings::new(64);
 
         let mut meta = HashMap::new();
-        meta.insert("source".to_string(), serde_json::Value::String("test".into()));
+        meta.insert(
+            "source".to_string(),
+            serde_json::Value::String("test".into()),
+        );
         meta.insert("page".to_string(), serde_json::json!(42));
 
         let docs = vec![Document::with_metadata("mm-1", "metadata test", meta)];

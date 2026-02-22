@@ -3,7 +3,7 @@
 ## Requirements
 
 - **Rust edition**: 2021
-- **Minimum supported Rust version (MSRV)**: 1.83
+- **Minimum supported Rust version (MSRV)**: 1.85
 - **Runtime**: Tokio (async runtime)
 
 ## Adding Synaptic to Your Project

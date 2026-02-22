@@ -30,14 +30,12 @@ async fn returns_error_for_missing_file() {
 
 #[tokio::test]
 async fn returns_error_for_corrupt_pdf() {
-    use synaptic_pdf::Loader;
     use std::fs;
+    use synaptic_pdf::Loader;
 
     // Write some garbage bytes that are not a valid PDF
-    let path = std::env::temp_dir().join(format!(
-        "synaptic-pdf-corrupt-{}.pdf",
-        std::process::id()
-    ));
+    let path =
+        std::env::temp_dir().join(format!("synaptic-pdf-corrupt-{}.pdf", std::process::id()));
     fs::write(&path, b"this is not a pdf file").unwrap();
 
     let loader = PdfLoader::new(&path);

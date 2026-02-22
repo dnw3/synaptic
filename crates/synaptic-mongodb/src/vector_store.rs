@@ -90,10 +90,7 @@ pub struct MongoVectorStore {
 
 impl MongoVectorStore {
     /// Create a new store by connecting to MongoDB at the given URI.
-    pub async fn from_uri(
-        uri: &str,
-        config: MongoVectorConfig,
-    ) -> Result<Self, SynapticError> {
+    pub async fn from_uri(uri: &str, config: MongoVectorConfig) -> Result<Self, SynapticError> {
         let client = Client::with_uri_str(uri).await.map_err(|e| {
             SynapticError::VectorStore(format!("failed to connect to MongoDB: {e}"))
         })?;
@@ -165,7 +162,8 @@ impl VectorStore for MongoVectorStore {
             };
 
             // Convert the embedding vector to BSON array of doubles.
-            let bson_vector: Vec<Bson> = vector.into_iter().map(|v| Bson::Double(v as f64)).collect();
+            let bson_vector: Vec<Bson> =
+                vector.into_iter().map(|v| Bson::Double(v as f64)).collect();
 
             // Convert metadata to BSON document.
             let metadata_bson = json_map_to_bson(&doc.metadata);
@@ -195,7 +193,9 @@ impl VectorStore for MongoVectorStore {
         k: usize,
         embeddings: &dyn Embeddings,
     ) -> Result<Vec<Document>, SynapticError> {
-        let results = self.similarity_search_with_score(query, k, embeddings).await?;
+        let results = self
+            .similarity_search_with_score(query, k, embeddings)
+            .await?;
         Ok(results.into_iter().map(|(doc, _)| doc).collect())
     }
 
@@ -275,30 +275,26 @@ impl MongoVectorStore {
 
         let pipeline = vec![vector_search_stage, project_stage];
 
-        let mut cursor = self
-            .collection
-            .aggregate(pipeline)
-            .await
-            .map_err(|e| SynapticError::VectorStore(format!("MongoDB aggregation failed: {e}")))?;
+        let mut cursor =
+            self.collection.aggregate(pipeline).await.map_err(|e| {
+                SynapticError::VectorStore(format!("MongoDB aggregation failed: {e}"))
+            })?;
 
         let mut results = Vec::new();
 
-        while let Some(bson_doc) = cursor.try_next().await.map_err(|e| {
-            SynapticError::VectorStore(format!("MongoDB cursor error: {e}"))
-        })? {
-            let id = bson_doc
-                .get_str("_id")
-                .unwrap_or("")
-                .to_string();
+        while let Some(bson_doc) = cursor
+            .try_next()
+            .await
+            .map_err(|e| SynapticError::VectorStore(format!("MongoDB cursor error: {e}")))?
+        {
+            let id = bson_doc.get_str("_id").unwrap_or("").to_string();
 
             let content = bson_doc
                 .get_str(&self.config.content_field)
                 .unwrap_or("")
                 .to_string();
 
-            let score = bson_doc
-                .get_f64("score")
-                .unwrap_or(0.0) as f32;
+            let score = bson_doc.get_f64("score").unwrap_or(0.0) as f32;
 
             let metadata = bson_doc
                 .get_document("metadata")
@@ -342,9 +338,7 @@ fn json_to_bson(value: &Value) -> Bson {
             }
         }
         Value::String(s) => Bson::String(s.clone()),
-        Value::Array(arr) => {
-            Bson::Array(arr.iter().map(json_to_bson).collect())
-        }
+        Value::Array(arr) => Bson::Array(arr.iter().map(json_to_bson).collect()),
         Value::Object(map) => {
             let mut doc = BsonDocument::new();
             for (k, v) in map {
@@ -411,29 +405,25 @@ mod tests {
 
     #[test]
     fn config_with_index_name() {
-        let config = MongoVectorConfig::new("db", "col")
-            .with_index_name("custom_index");
+        let config = MongoVectorConfig::new("db", "col").with_index_name("custom_index");
         assert_eq!(config.index_name, "custom_index");
     }
 
     #[test]
     fn config_with_vector_field() {
-        let config = MongoVectorConfig::new("db", "col")
-            .with_vector_field("vec");
+        let config = MongoVectorConfig::new("db", "col").with_vector_field("vec");
         assert_eq!(config.vector_field, "vec");
     }
 
     #[test]
     fn config_with_content_field() {
-        let config = MongoVectorConfig::new("db", "col")
-            .with_content_field("text");
+        let config = MongoVectorConfig::new("db", "col").with_content_field("text");
         assert_eq!(config.content_field, "text");
     }
 
     #[test]
     fn config_with_num_candidates() {
-        let config = MongoVectorConfig::new("db", "col")
-            .with_num_candidates(200);
+        let config = MongoVectorConfig::new("db", "col").with_num_candidates(200);
         assert_eq!(config.num_candidates, Some(200));
     }
 
@@ -533,8 +523,7 @@ mod tests {
 
     #[test]
     fn num_candidates_custom() {
-        let config = MongoVectorConfig::new("db", "col")
-            .with_num_candidates(200);
+        let config = MongoVectorConfig::new("db", "col").with_num_candidates(200);
         let k = 10_usize;
         let result = config.num_candidates.unwrap_or_else(|| (k as i64) * 10);
         assert_eq!(result, 200);

@@ -99,8 +99,7 @@ impl BedrockChatModel {
         let mut aws_config_loader = aws_config::from_env();
 
         if let Some(ref region) = config.region {
-            aws_config_loader =
-                aws_config_loader.region(aws_config::Region::new(region.clone()));
+            aws_config_loader = aws_config_loader.region(aws_config::Region::new(region.clone()));
         }
 
         let aws_config = aws_config_loader.load().await;
@@ -146,10 +145,7 @@ impl BedrockChatModel {
     }
 
     /// Build the tool configuration from a ChatRequest.
-    fn build_tool_config(
-        &self,
-        request: &ChatRequest,
-    ) -> Option<ToolConfiguration> {
+    fn build_tool_config(&self, request: &ChatRequest) -> Option<ToolConfiguration> {
         if request.tools.is_empty() {
             return None;
         }
@@ -161,7 +157,9 @@ impl BedrockChatModel {
                 let spec = ToolSpecification::builder()
                     .name(&td.name)
                     .description(&td.description)
-                    .input_schema(ToolInputSchema::Json(json_value_to_document(&td.parameters)))
+                    .input_schema(ToolInputSchema::Json(json_value_to_document(
+                        &td.parameters,
+                    )))
                     .build()
                     .expect("tool specification build should not fail");
 
@@ -176,15 +174,11 @@ impl BedrockChatModel {
 
         if let Some(ref choice) = request.tool_choice {
             let bedrock_choice = match choice {
-                ToolChoice::Auto => {
-                    bedrock_types::ToolChoice::Auto(
-                        bedrock_types::AutoToolChoice::builder().build(),
-                    )
-                }
+                ToolChoice::Auto => bedrock_types::ToolChoice::Auto(
+                    bedrock_types::AutoToolChoice::builder().build(),
+                ),
                 ToolChoice::Required => {
-                    bedrock_types::ToolChoice::Any(
-                        bedrock_types::AnyToolChoice::builder().build(),
-                    )
+                    bedrock_types::ToolChoice::Any(bedrock_types::AnyToolChoice::builder().build())
                 }
                 ToolChoice::None => {
                     // Bedrock does not have a "none" tool choice. We omit tools instead,
@@ -193,19 +187,21 @@ impl BedrockChatModel {
                         bedrock_types::AutoToolChoice::builder().build(),
                     )
                 }
-                ToolChoice::Specific(name) => {
-                    bedrock_types::ToolChoice::Tool(
-                        bedrock_types::SpecificToolChoice::builder()
-                            .name(name)
-                            .build()
-                            .expect("specific tool choice build should not fail"),
-                    )
-                }
+                ToolChoice::Specific(name) => bedrock_types::ToolChoice::Tool(
+                    bedrock_types::SpecificToolChoice::builder()
+                        .name(name)
+                        .build()
+                        .expect("specific tool choice build should not fail"),
+                ),
             };
             builder = builder.tool_choice(bedrock_choice);
         }
 
-        Some(builder.build().expect("tool configuration build should not fail"))
+        Some(
+            builder
+                .build()
+                .expect("tool configuration build should not fail"),
+        )
     }
 }
 
@@ -214,10 +210,7 @@ impl ChatModel for BedrockChatModel {
     async fn chat(&self, request: ChatRequest) -> Result<ChatResponse, SynapticError> {
         let (system_blocks, messages) = convert_messages(&request.messages);
 
-        let mut converse = self
-            .client
-            .converse()
-            .model_id(&self.config.model_id);
+        let mut converse = self.client.converse().model_id(&self.config.model_id);
 
         // Add system prompts.
         for block in system_blocks {
@@ -255,9 +248,7 @@ impl ChatModel for BedrockChatModel {
 
         // Parse the output message.
         let message = match output.output() {
-            Some(bedrock_types::ConverseOutput::Message(msg)) => {
-                parse_bedrock_message(msg)
-            }
+            Some(bedrock_types::ConverseOutput::Message(msg)) => parse_bedrock_message(msg),
             _ => Message::ai(""),
         };
 
@@ -712,6 +703,9 @@ mod tests {
         assert_eq!(parsed.tool_calls().len(), 1);
         assert_eq!(parsed.tool_calls()[0].id, "tc_1");
         assert_eq!(parsed.tool_calls()[0].name, "calculator");
-        assert_eq!(parsed.tool_calls()[0].arguments, serde_json::json!({"expr": "1+1"}));
+        assert_eq!(
+            parsed.tool_calls()[0].arguments,
+            serde_json::json!({"expr": "1+1"})
+        );
     }
 }

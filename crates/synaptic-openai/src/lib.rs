@@ -1,7 +1,7 @@
-pub(crate) mod chat_model;
-pub(crate) mod embeddings;
-pub mod compat;
 mod azure;
+pub(crate) mod chat_model;
+pub mod compat;
+pub(crate) mod embeddings;
 
 pub use azure::{
     AzureOpenAiChatModel, AzureOpenAiConfig, AzureOpenAiEmbeddings, AzureOpenAiEmbeddingsConfig,

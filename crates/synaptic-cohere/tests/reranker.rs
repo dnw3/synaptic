@@ -77,6 +77,9 @@ async fn integration_rerank_top_n_override() {
     ];
 
     // Override top_n at call site.
-    let result = reranker.rerank("fruit colors", docs, Some(1)).await.unwrap();
+    let result = reranker
+        .rerank("fruit colors", docs, Some(1))
+        .await
+        .unwrap();
     assert_eq!(result.len(), 1);
 }

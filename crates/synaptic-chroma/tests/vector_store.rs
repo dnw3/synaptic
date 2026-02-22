@@ -64,8 +64,8 @@ mod integration {
     use std::collections::HashMap;
 
     use async_trait::async_trait;
-    use synaptic_core::{Document, Embeddings, SynapticError, VectorStore};
     use synaptic_chroma::{ChromaConfig, ChromaVectorStore};
+    use synaptic_core::{Document, Embeddings, SynapticError, VectorStore};
 
     /// Simple fake embeddings for integration testing.
     struct FakeEmbeddings {
@@ -105,7 +105,10 @@ mod integration {
         let url = std::env::var("CHROMA_URL").unwrap_or_else(|_| "http://localhost:8000".into());
         let config = ChromaConfig::new(collection).with_url(url);
         let store = ChromaVectorStore::new(config);
-        store.ensure_collection().await.expect("failed to ensure collection");
+        store
+            .ensure_collection()
+            .await
+            .expect("failed to ensure collection");
         store
     }
 
@@ -180,7 +183,10 @@ mod integration {
         let embeddings = FakeEmbeddings::new(64);
 
         let mut meta = HashMap::new();
-        meta.insert("source".to_string(), serde_json::Value::String("test".into()));
+        meta.insert(
+            "source".to_string(),
+            serde_json::Value::String("test".into()),
+        );
         meta.insert("page".to_string(), serde_json::json!(42));
 
         let docs = vec![Document::with_metadata("cm-1", "metadata test", meta)];

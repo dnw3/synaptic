@@ -1,6 +1,6 @@
+use crate::Document;
 use async_trait::async_trait;
 use synaptic_core::SynapticError;
-use crate::Document;
 
 use crate::Loader;
 

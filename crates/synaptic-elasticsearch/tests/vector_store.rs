@@ -14,29 +14,25 @@ fn config_new_sets_defaults() {
 
 #[test]
 fn config_with_url() {
-    let config = ElasticsearchConfig::new("idx", 768)
-        .with_url("https://es.example.com:9200");
+    let config = ElasticsearchConfig::new("idx", 768).with_url("https://es.example.com:9200");
     assert_eq!(config.url, "https://es.example.com:9200");
 }
 
 #[test]
 fn config_with_vector_field() {
-    let config = ElasticsearchConfig::new("idx", 768)
-        .with_vector_field("vectors");
+    let config = ElasticsearchConfig::new("idx", 768).with_vector_field("vectors");
     assert_eq!(config.vector_field, "vectors");
 }
 
 #[test]
 fn config_with_content_field() {
-    let config = ElasticsearchConfig::new("idx", 768)
-        .with_content_field("body");
+    let config = ElasticsearchConfig::new("idx", 768).with_content_field("body");
     assert_eq!(config.content_field, "body");
 }
 
 #[test]
 fn config_with_auth() {
-    let config = ElasticsearchConfig::new("idx", 768)
-        .with_auth("elastic", "changeme");
+    let config = ElasticsearchConfig::new("idx", 768).with_auth("elastic", "changeme");
     assert_eq!(config.username.as_deref(), Some("elastic"));
     assert_eq!(config.password.as_deref(), Some("changeme"));
 }
@@ -124,8 +120,8 @@ mod integration {
     }
 
     fn setup_store(index_name: &str, dims: usize) -> ElasticsearchVectorStore {
-        let url = std::env::var("ELASTICSEARCH_URL")
-            .unwrap_or_else(|_| "http://localhost:9200".into());
+        let url =
+            std::env::var("ELASTICSEARCH_URL").unwrap_or_else(|_| "http://localhost:9200".into());
         let mut config = ElasticsearchConfig::new(index_name, dims).with_url(url);
 
         if let Ok(user) = std::env::var("ELASTICSEARCH_USER") {
@@ -227,7 +223,10 @@ mod integration {
         let embeddings = FakeEmbeddings::new(64);
 
         let mut meta = HashMap::new();
-        meta.insert("source".to_string(), serde_json::Value::String("test".into()));
+        meta.insert(
+            "source".to_string(),
+            serde_json::Value::String("test".into()),
+        );
         meta.insert("page".to_string(), serde_json::json!(42));
 
         let docs = vec![Document::with_metadata("esm-1", "metadata test", meta)];

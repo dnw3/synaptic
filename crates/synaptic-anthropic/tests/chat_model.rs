@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use futures::StreamExt;
 use serde_json::json;
-use synaptic_core::{ChatModel, ChatRequest, Message, ToolCall, ToolDefinition};
 use synaptic_anthropic::{AnthropicChatModel, AnthropicConfig};
+use synaptic_core::{ChatModel, ChatRequest, Message, ToolCall, ToolDefinition};
 use synaptic_models::{FakeBackend, ProviderResponse};
 
 fn setup(backend: Arc<FakeBackend>) -> AnthropicChatModel {

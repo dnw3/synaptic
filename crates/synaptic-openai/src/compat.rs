@@ -168,8 +168,7 @@ pub fn huggingface_embeddings(
 
 /// Create an OpenAI-compatible config for Cohere.
 pub fn cohere_config(api_key: impl Into<String>, model: impl Into<String>) -> OpenAiConfig {
-    OpenAiConfig::new(api_key, model)
-        .with_base_url("https://api.cohere.ai/compatibility/v1")
+    OpenAiConfig::new(api_key, model).with_base_url("https://api.cohere.ai/compatibility/v1")
 }
 
 /// Create a Cohere chat model.
@@ -183,8 +182,7 @@ pub fn cohere_chat_model(
 
 /// Create an OpenAI-compatible embeddings config for Cohere.
 pub fn cohere_embeddings_config(api_key: impl Into<String>) -> OpenAiEmbeddingsConfig {
-    OpenAiEmbeddingsConfig::new(api_key)
-        .with_base_url("https://api.cohere.ai/compatibility/v1")
+    OpenAiEmbeddingsConfig::new(api_key).with_base_url("https://api.cohere.ai/compatibility/v1")
 }
 
 /// Create Cohere embeddings.

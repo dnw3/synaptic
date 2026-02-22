@@ -66,9 +66,10 @@ impl OpenAiEmbeddings {
 pub(crate) fn parse_embeddings_response(
     body: &serde_json::Value,
 ) -> Result<Vec<Vec<f32>>, SynapticError> {
-    let data = body.get("data").and_then(|d| d.as_array()).ok_or_else(|| {
-        SynapticError::Embedding("missing 'data' field in response".to_string())
-    })?;
+    let data = body
+        .get("data")
+        .and_then(|d| d.as_array())
+        .ok_or_else(|| SynapticError::Embedding("missing 'data' field in response".to_string()))?;
 
     let mut embeddings = Vec::with_capacity(data.len());
     for item in data {

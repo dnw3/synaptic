@@ -4,10 +4,7 @@ use synaptic_core::{ChatModel, ChatRequest, Message};
 #[test]
 fn config_builder_defaults() {
     let config = BedrockConfig::new("anthropic.claude-3-5-sonnet-20241022-v2:0");
-    assert_eq!(
-        config.model_id,
-        "anthropic.claude-3-5-sonnet-20241022-v2:0"
-    );
+    assert_eq!(config.model_id, "anthropic.claude-3-5-sonnet-20241022-v2:0");
     assert!(config.region.is_none());
     assert!(config.max_tokens.is_none());
     assert!(config.temperature.is_none());
@@ -24,10 +21,7 @@ fn config_builder_all_fields() {
         .with_top_p(0.9)
         .with_stop(vec!["END".to_string()]);
 
-    assert_eq!(
-        config.model_id,
-        "anthropic.claude-3-5-sonnet-20241022-v2:0"
-    );
+    assert_eq!(config.model_id, "anthropic.claude-3-5-sonnet-20241022-v2:0");
     assert_eq!(config.region, Some("us-west-2".to_string()));
     assert_eq!(config.max_tokens, Some(1000));
     assert_eq!(config.temperature, Some(0.7));
@@ -49,8 +43,8 @@ fn config_builder_chaining() {
 #[tokio::test]
 #[ignore] // Requires AWS credentials
 async fn integration_basic_chat() {
-    let config = BedrockConfig::new("anthropic.claude-3-5-sonnet-20241022-v2:0")
-        .with_max_tokens(100);
+    let config =
+        BedrockConfig::new("anthropic.claude-3-5-sonnet-20241022-v2:0").with_max_tokens(100);
     let model = BedrockChatModel::new(config).await;
 
     let request = ChatRequest::new(vec![
@@ -68,8 +62,8 @@ async fn integration_basic_chat() {
 async fn integration_streaming() {
     use futures::StreamExt;
 
-    let config = BedrockConfig::new("anthropic.claude-3-5-sonnet-20241022-v2:0")
-        .with_max_tokens(50);
+    let config =
+        BedrockConfig::new("anthropic.claude-3-5-sonnet-20241022-v2:0").with_max_tokens(50);
     let model = BedrockChatModel::new(config).await;
 
     let request = ChatRequest::new(vec![Message::human("Count from 1 to 5.")]);
@@ -88,10 +82,10 @@ async fn integration_streaming() {
 #[tokio::test]
 #[ignore] // Requires AWS credentials
 async fn integration_tool_calling() {
-    use synaptic_core::{ToolDefinition, ToolChoice};
+    use synaptic_core::{ToolChoice, ToolDefinition};
 
-    let config = BedrockConfig::new("anthropic.claude-3-5-sonnet-20241022-v2:0")
-        .with_max_tokens(200);
+    let config =
+        BedrockConfig::new("anthropic.claude-3-5-sonnet-20241022-v2:0").with_max_tokens(200);
     let model = BedrockChatModel::new(config).await;
 
     let tool = ToolDefinition {
@@ -110,9 +104,9 @@ async fn integration_tool_calling() {
         extras: None,
     };
 
-    let request = ChatRequest::new(vec![
-        Message::human("What is the weather in San Francisco?"),
-    ])
+    let request = ChatRequest::new(vec![Message::human(
+        "What is the weather in San Francisco?",
+    )])
     .with_tools(vec![tool])
     .with_tool_choice(ToolChoice::Auto);
 

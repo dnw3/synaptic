@@ -33,7 +33,10 @@ impl FakeEmbeddings {
 #[async_trait]
 impl Embeddings for FakeEmbeddings {
     async fn embed_documents(&self, texts: &[&str]) -> Result<Vec<Vec<f32>>, SynapticError> {
-        Ok(texts.iter().map(|t| deterministic_vector(t, self.dimensions)).collect())
+        Ok(texts
+            .iter()
+            .map(|t| deterministic_vector(t, self.dimensions))
+            .collect())
     }
 
     async fn embed_query(&self, text: &str) -> Result<Vec<f32>, SynapticError> {
@@ -176,7 +179,10 @@ async fn test_similarity_search_by_vector() {
     store.add_documents(docs, &embeddings).await.unwrap();
 
     let query_vec = embeddings.embed_query("alpha beta gamma").await.unwrap();
-    let results = store.similarity_search_by_vector(&query_vec, 1).await.unwrap();
+    let results = store
+        .similarity_search_by_vector(&query_vec, 1)
+        .await
+        .unwrap();
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].id, "x");
 }
