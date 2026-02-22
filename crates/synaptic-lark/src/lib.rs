@@ -69,8 +69,8 @@ pub struct LarkConfig {
     pub app_id: String,
     /// Application secret.
     pub app_secret: String,
-    /// Base URL — use `"https://open.feishu.cn/open-apis"` for public cloud (default)
-    /// or `"https://fsopen.bytedance.net/open-apis"` for ByteDance internal network.
+    /// Base URL — defaults to `"https://open.feishu.cn/open-apis"` (Feishu public cloud).
+    /// Override with [`LarkConfig::with_base_url`] for private deployments.
     pub base_url: String,
 }
 
@@ -84,7 +84,7 @@ impl LarkConfig {
         }
     }
 
-    /// Override the base URL (e.g. for ByteDance internal or testing).
+    /// Override the base URL (e.g. for private deployments or testing).
     pub fn with_base_url(mut self, url: impl Into<String>) -> Self {
         self.base_url = url.into();
         self

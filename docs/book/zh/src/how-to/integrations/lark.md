@@ -16,12 +16,7 @@ synaptic = { version = "0.2", features = ["lark"] }
 ```rust,ignore
 use synaptic::lark::LarkConfig;
 
-// 飞书公有云（默认）
 let config = LarkConfig::new("cli_xxx", "app_secret_xxx");
-
-// 字节跳动内网
-let config = LarkConfig::new("cli_xxx", "app_secret_xxx")
-    .with_base_url("https://fsopen.bytedance.net/open-apis");
 ```
 
 `tenant_access_token` 会自动获取和刷新——token 有效期为 7,200 秒，剩余不足 300 秒时自动续期。

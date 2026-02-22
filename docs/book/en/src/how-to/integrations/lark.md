@@ -16,12 +16,7 @@ Create a custom app at the [Feishu Developer Console](https://open.feishu.cn/app
 ```rust,ignore
 use synaptic::lark::LarkConfig;
 
-// Public Feishu cloud (default)
 let config = LarkConfig::new("cli_xxx", "app_secret_xxx");
-
-// ByteDance internal network
-let config = LarkConfig::new("cli_xxx", "app_secret_xxx")
-    .with_base_url("https://fsopen.bytedance.net/open-apis");
 ```
 
 The `tenant_access_token` is fetched and refreshed automatically — tokens are valid for 7,200 seconds and are renewed when fewer than 300 seconds remain.
