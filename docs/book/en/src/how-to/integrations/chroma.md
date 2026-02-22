@@ -110,6 +110,103 @@ let retriever = VectorStoreRetriever::new(store, embeddings, 5);
 let results = retriever.retrieve("fast language", 5).await?;
 ```
 
+## Docker Deployment
+
+Chroma is easy to deploy with Docker for both development and production environments.
+
+**Quick start** -- run a Chroma server with default settings:
+
+```bash
+# Start Chroma on port 8000
+docker run -p 8000:8000 chromadb/chroma:latest
+```
+
+**With persistent storage** -- mount a volume so data survives container restarts:
+
+```bash
+docker run -p 8000:8000 -v ./chroma-data:/chroma/chroma chromadb/chroma:latest
+```
+
+**Docker Compose** -- for production deployments, use a `docker-compose.yml`:
+
+```yaml
+version: "3.8"
+services:
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma-data:/chroma/chroma
+    restart: unless-stopped
+
+volumes:
+  chroma-data:
+```
+
+Then connect from Synaptic:
+
+```rust,ignore
+use synaptic::chroma::{ChromaConfig, ChromaVectorStore};
+
+let config = ChromaConfig::new("http://localhost:8000", "my_collection");
+let store = ChromaVectorStore::new(config);
+store.ensure_collection().await?;
+```
+
+For remote or authenticated deployments, use `with_auth_token()`:
+
+```rust,ignore
+let config = ChromaConfig::new("https://chroma.example.com", "my_collection")
+    .with_auth_token("your-token");
+```
+
+## RAG Pipeline Example
+
+A complete RAG pipeline: load documents, split them into chunks, embed and store in Chroma, then retrieve relevant context and generate an answer.
+
+```rust,ignore
+use synaptic::core::{ChatModel, ChatRequest, Message, Embeddings, VectorStore, Retriever};
+use synaptic::openai::{OpenAiChatModel, OpenAiEmbeddings};
+use synaptic::chroma::{ChromaConfig, ChromaVectorStore};
+use synaptic::splitters::RecursiveCharacterTextSplitter;
+use synaptic::loaders::TextLoader;
+use synaptic::vectorstores::VectorStoreRetriever;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let backend = Arc::new(HttpBackend::new());
+let embeddings = Arc::new(OpenAiEmbeddings::new(
+    OpenAiEmbeddings::config("text-embedding-3-small"),
+    backend.clone(),
+));
+
+// 1. Load and split
+let loader = TextLoader::new("docs/knowledge-base.txt");
+let docs = loader.load().await?;
+let splitter = RecursiveCharacterTextSplitter::new(500, 50);
+let chunks = splitter.split_documents(&docs)?;
+
+// 2. Store in Chroma
+let config = ChromaConfig::new("http://localhost:8000", "my_collection");
+let store = ChromaVectorStore::new(config);
+store.ensure_collection().await?;
+store.add_documents(chunks, embeddings.as_ref()).await?;
+
+// 3. Retrieve and answer
+let store = Arc::new(store);
+let retriever = VectorStoreRetriever::new(store, embeddings.clone(), 5);
+let relevant = retriever.retrieve("What is Synaptic?", 5).await?;
+let context = relevant.iter().map(|d| d.content.as_str()).collect::<Vec<_>>().join("\n\n");
+
+let model = OpenAiChatModel::new(/* config */);
+let request = ChatRequest::new(vec![
+    Message::system(&format!("Answer based on context:\n{context}")),
+    Message::human("What is Synaptic?"),
+]);
+let response = model.chat(&request).await?;
+```
+
 ## Configuration reference
 
 | Field | Type | Default | Description |

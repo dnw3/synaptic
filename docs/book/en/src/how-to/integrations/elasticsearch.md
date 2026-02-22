@@ -122,6 +122,159 @@ let retriever = VectorStoreRetriever::new(store, embeddings, 5);
 let results = retriever.retrieve("fast language", 5).await?;
 ```
 
+## Index Mapping Configuration
+
+While `ensure_index()` creates a default mapping automatically, you may want full control over the index mapping for production use. Below is the recommended Elasticsearch mapping for vector search:
+
+```json
+{
+  "mappings": {
+    "properties": {
+      "embedding": {
+        "type": "dense_vector",
+        "dims": 1536,
+        "index": true,
+        "similarity": "cosine"
+      },
+      "content": { "type": "text" },
+      "metadata": { "type": "object", "enabled": true }
+    }
+  }
+}
+```
+
+### Creating the index via the REST API
+
+You can create the index with a custom mapping using the Elasticsearch REST API:
+
+```bash
+curl -X PUT "http://localhost:9200/my-index" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "mappings": {
+      "properties": {
+        "embedding": {
+          "type": "dense_vector",
+          "dims": 1536,
+          "index": true,
+          "similarity": "cosine"
+        },
+        "content": { "type": "text" },
+        "metadata": { "type": "object", "enabled": true }
+      }
+    }
+  }'
+```
+
+### Key mapping fields
+
+- **`type: "dense_vector"`** -- Tells Elasticsearch this field stores a fixed-length float array for vector operations.
+- **`dims`** -- Must match the dimensionality of your embedding model (e.g. 1536 for `text-embedding-3-small`, 768 for many open-source models).
+- **`index: true`** -- Enables the kNN search data structure. Without this, you can store vectors but cannot perform efficient approximate nearest-neighbor queries. Set to `true` for production use.
+- **`similarity`** -- Determines the distance function used for kNN search:
+  - `"cosine"` (default) -- Cosine similarity, recommended for most embedding models.
+  - `"dot_product"` -- Dot product, best for unit-length normalized vectors.
+  - `"l2_norm"` -- Euclidean distance.
+
+### Mapping for metadata filtering
+
+If you plan to filter search results by metadata fields, add explicit mappings for those fields:
+
+```json
+{
+  "mappings": {
+    "properties": {
+      "embedding": {
+        "type": "dense_vector",
+        "dims": 1536,
+        "index": true,
+        "similarity": "cosine"
+      },
+      "content": { "type": "text" },
+      "metadata": {
+        "properties": {
+          "source": { "type": "keyword" },
+          "category": { "type": "keyword" },
+          "created_at": { "type": "date" }
+        }
+      }
+    }
+  }
+}
+```
+
+Using `keyword` type for metadata fields enables exact-match filtering in kNN queries.
+
+## RAG Pipeline Example
+
+Below is a complete Retrieval-Augmented Generation (RAG) pipeline that loads documents, splits them, embeds and stores them in Elasticsearch, then retrieves relevant context to answer a question.
+
+```rust,ignore
+use std::sync::Arc;
+use synaptic::core::{
+    ChatModel, ChatRequest, Document, Embeddings, Message, Retriever, VectorStore,
+};
+use synaptic::elasticsearch::{ElasticsearchConfig, ElasticsearchVectorStore};
+use synaptic::openai::{OpenAiChatModel, OpenAiEmbeddings};
+use synaptic::splitters::RecursiveCharacterTextSplitter;
+use synaptic::vectorstores::VectorStoreRetriever;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 1. Configure embeddings and LLM
+    let embeddings = Arc::new(OpenAiEmbeddings::new("text-embedding-3-small"));
+    let llm = OpenAiChatModel::new("gpt-4o-mini");
+
+    // 2. Connect to Elasticsearch and create the index
+    let config = ElasticsearchConfig::new("http://localhost:9200", "rag_documents", 1536);
+    let store = ElasticsearchVectorStore::new(config);
+    store.ensure_index().await?;
+
+    // 3. Load and split documents
+    let raw_docs = vec![
+        Document::new("doc1", "Rust is a multi-paradigm, general-purpose programming language \
+            that emphasizes performance, type safety, and concurrency. It enforces memory safety \
+            without a garbage collector."),
+        Document::new("doc2", "Elasticsearch is a distributed, RESTful search and analytics engine. \
+            It supports vector search through dense_vector fields and approximate kNN queries, \
+            making it suitable for semantic search and RAG applications."),
+    ];
+
+    let splitter = RecursiveCharacterTextSplitter::new(500, 50);
+    let chunks = splitter.split_documents(&raw_docs);
+
+    // 4. Embed and store in Elasticsearch
+    store.add_documents(chunks, embeddings.as_ref()).await?;
+
+    // 5. Create a retriever
+    let store = Arc::new(store);
+    let retriever = VectorStoreRetriever::new(store, embeddings, 3);
+
+    // 6. Retrieve relevant context
+    let query = "What is Rust?";
+    let relevant_docs = retriever.retrieve(query, 3).await?;
+
+    let context = relevant_docs
+        .iter()
+        .map(|doc| doc.content.as_str())
+        .collect::<Vec<_>>()
+        .join("\n\n");
+
+    // 7. Generate answer using retrieved context
+    let messages = vec![
+        Message::system("Answer the user's question based on the following context. \
+            If the context doesn't contain relevant information, say so.\n\n\
+            Context:\n{context}".replace("{context}", &context)),
+        Message::human(query),
+    ];
+
+    let response = llm.chat(ChatRequest::new(messages)).await?;
+    println!("Answer: {}", response.message.content());
+
+    Ok(())
+}
+```
+
 ## Configuration reference
 
 | Field | Type | Default | Description |

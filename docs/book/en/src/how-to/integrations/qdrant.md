@@ -157,6 +157,78 @@ let config = QdrantConfig::new("http://localhost:6334", "my_collection", 1536);
 let store = QdrantVectorStore::from_client(client, config);
 ```
 
+## RAG Pipeline Example
+
+A complete RAG pipeline: load documents, split them into chunks, embed and store in Qdrant, then retrieve relevant context and generate an answer.
+
+```rust,ignore
+use synaptic::core::{ChatModel, ChatRequest, Message, Embeddings};
+use synaptic::openai::{OpenAiChatModel, OpenAiEmbeddings};
+use synaptic::qdrant::{QdrantConfig, QdrantVectorStore};
+use synaptic::splitters::RecursiveCharacterTextSplitter;
+use synaptic::loaders::TextLoader;
+use synaptic::vectorstores::VectorStoreRetriever;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let backend = Arc::new(HttpBackend::new());
+let embeddings = Arc::new(OpenAiEmbeddings::new(
+    OpenAiEmbeddings::config("text-embedding-3-small"),
+    backend.clone(),
+));
+
+// 1. Load and split
+let loader = TextLoader::new("docs/knowledge-base.txt");
+let docs = loader.load().await?;
+let splitter = RecursiveCharacterTextSplitter::new(500, 50);
+let chunks = splitter.split_documents(&docs)?;
+
+// 2. Store in Qdrant
+let config = QdrantConfig::new("http://localhost:6334", "my_collection", 1536);
+let store = QdrantVectorStore::new(config)?;
+store.ensure_collection().await?;
+store.add_documents(chunks, embeddings.as_ref()).await?;
+
+// 3. Retrieve and answer
+let store = Arc::new(store);
+let retriever = VectorStoreRetriever::new(store, embeddings.clone(), 5);
+let relevant = retriever.retrieve("What is Synaptic?", 5).await?;
+let context = relevant.iter().map(|d| d.content.as_str()).collect::<Vec<_>>().join("\n\n");
+
+let model = OpenAiChatModel::new(/* config */);
+let request = ChatRequest::new(vec![
+    Message::system(&format!("Answer based on context:\n{context}")),
+    Message::human("What is Synaptic?"),
+]);
+let response = model.chat(&request).await?;
+```
+
+## Using with an Agent
+
+Wrap the retriever as a tool so a ReAct agent can decide when to search the vector store during multi-step reasoning:
+
+```rust,ignore
+use synaptic::graph::create_react_agent;
+use synaptic::qdrant::{QdrantConfig, QdrantVectorStore};
+use synaptic::vectorstores::VectorStoreRetriever;
+use synaptic::openai::{OpenAiChatModel, OpenAiEmbeddings};
+use std::sync::Arc;
+
+// Build the retriever (as shown above)
+let config = QdrantConfig::new("http://localhost:6334", "knowledge", 1536);
+let store = Arc::new(QdrantVectorStore::new(config)?);
+store.ensure_collection().await?;
+let embeddings = Arc::new(OpenAiEmbeddings::new(/* config */));
+let retriever = VectorStoreRetriever::new(store, embeddings, 5);
+
+// Register the retriever as a tool and create a ReAct agent
+// that can autonomously decide when to search
+let model = OpenAiChatModel::new(/* config */);
+let agent = create_react_agent(model, vec![/* retriever tool */]).compile();
+```
+
+The agent will invoke the retriever tool whenever it determines that external knowledge is needed to answer the user's question.
+
 ## Configuration reference
 
 | Field | Type | Default | Description |

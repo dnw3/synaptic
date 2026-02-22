@@ -200,6 +200,52 @@ println!("已写入 {} 个文档块到 PostgreSQL", ids.len());
 let results = store.similarity_search("查询内容", 5, &embeddings).await?;
 ```
 
+## 索引策略
+
+pgvector 支持两种索引类型来加速近似最近邻搜索。选择哪种取决于数据集规模和性能需求。
+
+**HNSW**（Hierarchical Navigable Small World）-- 推荐用于大多数场景。它提供更高的召回率、更快的查询速度，且不需要单独的训练步骤。代价是更高的内存占用和更慢的索引构建速度。
+
+**IVFFlat**（Inverted File with Flat compression）-- 适合非常大的数据集且内存受限的场景。它将向量分区到多个列表中，查询时只搜索其中一部分。必须在表中已有数据后才能构建索引（需要代表性向量用于训练）。
+
+```sql
+-- HNSW 索引（推荐用于大多数场景）
+CREATE INDEX ON documents USING hnsw (embedding vector_cosine_ops)
+    WITH (m = 16, ef_construction = 64);
+
+-- IVFFlat 索引（适合超大数据集）
+CREATE INDEX ON documents USING ivfflat (embedding vector_cosine_ops)
+    WITH (lists = 100);
+```
+
+| 特性 | HNSW | IVFFlat |
+|------|------|---------|
+| 召回率 | 更高 | 较低 |
+| 查询速度 | 更快 | 较慢（取决于 `probes` 参数） |
+| 内存占用 | 更高 | 较低 |
+| 构建速度 | 较慢 | 更快 |
+| 是否需要训练 | 否 | 是（需要已有数据） |
+
+> **提示**：对于少于 10 万行的表，默认的顺序扫描通常已经足够快。当查询延迟成为瓶颈时再考虑添加索引。
+
+## 复用已有连接池
+
+如果你的应用已经维护了一个 `sqlx::PgPool`（例如用于主业务的关系数据），可以直接传给 `PgVectorStore`，无需创建新的连接池：
+
+```rust,ignore
+use sqlx::PgPool;
+use synaptic::pgvector::{PgVectorConfig, PgVectorStore};
+
+// 复用应用状态中的连接池
+let pool: PgPool = app_state.db_pool.clone();
+
+let config = PgVectorConfig::new("app_embeddings", 1536);
+let store = PgVectorStore::new(pool, config);
+store.initialize().await?;
+```
+
+这样可以避免打开重复的数据库连接，让向量操作与应用的其他数据库操作共享相同的事务边界和连接限制。
+
 ### 与 InMemoryVectorStore 的区别
 
 | 特性 | `InMemoryVectorStore` | `PgVectorStore` |

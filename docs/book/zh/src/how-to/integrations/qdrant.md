@@ -191,3 +191,74 @@ let chunks = splitter.split_documents(&docs)?;
 let ids = store.add_documents(chunks, &embeddings).await?;
 println!("已导入 {} 个文档块", ids.len());
 ```
+
+## 完整 RAG 流水线示例
+
+一个完整的 RAG 流水线：加载文档、分割为小块、Embedding 后存入 Qdrant，然后检索相关上下文并生成回答。
+
+```rust,ignore
+use synaptic::core::{ChatModel, ChatRequest, Message, Embeddings};
+use synaptic::openai::{OpenAiChatModel, OpenAiEmbeddings};
+use synaptic::qdrant::{QdrantConfig, QdrantVectorStore};
+use synaptic::splitters::RecursiveCharacterTextSplitter;
+use synaptic::loaders::TextLoader;
+use synaptic::vectorstores::VectorStoreRetriever;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let backend = Arc::new(HttpBackend::new());
+let embeddings = Arc::new(OpenAiEmbeddings::new(
+    OpenAiEmbeddings::config("text-embedding-3-small"),
+    backend.clone(),
+));
+
+// 1. 加载并分割文档
+let loader = TextLoader::new("docs/knowledge-base.txt");
+let docs = loader.load().await?;
+let splitter = RecursiveCharacterTextSplitter::new(500, 50);
+let chunks = splitter.split_documents(&docs)?;
+
+// 2. 存入 Qdrant
+let config = QdrantConfig::new("http://localhost:6334", "my_collection", 1536);
+let store = QdrantVectorStore::new(config)?;
+store.ensure_collection().await?;
+store.add_documents(chunks, embeddings.as_ref()).await?;
+
+// 3. 检索并生成回答
+let store = Arc::new(store);
+let retriever = VectorStoreRetriever::new(store, embeddings.clone(), 5);
+let relevant = retriever.retrieve("What is Synaptic?", 5).await?;
+let context = relevant.iter().map(|d| d.content.as_str()).collect::<Vec<_>>().join("\n\n");
+
+let model = OpenAiChatModel::new(/* config */);
+let request = ChatRequest::new(vec![
+    Message::system(&format!("Answer based on context:\n{context}")),
+    Message::human("What is Synaptic?"),
+]);
+let response = model.chat(&request).await?;
+```
+
+## 与 Agent 配合使用
+
+将检索器封装为工具，供 ReAct Agent 在多步推理过程中自主决定何时搜索向量库：
+
+```rust,ignore
+use synaptic::graph::create_react_agent;
+use synaptic::qdrant::{QdrantConfig, QdrantVectorStore};
+use synaptic::vectorstores::VectorStoreRetriever;
+use synaptic::openai::{OpenAiChatModel, OpenAiEmbeddings};
+use std::sync::Arc;
+
+// 构建检索器（如上所示）
+let config = QdrantConfig::new("http://localhost:6334", "knowledge", 1536);
+let store = Arc::new(QdrantVectorStore::new(config)?);
+store.ensure_collection().await?;
+let embeddings = Arc::new(OpenAiEmbeddings::new(/* config */));
+let retriever = VectorStoreRetriever::new(store, embeddings, 5);
+
+// 将检索器注册为工具，创建能自主决定何时搜索的 ReAct Agent
+let model = OpenAiChatModel::new(/* config */);
+let agent = create_react_agent(model, vec![/* retriever tool */]).compile();
+```
+
+Agent 会在判断需要外部知识来回答用户问题时，自动调用检索器工具进行搜索。

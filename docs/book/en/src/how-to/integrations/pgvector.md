@@ -203,6 +203,52 @@ let request = ChatRequest::new(vec![
 let response = model.chat(request).await?;
 ```
 
+## Index Strategies
+
+pgvector supports two index types for accelerating approximate nearest-neighbor search. Choosing the right one depends on your dataset size and performance requirements.
+
+**HNSW** (Hierarchical Navigable Small World) -- recommended for most use cases. It provides better recall, faster queries at search time, and does not require a separate training step. The trade-off is higher memory usage and slower index build time.
+
+**IVFFlat** (Inverted File with Flat compression) -- a good option for very large datasets where memory is a concern. It partitions vectors into lists and searches only a subset at query time. You must build the index after the table already contains data (it needs representative vectors for training).
+
+```sql
+-- HNSW index (recommended for most use cases)
+CREATE INDEX ON documents USING hnsw (embedding vector_cosine_ops)
+    WITH (m = 16, ef_construction = 64);
+
+-- IVFFlat index (better for very large datasets)
+CREATE INDEX ON documents USING ivfflat (embedding vector_cosine_ops)
+    WITH (lists = 100);
+```
+
+| Property | HNSW | IVFFlat |
+|----------|------|---------|
+| Recall | Higher | Lower |
+| Query speed | Faster | Slower (depends on `probes`) |
+| Memory usage | Higher | Lower |
+| Build speed | Slower | Faster |
+| Training required | No | Yes (needs existing data) |
+
+> **Tip**: For tables with fewer than 100k rows, the default sequential scan is often fast enough. Add an index when query latency becomes a concern.
+
+## Reusing an Existing Connection Pool
+
+If your application already maintains a `sqlx::PgPool` (e.g. for your main relational data), you can pass it directly to `PgVectorStore` instead of creating a new pool:
+
+```rust,ignore
+use sqlx::PgPool;
+use synaptic::pgvector::{PgVectorConfig, PgVectorStore};
+
+// Reuse the pool from your application state
+let pool: PgPool = app_state.db_pool.clone();
+
+let config = PgVectorConfig::new("app_embeddings", 1536);
+let store = PgVectorStore::new(pool, config);
+store.initialize().await?;
+```
+
+This avoids opening duplicate connections and lets your vector operations share the same transaction boundaries and connection limits as the rest of your application.
+
 ## Configuration reference
 
 | Field | Type | Default | Description |

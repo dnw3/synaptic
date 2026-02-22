@@ -108,6 +108,88 @@ let retriever = VectorStoreRetriever::new(store, embeddings, 5);
 let results = retriever.retrieve("查询内容", 5).await?;
 ```
 
+## 命名空间隔离
+
+命名空间是构建多租户 RAG 应用的常见模式。每个租户的数据存放在同一索引的不同命名空间中，提供逻辑隔离，无需管理多个索引。
+
+```rust,ignore
+use synaptic::pinecone::{PineconeConfig, PineconeVectorStore};
+use synaptic::core::{VectorStore, Document, Embeddings};
+use synaptic::openai::OpenAiEmbeddings;
+
+let api_key = std::env::var("PINECONE_API_KEY")?;
+let index_host = "https://my-index-abc123.svc.aped-1234.pinecone.io";
+
+// 为不同租户创建使用不同命名空间的存储
+let config_a = PineconeConfig::new(&api_key, index_host)
+    .with_namespace("tenant-a");
+let config_b = PineconeConfig::new(&api_key, index_host)
+    .with_namespace("tenant-b");
+
+let store_a = PineconeVectorStore::new(config_a);
+let store_b = PineconeVectorStore::new(config_b);
+
+let embeddings = OpenAiEmbeddings::new("text-embedding-3-small");
+
+// 租户 A 的文档对租户 B 不可见
+let docs_a = vec![Document::new("a1", "Tenant A internal report")];
+store_a.add_documents(docs_a, &embeddings).await?;
+
+// 在租户 B 的命名空间中搜索不会返回租户 A 的结果
+let results = store_b.similarity_search("internal report", 5, &embeddings).await?;
+assert!(results.is_empty());
+```
+
+这种方式具有良好的可扩展性，因为 Pinecone 在内部处理命名空间级别的分区。你可以在一个命名空间中添加、搜索和删除文档，而不会影响其他命名空间。
+
+## RAG 管道示例
+
+完整的 RAG 管道：加载文档、切分成块、生成嵌入并存入 Pinecone，然后检索相关上下文并生成回答。
+
+```rust,ignore
+use synaptic::core::{ChatModel, ChatRequest, Message, Embeddings, VectorStore, Retriever};
+use synaptic::openai::{OpenAiChatModel, OpenAiEmbeddings};
+use synaptic::pinecone::{PineconeConfig, PineconeVectorStore};
+use synaptic::splitters::RecursiveCharacterTextSplitter;
+use synaptic::loaders::TextLoader;
+use synaptic::vectorstores::VectorStoreRetriever;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let backend = Arc::new(HttpBackend::new());
+let embeddings = Arc::new(OpenAiEmbeddings::new(
+    OpenAiEmbeddings::config("text-embedding-3-small"),
+    backend.clone(),
+));
+
+// 1. 加载并切分文档
+let loader = TextLoader::new("docs/knowledge-base.txt");
+let docs = loader.load().await?;
+let splitter = RecursiveCharacterTextSplitter::new(500, 50);
+let chunks = splitter.split_documents(&docs)?;
+
+// 2. 存入 Pinecone
+let config = PineconeConfig::new(
+    std::env::var("PINECONE_API_KEY")?,
+    "https://my-index-abc123.svc.aped-1234.pinecone.io",
+);
+let store = PineconeVectorStore::new(config);
+store.add_documents(chunks, embeddings.as_ref()).await?;
+
+// 3. 检索并回答
+let store = Arc::new(store);
+let retriever = VectorStoreRetriever::new(store, embeddings.clone(), 5);
+let relevant = retriever.retrieve("What is Synaptic?", 5).await?;
+let context = relevant.iter().map(|d| d.content.as_str()).collect::<Vec<_>>().join("\n\n");
+
+let model = OpenAiChatModel::new(/* config */);
+let request = ChatRequest::new(vec![
+    Message::system(&format!("Answer based on context:\n{context}")),
+    Message::human("What is Synaptic?"),
+]);
+let response = model.chat(&request).await?;
+```
+
 ## 配置参考
 
 | 字段 | 类型 | 默认值 | 说明 |

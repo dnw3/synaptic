@@ -119,6 +119,103 @@ let retriever = VectorStoreRetriever::new(store, embeddings, 5);
 let results = retriever.retrieve("查询内容", 5).await?;
 ```
 
+## Docker 部署
+
+Chroma 可以通过 Docker 轻松部署，适用于开发和生产环境。
+
+**快速启动** -- 使用默认配置运行 Chroma 服务器：
+
+```bash
+# 在端口 8000 启动 Chroma
+docker run -p 8000:8000 chromadb/chroma:latest
+```
+
+**持久化存储** -- 挂载卷以确保数据在容器重启后不会丢失：
+
+```bash
+docker run -p 8000:8000 -v ./chroma-data:/chroma/chroma chromadb/chroma:latest
+```
+
+**Docker Compose** -- 用于生产部署，使用 `docker-compose.yml`：
+
+```yaml
+version: "3.8"
+services:
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma-data:/chroma/chroma
+    restart: unless-stopped
+
+volumes:
+  chroma-data:
+```
+
+然后从 Synaptic 连接：
+
+```rust,ignore
+use synaptic::chroma::{ChromaConfig, ChromaVectorStore};
+
+let config = ChromaConfig::new("http://localhost:8000", "my_collection");
+let store = ChromaVectorStore::new(config);
+store.ensure_collection().await?;
+```
+
+对于远程或需要认证的部署，使用 `with_auth_token()`：
+
+```rust,ignore
+let config = ChromaConfig::new("https://chroma.example.com", "my_collection")
+    .with_auth_token("your-token");
+```
+
+## RAG 管道示例
+
+完整的 RAG 管道：加载文档、切分成块、生成嵌入并存入 Chroma，然后检索相关上下文并生成回答。
+
+```rust,ignore
+use synaptic::core::{ChatModel, ChatRequest, Message, Embeddings, VectorStore, Retriever};
+use synaptic::openai::{OpenAiChatModel, OpenAiEmbeddings};
+use synaptic::chroma::{ChromaConfig, ChromaVectorStore};
+use synaptic::splitters::RecursiveCharacterTextSplitter;
+use synaptic::loaders::TextLoader;
+use synaptic::vectorstores::VectorStoreRetriever;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let backend = Arc::new(HttpBackend::new());
+let embeddings = Arc::new(OpenAiEmbeddings::new(
+    OpenAiEmbeddings::config("text-embedding-3-small"),
+    backend.clone(),
+));
+
+// 1. 加载并切分文档
+let loader = TextLoader::new("docs/knowledge-base.txt");
+let docs = loader.load().await?;
+let splitter = RecursiveCharacterTextSplitter::new(500, 50);
+let chunks = splitter.split_documents(&docs)?;
+
+// 2. 存入 Chroma
+let config = ChromaConfig::new("http://localhost:8000", "my_collection");
+let store = ChromaVectorStore::new(config);
+store.ensure_collection().await?;
+store.add_documents(chunks, embeddings.as_ref()).await?;
+
+// 3. 检索并回答
+let store = Arc::new(store);
+let retriever = VectorStoreRetriever::new(store, embeddings.clone(), 5);
+let relevant = retriever.retrieve("What is Synaptic?", 5).await?;
+let context = relevant.iter().map(|d| d.content.as_str()).collect::<Vec<_>>().join("\n\n");
+
+let model = OpenAiChatModel::new(/* config */);
+let request = ChatRequest::new(vec![
+    Message::system(&format!("Answer based on context:\n{context}")),
+    Message::human("What is Synaptic?"),
+]);
+let response = model.chat(&request).await?;
+```
+
 ## 配置参考
 
 | 字段 | 类型 | 默认值 | 说明 |
