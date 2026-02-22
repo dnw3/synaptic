@@ -55,3 +55,30 @@ async fn translate_missing_target() {
         .unwrap_err();
     assert!(err.to_string().contains("target_language"));
 }
+
+#[tokio::test]
+async fn ocr_missing_both_inputs() {
+    let tool = LarkOcrTool::new(LarkConfig::new("a", "b"));
+    let err = tool.call(serde_json::json!({})).await.unwrap_err();
+    assert!(
+        err.to_string().contains("image_base64") || err.to_string().contains("file_key"),
+        "got: {err}"
+    );
+}
+
+#[tokio::test]
+async fn asr_missing_file_key() {
+    let tool = LarkAsrTool::new(LarkConfig::new("a", "b"));
+    let err = tool.call(serde_json::json!({})).await.unwrap_err();
+    assert!(err.to_string().contains("file_key"), "got: {err}");
+}
+
+#[tokio::test]
+async fn doc_process_missing_file_key() {
+    let tool = LarkDocProcessTool::new(LarkConfig::new("a", "b"));
+    let err = tool
+        .call(serde_json::json!({"task_type": "invoice"}))
+        .await
+        .unwrap_err();
+    assert!(err.to_string().contains("file_key"), "got: {err}");
+}

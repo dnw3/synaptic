@@ -47,9 +47,14 @@ pub use store::checkpointer::LarkBitableCheckpointer;
 pub use store::memory::LarkBitableMemoryStore;
 pub use tools::asr::LarkAsrTool;
 pub use tools::bitable::LarkBitableTool;
+pub use tools::calendar::LarkCalendarTool;
+pub use tools::chat::LarkChatTool;
+pub use tools::contact::LarkContactTool;
 pub use tools::doc_process::LarkDocProcessTool;
 pub use tools::message::LarkMessageTool;
 pub use tools::ocr::LarkOcrTool;
+pub use tools::spreadsheet::LarkSpreadsheetTool;
+pub use tools::task::LarkTaskTool;
 pub use tools::translate::LarkTranslateTool;
 pub use vector_store::LarkVectorStore;
 

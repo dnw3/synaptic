@@ -80,7 +80,7 @@ resolver = "2"
 
 [workspace.package]
 edition = "2021"
-version = "0.2.8"
+version = "0.2.9"
 license = "MIT"
 authors = ["Synaptic Contributors"]
 rust-version = "1.88"

@@ -1,6 +1,11 @@
 pub mod asr;
 pub mod bitable;
+pub mod calendar;
+pub mod chat;
+pub mod contact;
 pub mod doc_process;
 pub mod message;
 pub mod ocr;
+pub mod spreadsheet;
+pub mod task;
 pub mod translate;

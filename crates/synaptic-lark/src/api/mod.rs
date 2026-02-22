@@ -1,2 +1,7 @@
 pub(crate) mod bitable;
+pub(crate) mod calendar;
+pub(crate) mod chat;
+pub(crate) mod contact;
 pub(crate) mod message;
+pub(crate) mod spreadsheet;
+pub(crate) mod task;
