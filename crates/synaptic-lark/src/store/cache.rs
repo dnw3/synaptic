@@ -96,7 +96,7 @@ impl LlmCache for LarkBitableLlmCache {
         });
         let resp = self
             .client
-            .post(&self.search_url())
+            .post(self.search_url())
             .bearer_auth(&token)
             .json(&body)
             .send()
@@ -177,7 +177,7 @@ impl LlmCache for LarkBitableLlmCache {
         let body = json!({ "page_size": 500 });
         let resp = self
             .client
-            .post(&self.search_url())
+            .post(self.search_url())
             .bearer_auth(&token)
             .json(&body)
             .send()

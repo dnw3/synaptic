@@ -127,7 +127,7 @@ impl MemoryStore for LarkBitableMemoryStore {
         });
         let resp = self
             .client
-            .post(&self.search_url())
+            .post(self.search_url())
             .bearer_auth(&token)
             .json(&body)
             .send()
@@ -183,7 +183,7 @@ impl MemoryStore for LarkBitableMemoryStore {
         });
         let resp = self
             .client
-            .post(&self.search_url())
+            .post(self.search_url())
             .bearer_auth(&token)
             .json(&search_body)
             .send()
