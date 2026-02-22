@@ -35,6 +35,7 @@ pub mod vector_store;
 
 pub use loaders::bitable::LarkBitableLoader;
 pub use loaders::doc::LarkDocLoader;
+pub use store::cache::LarkBitableLlmCache;
 pub use store::checkpointer::LarkBitableCheckpointer;
 pub use store::memory::LarkBitableMemoryStore;
 pub use tools::bitable::LarkBitableTool;
