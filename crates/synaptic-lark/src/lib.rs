@@ -41,8 +41,12 @@ pub use loaders::wiki::LarkWikiLoader;
 pub use store::cache::LarkBitableLlmCache;
 pub use store::checkpointer::LarkBitableCheckpointer;
 pub use store::memory::LarkBitableMemoryStore;
+pub use tools::asr::LarkAsrTool;
 pub use tools::bitable::LarkBitableTool;
+pub use tools::doc_process::LarkDocProcessTool;
 pub use tools::message::LarkMessageTool;
+pub use tools::ocr::LarkOcrTool;
+pub use tools::translate::LarkTranslateTool;
 
 // Re-export core traits for convenience
 pub use synaptic_core::{Loader, Tool};
