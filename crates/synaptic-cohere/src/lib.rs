@@ -30,8 +30,10 @@
 //! # }
 //! ```
 
+mod embeddings;
 mod reranker;
 
+pub use embeddings::{CohereEmbeddings, CohereEmbeddingsConfig, CohereInputType};
 pub use reranker::{CohereReranker, CohereRerankerConfig};
 
 // Re-export core types for convenience.

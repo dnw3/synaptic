@@ -24,9 +24,13 @@
 //! ```
 
 mod cache;
+#[cfg(feature = "checkpointer")]
+pub mod checkpointer;
 mod store;
 
 pub use cache::{RedisCache, RedisCacheConfig};
+#[cfg(feature = "checkpointer")]
+pub use checkpointer::{RedisCheckpointer, RedisCheckpointerConfig};
 pub use store::{RedisStore, RedisStoreConfig};
 
 // Re-export core traits for convenience.

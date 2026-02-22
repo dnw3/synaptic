@@ -48,6 +48,12 @@ synaptic-mongodb = { version = "0.2", path = "../synaptic-mongodb", optional = t
 synaptic-elasticsearch = { version = "0.2", path = "../synaptic-elasticsearch", optional = true }
 synaptic-sqlite = { version = "0.2", path = "../synaptic-sqlite", optional = true }
 synaptic-tavily = { version = "0.2", path = "../synaptic-tavily", optional = true }
+synaptic-groq = { version = "0.2", path = "../synaptic-groq", optional = true }
+synaptic-mistral = { version = "0.2", path = "../synaptic-mistral", optional = true }
+synaptic-deepseek = { version = "0.2", path = "../synaptic-deepseek", optional = true }
+synaptic-huggingface = { version = "0.2", path = "../synaptic-huggingface", optional = true }
+synaptic-weaviate = { version = "0.2", path = "../synaptic-weaviate", optional = true }
+synaptic-sqltoolkit = { version = "0.2", path = "../synaptic-sqltoolkit", optional = true }
 schemars = { workspace = true, optional = true }
 
 [features]
@@ -93,14 +99,21 @@ mongodb = ["dep:synaptic-mongodb"]
 elasticsearch = ["dep:synaptic-elasticsearch"]
 sqlite = ["dep:synaptic-sqlite"]
 tavily = ["dep:synaptic-tavily"]
+groq = ["model-utils", "dep:synaptic-groq"]
+mistral = ["model-utils", "dep:synaptic-mistral"]
+deepseek = ["model-utils", "dep:synaptic-deepseek"]
+huggingface = ["dep:synaptic-huggingface"]
+weaviate = ["dep:synaptic-weaviate"]
+sqltoolkit = ["dep:synaptic-sqltoolkit"]
 
 # Convenience combinations
-models = ["openai", "anthropic", "gemini", "ollama", "bedrock", "cohere"]
+models = ["openai", "anthropic", "gemini", "ollama", "bedrock", "cohere", "groq", "mistral", "deepseek"]
 agent = ["default", "openai", "model-utils", "graph", "memory", "middleware", "store"]
 rag = ["default", "openai", "embeddings", "retrieval", "loaders", "splitters", "vectorstores"]
 full = ["default", "agent", "rag", "cache", "eval", "mcp", "macros", "deep", "schemars",
         "models", "qdrant", "pgvector", "redis", "pdf",
-        "pinecone", "chroma", "mongodb", "elasticsearch", "sqlite", "tavily"]
+        "pinecone", "chroma", "mongodb", "elasticsearch", "sqlite", "tavily",
+        "huggingface", "weaviate", "sqltoolkit"]
 
 [dev-dependencies]
 tokio.workspace = true

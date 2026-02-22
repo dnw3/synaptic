@@ -11,17 +11,23 @@ synaptic-core（定义 trait）
   ├── synaptic-gemini         (ChatModel)
   ├── synaptic-ollama         (ChatModel + Embeddings)
   ├── synaptic-bedrock        (ChatModel)
-  ├── synaptic-cohere         (Reranker / DocumentCompressor)
+  ├── synaptic-groq           (ChatModel — OpenAI 兼容，LPU)
+  ├── synaptic-mistral        (ChatModel — OpenAI 兼容)
+  ├── synaptic-deepseek       (ChatModel — OpenAI 兼容)
+  ├── synaptic-cohere         (Reranker / DocumentCompressor + Embeddings)
+  ├── synaptic-huggingface    (Embeddings)
   ├── synaptic-qdrant         (VectorStore)
-  ├── synaptic-pgvector       (VectorStore)
+  ├── synaptic-pgvector       (VectorStore + Checkpointer)
   ├── synaptic-pinecone       (VectorStore)
   ├── synaptic-chroma         (VectorStore)
   ├── synaptic-mongodb        (VectorStore)
   ├── synaptic-elasticsearch  (VectorStore)
-  ├── synaptic-redis          (Store + LlmCache)
+  ├── synaptic-weaviate       (VectorStore)
+  ├── synaptic-redis          (Store + LlmCache + Checkpointer)
   ├── synaptic-sqlite         (LlmCache)
   ├── synaptic-pdf            (Loader)
-  └── synaptic-tavily         (Tool)
+  ├── synaptic-tavily         (Tool)
+  └── synaptic-sqltoolkit     (Tool×3: ListTables, DescribeTable, ExecuteQuery)
 ```
 
 所有集成 crate 遵循统一模式：
@@ -35,13 +41,14 @@ synaptic-core（定义 trait）
 
 | Trait | 用途 | 实现 Crate |
 |-------|------|-----------|
-| `ChatModel` | LLM 聊天补全 | openai, anthropic, gemini, ollama, bedrock |
-| `Embeddings` | 文本嵌入向量 | openai, ollama |
-| `VectorStore` | 向量相似度搜索 | qdrant, pgvector, pinecone, chroma, mongodb, elasticsearch, (+ in-memory) |
+| `ChatModel` | LLM 聊天补全 | openai, anthropic, gemini, ollama, bedrock, groq, mistral, deepseek |
+| `Embeddings` | 文本嵌入向量 | openai, ollama, cohere, huggingface |
+| `VectorStore` | 向量相似度搜索 | qdrant, pgvector, pinecone, chroma, mongodb, elasticsearch, weaviate, (+ in-memory) |
 | `Store` | 键值存储 | redis, (+ in-memory) |
 | `LlmCache` | LLM 响应缓存 | redis, sqlite, (+ in-memory) |
+| `Checkpointer` | Graph 状态持久化 | redis, pgvector |
 | `Loader` | 文档加载 | pdf, (+ text, json, csv, directory) |
-| `Tool` | Agent 工具 | tavily, (+ 自定义工具) |
+| `Tool` | Agent 工具 | tavily, sqltoolkit（3 个工具）, duckduckgo, wikipedia, (+ 自定义工具) |
 | `DocumentCompressor` | 文档压缩/重排序 | cohere, (+ embeddings-filter) |
 
 ## LLM Provider 模式
@@ -96,19 +103,25 @@ synaptic = { version = "0.2", features = ["openai", "qdrant"] }
 | `gemini` | Google Gemini ChatModel |
 | `ollama` | Ollama ChatModel + Embeddings |
 | `bedrock` | AWS Bedrock ChatModel |
-| `cohere` | Cohere Reranker |
+| `groq` | Groq ChatModel（超快 LPU 推理，OpenAI 兼容） |
+| `mistral` | Mistral ChatModel（OpenAI 兼容） |
+| `deepseek` | DeepSeek ChatModel（成本极低，OpenAI 兼容） |
+| `cohere` | Cohere Reranker + Embeddings |
+| `huggingface` | HuggingFace Inference API Embeddings |
 | `qdrant` | Qdrant 向量存储 |
-| `pgvector` | PostgreSQL pgvector 存储 |
+| `pgvector` | PostgreSQL pgvector 存储 + Graph 检查点 |
 | `pinecone` | Pinecone 向量存储 |
 | `chroma` | Chroma 向量存储 |
 | `mongodb` | MongoDB Atlas 向量搜索 |
 | `elasticsearch` | Elasticsearch 向量存储 |
-| `redis` | Redis 存储 + 缓存 |
+| `weaviate` | Weaviate 向量存储 |
+| `redis` | Redis 存储 + 缓存 + Graph 检查点 |
 | `sqlite` | SQLite LLM 缓存 |
 | `pdf` | PDF 文档加载器 |
 | `tavily` | Tavily 搜索工具 |
+| `sqltoolkit` | SQL 数据库工具包（ListTables、DescribeTable、ExecuteQuery） |
 
-便捷组合：`models`（所有 LLM provider）、`agent`（包含 openai）、`rag`（包含 openai + 检索栈）、`full`（全部）。
+便捷组合：`models`（全部 9 个 LLM provider）、`agent`（包含 openai + graph）、`rag`（包含 openai + 检索栈）、`full`（全部）。
 
 ## Provider 选型指南
 
@@ -121,7 +134,11 @@ synaptic = { version = "0.2", features = ["openai", "qdrant"] }
 | **Gemini** | API key (查询参数) | SSE | 支持 | 不支持 | Google 生态、多模态 |
 | **Ollama** | 无需认证（本地） | NDJSON | 支持 | 支持 | 隐私敏感、离线、开发调试 |
 | **Bedrock** | AWS IAM | AWS SDK | 支持 | 不支持 | 企业 AWS 环境 |
-| **OpenAI 兼容** | 各异 | SSE | 部分支持 | 部分支持 | 降低成本（Groq、DeepSeek 等） |
+| **Groq** | API key (Header) | SSE | 支持 | 不支持 | 超快推理（LPU），延迟敏感场景 |
+| **Mistral** | API key (Header) | SSE | 支持 | 不支持 | 欧盟合规，低成本工具调用 |
+| **DeepSeek** | API key (Header) | SSE | 支持 | 不支持 | 成本极低（比 GPT-4o 便宜 90%+），国内首选 |
+| **Cohere** | API key (Header) | — | — | 支持 | Reranker + 生产级嵌入 |
+| **HuggingFace** | API key（可选） | — | — | 支持 | 开源 sentence-transformers |
 
 **决策因素：**
 
@@ -140,6 +157,7 @@ synaptic = { version = "0.2", features = ["openai", "qdrant"] }
 | **Chroma** | 自托管 / Docker | 无 | 元数据过滤 | 单节点 | 开发环境，中小数据集 |
 | **MongoDB Atlas** | 全托管 | 内置 | MQL 过滤 | 自动扩展 | 已有 MongoDB 的团队 |
 | **Elasticsearch** | 自托管 / 云 | Elastic Cloud | 完整查询 DSL | 水平扩展 | 混合文本 + 向量搜索 |
+| **Weaviate** | 自托管 / 云 | WCS | GraphQL 过滤 | 水平扩展 | 多租户、混合搜索 |
 | **InMemory** | 进程内 | 不适用 | 无 | 不适用 | 测试、原型验证 |
 
 **决策因素：**

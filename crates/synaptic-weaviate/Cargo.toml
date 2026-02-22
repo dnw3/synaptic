@@ -1,0 +1,25 @@
+[package]
+name = "synaptic-weaviate"
+description = "Weaviate vector database integration for Synaptic"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+readme.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+synaptic-core = { version = "0.2", path = "../synaptic-core" }
+uuid = { version = "1", features = ["v4"] }
+
+[dev-dependencies]
+async-trait.workspace = true
+tokio.workspace = true
+serde_json.workspace = true
+synaptic-core = { version = "0.2", path = "../synaptic-core" }

@@ -11,17 +11,23 @@ synaptic-core (defines traits)
   ├── synaptic-gemini          (ChatModel)
   ├── synaptic-ollama          (ChatModel + Embeddings)
   ├── synaptic-bedrock         (ChatModel)
-  ├── synaptic-cohere          (DocumentCompressor)
+  ├── synaptic-groq            (ChatModel — OpenAI-compatible, LPU)
+  ├── synaptic-mistral         (ChatModel — OpenAI-compatible)
+  ├── synaptic-deepseek        (ChatModel — OpenAI-compatible)
+  ├── synaptic-cohere          (DocumentCompressor + Embeddings)
+  ├── synaptic-huggingface     (Embeddings)
   ├── synaptic-qdrant          (VectorStore)
-  ├── synaptic-pgvector        (VectorStore)
+  ├── synaptic-pgvector        (VectorStore + Checkpointer)
   ├── synaptic-pinecone        (VectorStore)
   ├── synaptic-chroma          (VectorStore)
   ├── synaptic-mongodb         (VectorStore)
   ├── synaptic-elasticsearch   (VectorStore)
-  ├── synaptic-redis           (Store + LlmCache)
+  ├── synaptic-weaviate        (VectorStore)
+  ├── synaptic-redis           (Store + LlmCache + Checkpointer)
   ├── synaptic-sqlite          (LlmCache)
   ├── synaptic-pdf             (Loader)
-  └── synaptic-tavily          (Tool)
+  ├── synaptic-tavily          (Tool)
+  └── synaptic-sqltoolkit      (Tool×3: ListTables, DescribeTable, ExecuteQuery)
 ```
 
 All integration crates share a common pattern:
@@ -35,14 +41,15 @@ All integration crates share a common pattern:
 
 | Trait | Purpose | Crate Implementations |
 |-------|---------|----------------------|
-| `ChatModel` | LLM chat completion | openai, anthropic, gemini, ollama, bedrock |
-| `Embeddings` | Text embedding vectors | openai, ollama |
-| `VectorStore` | Vector similarity search | qdrant, pgvector, pinecone, chroma, mongodb, elasticsearch, (+ in-memory) |
+| `ChatModel` | LLM chat completion | openai, anthropic, gemini, ollama, bedrock, groq, mistral, deepseek |
+| `Embeddings` | Text embedding vectors | openai, ollama, cohere, huggingface |
+| `VectorStore` | Vector similarity search | qdrant, pgvector, pinecone, chroma, mongodb, elasticsearch, weaviate, (+ in-memory) |
 | `Store` | Key-value storage | redis, (+ in-memory) |
 | `LlmCache` | LLM response caching | redis, sqlite, (+ in-memory) |
+| `Checkpointer` | Graph state persistence | redis, pgvector |
 | `Loader` | Document loading | pdf, (+ text, json, csv, directory) |
 | `DocumentCompressor` | Document reranking/filtering | cohere, (+ embeddings filter) |
-| `Tool` | Agent tool | tavily, (+ custom tools) |
+| `Tool` | Agent tool | tavily, sqltoolkit (3 tools), duckduckgo, wikipedia, (+ custom tools) |
 
 ## LLM Provider Pattern
 
@@ -94,19 +101,25 @@ synaptic = { version = "0.3", features = ["openai", "qdrant"] }
 | `gemini` | Google Gemini ChatModel |
 | `ollama` | Ollama ChatModel + Embeddings |
 | `bedrock` | AWS Bedrock ChatModel |
-| `cohere` | Cohere Reranker |
+| `groq` | Groq ChatModel (ultra-fast LPU inference, OpenAI-compatible) |
+| `mistral` | Mistral ChatModel (OpenAI-compatible) |
+| `deepseek` | DeepSeek ChatModel (cost-efficient reasoning, OpenAI-compatible) |
+| `cohere` | Cohere Reranker + Embeddings |
+| `huggingface` | HuggingFace Inference API Embeddings |
 | `qdrant` | Qdrant vector store |
-| `pgvector` | PostgreSQL pgvector store |
+| `pgvector` | PostgreSQL pgvector store + graph checkpointer |
 | `pinecone` | Pinecone vector store |
 | `chroma` | Chroma vector store |
 | `mongodb` | MongoDB Atlas vector search |
 | `elasticsearch` | Elasticsearch vector store |
-| `redis` | Redis store + cache |
+| `weaviate` | Weaviate vector store |
+| `redis` | Redis store + cache + graph checkpointer |
 | `sqlite` | SQLite LLM cache |
 | `pdf` | PDF document loader |
 | `tavily` | Tavily search tool |
+| `sqltoolkit` | SQL database toolkit (ListTables, DescribeTable, ExecuteQuery) |
 
-Convenience combinations: `models` (all 6 LLM providers including bedrock and cohere), `agent` (includes openai), `rag` (includes openai + retrieval stack), `full` (everything).
+Convenience combinations: `models` (all 9 LLM providers), `agent` (includes openai + graph), `rag` (includes openai + retrieval stack), `full` (everything).
 
 ## Provider Selection Guide
 
@@ -119,7 +132,11 @@ Choose a provider based on your requirements:
 | **Gemini** | API key (query param) | SSE | Yes | No | Google ecosystem, multimodal |
 | **Ollama** | None (local) | NDJSON | Yes | Yes | Privacy-sensitive, offline, development |
 | **Bedrock** | AWS IAM | AWS SDK | Yes | No | Enterprise AWS environments |
-| **OpenAI-Compatible** | Varies | SSE | Varies | Varies | Cost optimization (Groq, DeepSeek, etc.) |
+| **Groq** | API key (header) | SSE | Yes | No | Ultra-fast inference (LPU), latency-critical |
+| **Mistral** | API key (header) | SSE | Yes | No | EU compliance, cost-efficient tool calling |
+| **DeepSeek** | API key (header) | SSE | Yes | No | Cost-efficient reasoning (90%+ cheaper) |
+| **Cohere** | API key (header) | — | — | Yes | Reranking + production-grade embeddings |
+| **HuggingFace** | API key (optional) | — | — | Yes | Open-source sentence-transformers |
 
 **Deciding factors:**
 
@@ -138,6 +155,7 @@ Choose a provider based on your requirements:
 | **Chroma** | Self-hosted / Docker | No | Metadata filters | Single node | Development, small-medium datasets |
 | **MongoDB Atlas** | Fully managed | Yes | MQL filters | Automatic | Teams already using MongoDB |
 | **Elasticsearch** | Self-hosted / Cloud | Yes (Elastic Cloud) | Full query DSL | Horizontal | Hybrid text + vector search |
+| **Weaviate** | Self-hosted / Cloud | Yes (WCS) | GraphQL filters | Horizontal | Multi-tenancy, hybrid search |
 | **InMemory** | In-process | N/A | None | N/A | Testing, prototyping |
 
 **Deciding factors:**

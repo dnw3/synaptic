@@ -25,8 +25,12 @@
 //! # }
 //! ```
 
+#[cfg(feature = "checkpointer")]
+pub mod checkpointer;
 mod vector_store;
 
+#[cfg(feature = "checkpointer")]
+pub use checkpointer::PgCheckpointer;
 pub use vector_store::{PgVectorConfig, PgVectorStore};
 
 // Re-export core traits/types for convenience.

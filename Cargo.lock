@@ -3956,16 +3956,20 @@ dependencies = [
  "synaptic-cohere",
  "synaptic-core",
  "synaptic-deep",
+ "synaptic-deepseek",
  "synaptic-elasticsearch",
  "synaptic-embeddings",
  "synaptic-eval",
  "synaptic-gemini",
  "synaptic-graph",
+ "synaptic-groq",
+ "synaptic-huggingface",
  "synaptic-loaders",
  "synaptic-macros",
  "synaptic-mcp",
  "synaptic-memory",
  "synaptic-middleware",
+ "synaptic-mistral",
  "synaptic-models",
  "synaptic-mongodb",
  "synaptic-ollama",
@@ -3981,10 +3985,12 @@ dependencies = [
  "synaptic-runnables",
  "synaptic-splitters",
  "synaptic-sqlite",
+ "synaptic-sqltoolkit",
  "synaptic-store",
  "synaptic-tavily",
  "synaptic-tools",
  "synaptic-vectorstores",
+ "synaptic-weaviate",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -4102,6 +4108,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "synaptic-deepseek"
+version = "0.2.5"
+dependencies = [
+ "async-stream",
+ "async-trait",
+ "bytes",
+ "eventsource-stream",
+ "futures",
+ "serde_json",
+ "synaptic-core",
+ "synaptic-models",
+ "synaptic-openai",
+ "tokio",
+]
+
+[[package]]
 name = "synaptic-elasticsearch"
 version = "0.2.5"
 dependencies = [
@@ -4173,6 +4195,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "synaptic-groq"
+version = "0.2.5"
+dependencies = [
+ "async-stream",
+ "async-trait",
+ "bytes",
+ "eventsource-stream",
+ "futures",
+ "serde_json",
+ "synaptic-core",
+ "synaptic-models",
+ "synaptic-openai",
+ "tokio",
+]
+
+[[package]]
+name = "synaptic-huggingface"
+version = "0.2.5"
+dependencies = [
+ "async-trait",
+ "reqwest 0.13.2",
+ "serde_json",
+ "synaptic-core",
+ "tokio",
+]
+
+[[package]]
 name = "synaptic-loaders"
 version = "0.2.5"
 dependencies = [
@@ -4240,6 +4289,22 @@ dependencies = [
  "serde_json",
  "synaptic-core",
  "synaptic-macros",
+ "tokio",
+]
+
+[[package]]
+name = "synaptic-mistral"
+version = "0.2.5"
+dependencies = [
+ "async-stream",
+ "async-trait",
+ "bytes",
+ "eventsource-stream",
+ "futures",
+ "serde_json",
+ "synaptic-core",
+ "synaptic-models",
+ "synaptic-openai",
  "tokio",
 ]
 
@@ -4334,6 +4399,7 @@ dependencies = [
  "serde_json",
  "sqlx",
  "synaptic-core",
+ "synaptic-graph",
  "tokio",
  "uuid",
 ]
@@ -4386,6 +4452,7 @@ dependencies = [
  "serde",
  "serde_json",
  "synaptic-core",
+ "synaptic-graph",
  "tokio",
 ]
 
@@ -4435,6 +4502,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "synaptic-sqltoolkit"
+version = "0.2.5"
+dependencies = [
+ "async-trait",
+ "serde_json",
+ "sqlx",
+ "synaptic-core",
+ "tokio",
+]
+
+[[package]]
 name = "synaptic-store"
 version = "0.2.5"
 dependencies = [
@@ -4463,10 +4541,12 @@ version = "0.2.5"
 dependencies = [
  "async-trait",
  "futures",
+ "reqwest 0.13.2",
  "serde_json",
  "synaptic-core",
  "synaptic-macros",
  "tokio",
+ "urlencoding",
 ]
 
 [[package]]
@@ -4478,6 +4558,19 @@ dependencies = [
  "synaptic-core",
  "synaptic-embeddings",
  "tokio",
+]
+
+[[package]]
+name = "synaptic-weaviate"
+version = "0.2.5"
+dependencies = [
+ "async-trait",
+ "reqwest 0.13.2",
+ "serde",
+ "serde_json",
+ "synaptic-core",
+ "tokio",
+ "uuid",
 ]
 
 [[package]]

@@ -191,3 +191,27 @@ pub use synaptic_sqlite as sqlite;
 /// Tavily search tool.
 #[cfg(feature = "tavily")]
 pub use synaptic_tavily as tavily;
+
+/// Groq ChatModel (OpenAI-compatible, ultra-fast LPU inference).
+#[cfg(feature = "groq")]
+pub use synaptic_groq as groq;
+
+/// Mistral ChatModel (OpenAI-compatible).
+#[cfg(feature = "mistral")]
+pub use synaptic_mistral as mistral;
+
+/// DeepSeek ChatModel (OpenAI-compatible, cost-efficient reasoning).
+#[cfg(feature = "deepseek")]
+pub use synaptic_deepseek as deepseek;
+
+/// HuggingFace Inference API Embeddings.
+#[cfg(feature = "huggingface")]
+pub use synaptic_huggingface as huggingface;
+
+/// Weaviate vector database integration.
+#[cfg(feature = "weaviate")]
+pub use synaptic_weaviate as weaviate;
+
+/// SQL database toolkit: ListTables, DescribeTable, ExecuteQuery (read-only).
+#[cfg(feature = "sqltoolkit")]
+pub use synaptic_sqltoolkit as sqltoolkit;

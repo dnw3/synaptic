@@ -1,10 +1,14 @@
+pub mod duckduckgo;
 mod handle_error;
 mod parallel_executor;
 mod return_direct;
+pub mod wikipedia;
 
+pub use duckduckgo::DuckDuckGoTool;
 pub use handle_error::HandleErrorTool;
 pub use parallel_executor::ParallelToolExecutor;
 pub use return_direct::ReturnDirectTool;
+pub use wikipedia::WikipediaTool;
 
 use std::{
     collections::HashMap,

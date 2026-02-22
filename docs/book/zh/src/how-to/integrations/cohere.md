@@ -128,6 +128,51 @@ let retriever = ContextualCompressionRetriever::new(base_retriever, reranker);
 let results = retriever.retrieve("查询", 5).await?;  // 返回 top 5
 ```
 
+## 嵌入向量
+
+Synaptic 提供原生 Cohere 嵌入向量支持，通过 CohereEmbeddings
+调用 Cohere v2 embed 端点。支持 input_type 参数，区分文档和查询嵌入类型。
+
+### 设置
+
+```rust,ignore
+use synaptic::cohere::{CohereEmbeddings, CohereEmbeddingsConfig};
+
+let config = CohereEmbeddingsConfig::new("your-api-key")
+    .with_model("embed-english-v3.0");
+let embeddings = CohereEmbeddings::new(config);
+```
+
+### 嵌入文档和查询
+
+```rust,ignore
+use synaptic::core::Embeddings;
+
+// 文档使用 SearchDocument 类型（默认）
+let doc_vecs = embeddings.embed_documents(&["Rust 确保内存安全"]).await?;
+
+// 查询使用 SearchQuery 类型（embed_query 默认）
+let query_vec = embeddings.embed_query("内存安全编程").await?;
+```
+
+### CohereInputType
+
+input_type 控制 Cohere 如何优化嵌入：
+
+| 变体 | 使用时机 |
+|------|--------|
+| SearchDocument | 嵌入存储到向量库的文档 |
+| SearchQuery | 嵌入搜索查询 |
+| Classification | 文本分类 |
+| Clustering | 文本聚类 |
+
+### 对应模型
+
+| 模型 | 维度 | 说明 |
+|-------|------|------|
+| embed-english-v3.0 | 1024 | 英文优化 |
+| embed-multilingual-v3.0 | 1024 | 100+ 语言 |
+
 ## 配置参考
 
 | 字段 | 类型 | 默认值 | 说明 |

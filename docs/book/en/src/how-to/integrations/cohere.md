@@ -102,6 +102,52 @@ let results = retriever.retrieve("memory safety in Rust", 5).await?;
 
 This two-stage pattern (broad retrieval followed by reranking) often produces better results than relying on embedding similarity alone.
 
+## Embeddings
+
+Synaptic provides native Cohere embeddings via CohereEmbeddings,
+which calls the Cohere v2 embed endpoint. Unlike the OpenAI-compatible endpoint,
+this supports the input_type parameter for improved retrieval quality.
+
+### Setup
+
+```rust,ignore
+use synaptic::cohere::{CohereEmbeddings, CohereEmbeddingsConfig};
+
+let config = CohereEmbeddingsConfig::new("your-api-key")
+    .with_model("embed-english-v3.0");
+let embeddings = CohereEmbeddings::new(config);
+```
+
+### embed_documents and embed_query
+
+```rust,ignore
+use synaptic::core::Embeddings;
+
+// Documents use SearchDocument input_type (default)
+let doc_vecs = embeddings.embed_documents(&["Rust ensures memory safety"]).await?;
+
+// Queries use SearchQuery input_type (default for embed_query)
+let query_vec = embeddings.embed_query("memory safe programming").await?;
+```
+
+### CohereInputType
+
+The input_type controls how Cohere optimizes the embedding:
+
+| Variant | Use When |
+|---------|----------|
+| SearchDocument | Embedding documents to store in a vector DB |
+| SearchQuery | Embedding a search query |
+| Classification | Text classification |
+| Clustering | Clustering texts |
+
+### Available models
+
+| Model | Dimensions | Notes |
+|-------|------------|-------|
+| embed-english-v3.0 | 1024 | Best for English |
+| embed-multilingual-v3.0 | 1024 | 100+ languages |
+
 ## Configuration reference
 
 | Field | Type | Default | Description |
