@@ -22,6 +22,7 @@ synaptic-core = { version = "0.2", path = "../synaptic-core" }
 synaptic-graph = { version = "0.2", path = "../synaptic-graph", optional = true }
 hmac = "0.12"
 sha2 = "0.10"
+urlencoding = "2"
 
 [features]
 default = []
