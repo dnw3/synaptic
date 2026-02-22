@@ -30,3 +30,4 @@ events = []
 
 [dev-dependencies]
 tokio.workspace = true
+synaptic-graph = { version = "0.2", path = "../synaptic-graph" }
