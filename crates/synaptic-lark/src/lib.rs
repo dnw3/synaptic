@@ -48,6 +48,7 @@ pub use tools::doc_process::LarkDocProcessTool;
 pub use tools::message::LarkMessageTool;
 pub use tools::ocr::LarkOcrTool;
 pub use tools::translate::LarkTranslateTool;
+pub use vector_store::LarkVectorStore;
 
 // Re-export core traits for convenience
 pub use synaptic_core::{Loader, Tool};
