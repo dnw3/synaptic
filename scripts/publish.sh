@@ -6,14 +6,12 @@ set -euo pipefail
 # Uses `cargo metadata` + jq for true DAG topological sort instead of
 # a hardcoded crate list.
 #
+# Handles circular dev-dependencies (e.g., synaptic-macros <-> synaptic-middleware)
+# by temporarily stripping unpublished workspace dev-deps before packaging.
+#
 # Usage:
 #   ./scripts/publish.sh          # publish all crates
 #   ./scripts/publish.sh --dry-run # dry-run (no actual publish)
-#
-# Notes:
-#   - Uses --no-verify because workspace crates have circular dev-dependencies
-#     (e.g., synaptic-macros <-> synaptic-middleware) that can't all be on
-#     crates.io simultaneously during first publish.
 #
 DRY_RUN=""
 [[ "${1:-}" == "--dry-run" ]] && DRY_RUN="--dry-run" && echo "==> DRY RUN mode"
@@ -53,11 +51,68 @@ CRATES=$(cargo metadata --no-deps --format-version 1 \
     $graph | topo_sort | .[]')
 
 TOTAL=$(echo "$CRATES" | wc -l | tr -d ' ')
+PUBLISHED=""
 IDX=0
+
 for crate in $CRATES; do
   IDX=$((IDX + 1))
   echo "==> [$IDX/$TOTAL] Publishing $crate ..."
-  cargo publish -p "$crate" $DRY_RUN --allow-dirty --no-verify
+
+  # Find the manifest path for this crate
+  MANIFEST=$(cargo metadata --no-deps --format-version 1 \
+    | jq -r ".packages[] | select(.name == \"$crate\") | .manifest_path")
+  MANIFEST_DIR=$(dirname "$MANIFEST")
+
+  # Get this crate's dev-deps that are workspace crates not yet published
+  UNPUBLISHED_DEV_DEPS=$(cargo metadata --no-deps --format-version 1 \
+    | jq -r --arg crate "$crate" --arg published "$PUBLISHED" '
+      ($published | split("\n") | map(select(. != ""))) as $pub
+      | .packages[] | select(.name == $crate)
+      | .dependencies[]
+      | select(.kind == "dev")
+      | select(.path != null)
+      | select(.name as $n | $pub | index($n) | not)
+      | .name' 2>/dev/null || true)
+
+  PATCHED=false
+  if [[ -n "$UNPUBLISHED_DEV_DEPS" ]]; then
+    echo "    Patching: stripping unpublished dev-deps: $(echo $UNPUBLISHED_DEV_DEPS | tr '\n' ' ')"
+    cp "$MANIFEST" "${MANIFEST}.bak"
+    PATCHED=true
+    for dep in $UNPUBLISHED_DEV_DEPS; do
+      # Remove line matching "dep-name = " in [dev-dependencies] section
+      # Use awk to only remove within [dev-dependencies] block
+      awk -v dep="$dep" '
+        /^\[dev-dependencies\]/ { in_dev=1; print; next }
+        /^\[/ { in_dev=0; print; next }
+        in_dev && $0 ~ "^"dep" *=" { next }
+        { print }
+      ' "$MANIFEST" > "${MANIFEST}.tmp"
+      mv "${MANIFEST}.tmp" "$MANIFEST"
+    done
+  fi
+
+  set +e
+  OUTPUT=$(cargo publish -p "$crate" $DRY_RUN --allow-dirty --no-verify 2>&1)
+  EXIT_CODE=$?
+  set -e
+  echo "$OUTPUT"
+  if [[ $EXIT_CODE -ne 0 ]]; then
+    if echo "$OUTPUT" | grep -q "already exists\|already uploaded"; then
+      echo "    Already published, skipping."
+    else
+      echo "    ERROR: Failed to publish $crate"
+      exit 1
+    fi
+  fi
+
+  # Restore original Cargo.toml if patched
+  if [[ "$PATCHED" == "true" ]]; then
+    mv "${MANIFEST}.bak" "$MANIFEST"
+    echo "    Restored Cargo.toml"
+  fi
+
+  PUBLISHED="${PUBLISHED}${crate}\n"
   [[ -z "$DRY_RUN" ]] && echo "    Waiting 30s..." && sleep 30
 done
 echo "==> All $TOTAL crates published!"
