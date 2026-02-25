@@ -2,13 +2,13 @@
 
 [Perplexity AI](https://www.perplexity.ai/) 通过 Sonar 模型系列提供联网搜索增强的语言模型服务。与传统 LLM 不同，Sonar 模型能够访问实时网络信息并返回引用来源，非常适合事实性查询和研究任务。
 
-`synaptic-perplexity` crate 封装了 `synaptic-openai`，预设了 Perplexity 的 base URL 并提供类型安全的模型枚举。
+Perplexity AI 作为 `synaptic-openai` 内的兼容子模块提供，无需单独的 crate。
 
 ## 安装
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["perplexity"] }
+synaptic = { version = "0.3", features = ["openai"] }
 ```
 
 在 [perplexity.ai](https://www.perplexity.ai/) 注册以获取 API 密钥（以 `pplx-` 开头）。
@@ -16,20 +16,28 @@ synaptic = { version = "0.2", features = ["perplexity"] }
 ## 配置
 
 ```rust,ignore
-use synaptic::perplexity::{PerplexityChatModel, PerplexityConfig, PerplexityModel};
+use synaptic::openai::compat::perplexity::{self, PerplexityModel};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = PerplexityConfig::new("pplx-your-api-key", PerplexityModel::SonarLarge);
-let model = PerplexityChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = perplexity::chat_model("pplx-your-api-key", PerplexityModel::SonarLarge.to_string(), Arc::new(HttpBackend::new()));
 ```
 
 ### Builder 方法
 
+使用 `OpenAiConfig` 的构建器方法进行自定义：
+
 ```rust,ignore
-let config = PerplexityConfig::new("pplx-your-api-key", PerplexityModel::SonarLarge)
+use synaptic::openai::compat::perplexity::{self, PerplexityModel};
+use synaptic::openai::OpenAiChatModel;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let config = perplexity::config("pplx-your-api-key", PerplexityModel::SonarLarge.to_string())
     .with_temperature(0.2)
     .with_max_tokens(1024);
+
+let model = OpenAiChatModel::new(config, Arc::new(HttpBackend::new()));
 ```
 
 ## 可用模型
@@ -45,13 +53,12 @@ let config = PerplexityConfig::new("pplx-your-api-key", PerplexityModel::SonarLa
 ## 使用示例
 
 ```rust,ignore
-use synaptic::perplexity::{PerplexityChatModel, PerplexityConfig, PerplexityModel};
+use synaptic::openai::compat::perplexity::{self, PerplexityModel};
 use synaptic::core::{ChatModel, ChatRequest, Message};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = PerplexityConfig::new("pplx-your-api-key", PerplexityModel::SonarLarge);
-let model = PerplexityChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = perplexity::chat_model("pplx-your-api-key", PerplexityModel::SonarLarge.to_string(), Arc::new(HttpBackend::new()));
 
 let request = ChatRequest::new(vec![
     Message::system("请精确简洁地回答，并引用来源。"),
@@ -76,13 +83,13 @@ while let Some(chunk) = stream.next().await {
 println!();
 ```
 
-## 配置参数
+## 配置参考
 
-| 字段 | 类型 | 默认值 | 说明 |
-|-------|------|---------|-------------|
-| `api_key` | `String` | 必填 | Perplexity API 密钥（`pplx-...`） |
-| `model` | `String` | 枚举决定 | API 模型标识符 |
-| `max_tokens` | `Option<u32>` | `None` | 最大生成 token 数 |
-| `temperature` | `Option<f64>` | `None` | 采样温度（0.0–2.0） |
-| `top_p` | `Option<f64>` | `None` | 核采样阈值 |
-| `stop` | `Option<Vec<String>>` | `None` | 停止序列 |
+所有配置通过 `OpenAiConfig` 构建器方法完成。完整参考请见 [OpenAI 兼容 Provider](openai-compatible.md) 页面。
+
+| 方法 | 说明 |
+|------|------|
+| `.with_temperature(f64)` | 采样温度（0.0-2.0） |
+| `.with_max_tokens(u32)` | 最大生成 token 数 |
+| `.with_top_p(f64)` | 核采样阈值 |
+| `.with_stop(Vec<String>)` | 停止序列 |

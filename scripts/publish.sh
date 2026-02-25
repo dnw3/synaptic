@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
+set -euo pipefail
 #
 # Publish all synaptic crates to crates.io in dependency order.
+#
+# Uses `cargo metadata` + jq for true DAG topological sort instead of
+# a hardcoded crate list.
 #
 # Usage:
 #   ./scripts/publish.sh          # publish all crates
@@ -10,67 +14,50 @@
 #   - Uses --no-verify because workspace crates have circular dev-dependencies
 #     (e.g., synaptic-macros <-> synaptic-middleware) that can't all be on
 #     crates.io simultaneously during first publish.
-#   - Workspace tests (cargo test --workspace) verify everything builds correctly.
 #
-set -euo pipefail
-
 DRY_RUN=""
-if [[ "${1:-}" == "--dry-run" ]]; then
-  DRY_RUN="--dry-run"
-  echo "==> DRY RUN mode"
-fi
+[[ "${1:-}" == "--dry-run" ]] && DRY_RUN="--dry-run" && echo "==> DRY RUN mode"
 
-# Topological publish order (runtime dependencies before dependents)
-# Level 0: no internal deps
-# Level 1: depends on core only
-# Level 2: depends on level-1 crates
-# Level 3: depends on level-2 crates
-# Level 4: facade (depends on all)
-CRATES=(
-  # Level 0
-  synaptic-core
-  synaptic-macros
-  # Level 1 (depend on core only)
-  synaptic-runnables
-  synaptic-store
-  synaptic-middleware
-  synaptic-models
-  synaptic-callbacks
-  synaptic-mcp
-  synaptic-embeddings
-  synaptic-memory
-  synaptic-parsers
-  synaptic-prompts
-  synaptic-loaders
-  synaptic-splitters
-  # Level 2 (depend on level-1 crates)
-  synaptic-tools
-  synaptic-retrieval
-  synaptic-cache
-  synaptic-eval
-  synaptic-vectorstores
-  # Level 3
-  synaptic-graph
-  synaptic-deep
-  # Level 4 (facade)
-  synaptic
-)
+# Extract publishable crates from crates/ directory and topologically sort by dependencies
+CRATES=$(cargo metadata --no-deps --format-version 1 \
+  | jq -r '
+    # Step 1: Filter to crates/ directory packages that are publishable
+    [.packages[]
+     | select(.source == null)
+     | select(.manifest_path | test("/crates/"))
+     | select(.publish == null or (.publish | length > 0))
+    ] as $pkgs
+    | ($pkgs | map(.name) | sort) as $names
+    # Step 2: Build internal dependency graph (normal deps only, skip dev/build)
+    | [.packages[]
+       | select(.name as $n | $names | index($n))
+       | {name, internal_deps: [.dependencies[] | select(.kind == null) | .name | select(. as $d | $names | index($d))]}
+      ] as $graph
+    # Step 3: Kahn topological sort
+    | def topo_sort:
+        . as $g
+        | ($g | map({(.name): .internal_deps}) | add) as $adj
+        | ($g | map(.name)) as $all
+        | ($g | map(select(.internal_deps | length == 0) | .name)) as $ready
+        | {queue: $ready, result: [], remaining: ($all - $ready), adj: $adj}
+        | until(.queue | length == 0;
+            .queue[0] as $cur
+            | .result += [$cur]
+            | .queue |= .[1:]
+            | .remaining as $rem
+            | reduce ($rem[]) as $n (.;
+                if (.adj[$n] - .result) | length == 0
+                then .queue += [$n] | .remaining -= [$n]
+                else . end))
+        | .result;
+    $graph | topo_sort | .[]')
 
-TOTAL=${#CRATES[@]}
+TOTAL=$(echo "$CRATES" | wc -l | tr -d ' ')
 IDX=0
-
-for crate in "${CRATES[@]}"; do
+for crate in $CRATES; do
   IDX=$((IDX + 1))
-  echo ""
   echo "==> [$IDX/$TOTAL] Publishing $crate ..."
   cargo publish -p "$crate" $DRY_RUN --allow-dirty --no-verify
-
-  if [[ -z "$DRY_RUN" ]]; then
-    # Wait for crates.io index to update before publishing dependents
-    echo "    Waiting 30s for crates.io index..."
-    sleep 30
-  fi
+  [[ -z "$DRY_RUN" ]] && echo "    Waiting 30s..." && sleep 30
 done
-
-echo ""
-echo "==> All $TOTAL crates published successfully!"
+echo "==> All $TOTAL crates published!"

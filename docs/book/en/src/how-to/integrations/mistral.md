@@ -2,48 +2,49 @@
 
 [Mistral AI](https://mistral.ai/) offers state-of-the-art open and proprietary language models with excellent multilingual support and strong function-calling capabilities. The Mistral API is fully compatible with the OpenAI API format.
 
-The `synaptic-mistral` crate wraps `synaptic-openai` with the Mistral base URL preset and a type-safe `MistralModel` enum. It also provides a `mistral_embeddings` helper for the Mistral embeddings endpoint.
+Mistral AI is available as a compatibility submodule inside `synaptic-openai`. No separate crate is needed. The submodule also provides an `embeddings` helper for the Mistral embeddings endpoint.
 
 ## Setup
 
-Add the `mistral` feature to your `Cargo.toml`:
-
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["mistral"] }
+synaptic = { version = "0.3", features = ["openai"] }
 ```
 
 Obtain an API key from [console.mistral.ai](https://console.mistral.ai/).
 
 ## Configuration
 
-Create a `MistralConfig` with your API key and a `MistralModel` variant:
-
 ```rust,ignore
-use synaptic::mistral::{MistralChatModel, MistralConfig, MistralModel};
+use synaptic::openai::compat::mistral::{self, MistralModel};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = MistralConfig::new("your-api-key", MistralModel::MistralLargeLatest);
-let model = MistralChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = mistral::chat_model("your-api-key", MistralModel::MistralLargeLatest.to_string(), Arc::new(HttpBackend::new()));
 ```
 
 ### Builder methods
 
-`MistralConfig` supports the same fluent builder pattern as other providers:
+Use `OpenAiConfig` builder methods for customization:
 
 ```rust,ignore
-let config = MistralConfig::new("key", MistralModel::MistralLargeLatest)
+use synaptic::openai::compat::mistral::{self, MistralModel};
+use synaptic::openai::OpenAiChatModel;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let config = mistral::config("key", MistralModel::MistralLargeLatest.to_string())
     .with_temperature(0.7)
     .with_max_tokens(4096)
-    .with_top_p(0.95)
-    .with_seed(123);
+    .with_top_p(0.95);
+
+let model = OpenAiChatModel::new(config, Arc::new(HttpBackend::new()));
 ```
 
-For unlisted models:
+For unlisted models, pass a string directly:
 
 ```rust,ignore
-let config = MistralConfig::new_custom("key", "mistral-large-2411");
+let model = mistral::chat_model("key", "mistral-large-2411", Arc::new(HttpBackend::new()));
 ```
 
 ## Available Models
@@ -58,24 +59,23 @@ let config = MistralConfig::new_custom("key", "mistral-large-2411");
 
 ## Usage
 
-`MistralChatModel` implements the `ChatModel` trait:
+The model returned by `chat_model()` implements the `ChatModel` trait:
 
 ```rust,ignore
-use synaptic::mistral::{MistralChatModel, MistralConfig, MistralModel};
+use synaptic::openai::compat::mistral::{self, MistralModel};
 use synaptic::core::{ChatModel, ChatRequest, Message};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = MistralConfig::new("key", MistralModel::MistralLargeLatest);
-let model = MistralChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = mistral::chat_model("key", MistralModel::MistralLargeLatest.to_string(), Arc::new(HttpBackend::new()));
 
-let request = ChatRequest::new(vec\![
+let request = ChatRequest::new(vec![
     Message::system("You are a helpful multilingual assistant."),
-    Message::human("Bonjour\! Explain Rust ownership in one sentence."),
+    Message::human("Bonjour! Explain Rust ownership in one sentence."),
 ]);
 
 let response = model.chat(request).await?;
-println\!("{}", response.message.content().unwrap_or_default());
+println!("{}", response.message.content().unwrap_or_default());
 ```
 
 ## Streaming
@@ -126,15 +126,15 @@ for tc in response.message.tool_calls() {
 
 ## Embeddings
 
-Mistral provides an embeddings API through the same base URL. Use the `mistral_embeddings` helper function:
+Mistral provides an embeddings API through the same base URL. Use the `embeddings` helper function:
 
 ```rust,ignore
-use synaptic::mistral::mistral_embeddings;
+use synaptic::openai::compat::mistral;
 use synaptic::models::HttpBackend;
 use synaptic::core::Embeddings;
 use std::sync::Arc;
 
-let embeddings = mistral_embeddings(
+let embeddings = mistral::embeddings(
     "your-api-key",
     "mistral-embed",
     Arc::new(HttpBackend::new()),
@@ -166,14 +166,12 @@ match model.chat(request).await {
 
 ## Configuration Reference
 
-### MistralConfig
+All configuration is done through `OpenAiConfig` builder methods. See the [OpenAI-Compatible Providers](openai-compatible.md) page for the full reference.
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `api_key` | `String` | required | Mistral AI API key |
-| `model` | `String` | from enum | API model identifier |
-| `max_tokens` | `Option<u32>` | `None` | Maximum tokens to generate |
-| `temperature` | `Option<f64>` | `None` | Sampling temperature (0.0-1.0) |
-| `top_p` | `Option<f64>` | `None` | Nucleus sampling threshold |
-| `stop` | `Option<Vec<String>>` | `None` | Stop sequences |
-| `seed` | `Option<u64>` | `None` | Seed for reproducible output |
+| Method | Description |
+|--------|-------------|
+| `.with_temperature(f64)` | Sampling temperature (0.0-1.0) |
+| `.with_max_tokens(u32)` | Maximum tokens to generate |
+| `.with_top_p(f64)` | Nucleus sampling threshold |
+| `.with_stop(Vec<String>)` | Stop sequences |
+| `.with_seed(u64)` | Seed for reproducible output |

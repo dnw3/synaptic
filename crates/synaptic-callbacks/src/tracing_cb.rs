@@ -40,6 +40,32 @@ impl CallbackHandler for TracingCallback {
             RunEvent::RunFailed { run_id, error } => {
                 tracing::error!(run_id = %run_id, error = %error, "run failed");
             }
+            RunEvent::BeforeToolCall {
+                run_id,
+                tool_name,
+                arguments,
+            } => {
+                tracing::info!(run_id = %run_id, tool_name = %tool_name, args_len = arguments.len(), "before tool call");
+            }
+            RunEvent::AfterToolCall {
+                run_id,
+                tool_name,
+                result,
+            } => {
+                tracing::info!(run_id = %run_id, tool_name = %tool_name, result_len = result.len(), "after tool call");
+            }
+            RunEvent::BeforeMessage {
+                run_id,
+                message_count,
+            } => {
+                tracing::info!(run_id = %run_id, message_count = message_count, "before message");
+            }
+            RunEvent::AfterMessage {
+                run_id,
+                response_length,
+            } => {
+                tracing::info!(run_id = %run_id, response_length = response_length, "after message");
+            }
         }
         Ok(())
     }

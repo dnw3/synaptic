@@ -83,6 +83,7 @@ fn sse_connection_serde_roundtrip() {
     let conn = McpConnection::Sse(SseConnection {
         url: "http://localhost:8080/sse".to_string(),
         headers: HashMap::from([("Authorization".to_string(), "Bearer token".to_string())]),
+        oauth: None,
     });
     let json = serde_json::to_value(&conn).unwrap();
     assert_eq!(json["type"], "Sse");
@@ -123,6 +124,7 @@ fn http_connection_serde_roundtrip() {
     let conn = McpConnection::Http(HttpConnection {
         url: "http://localhost:8080/mcp".to_string(),
         headers: HashMap::new(),
+        oauth: None,
     });
     let json = serde_json::to_value(&conn).unwrap();
     assert_eq!(json["type"], "Http");

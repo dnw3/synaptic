@@ -2,15 +2,13 @@
 
 [Together AI](https://www.together.ai/) provides access to leading open-source models (Llama, DeepSeek, Qwen, Mixtral) via an OpenAI-compatible API. It offers serverless inference at competitive prices, making it ideal for production workloads that require state-of-the-art open models.
 
-The `synaptic-together` crate wraps `synaptic-openai` with Together AI's base URL preset and a type-safe model enum.
+Together AI is available as a compatibility submodule inside `synaptic-openai`. No separate crate is needed.
 
 ## Setup
 
-Add the `together` feature to your `Cargo.toml`:
-
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["together"] }
+synaptic = { version = "0.3", features = ["openai"] }
 ```
 
 Sign up at [api.together.xyz](https://api.together.xyz/) to obtain an API key.
@@ -18,28 +16,36 @@ Sign up at [api.together.xyz](https://api.together.xyz/) to obtain an API key.
 ## Configuration
 
 ```rust,ignore
-use synaptic::together::{TogetherChatModel, TogetherConfig, TogetherModel};
+use synaptic::openai::compat::together::{self, TogetherModel};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = TogetherConfig::new("your-api-key", TogetherModel::Llama3_3_70bInstructTurbo);
-let model = TogetherChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = together::chat_model("your-api-key", TogetherModel::Llama3_3_70bInstructTurbo.to_string(), Arc::new(HttpBackend::new()));
 ```
 
 ### Builder methods
 
+Use `OpenAiConfig` builder methods for customization:
+
 ```rust,ignore
-let config = TogetherConfig::new("your-api-key", TogetherModel::Llama3_3_70bInstructTurbo)
+use synaptic::openai::compat::together::{self, TogetherModel};
+use synaptic::openai::OpenAiChatModel;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let config = together::config("your-api-key", TogetherModel::Llama3_3_70bInstructTurbo.to_string())
     .with_temperature(0.7)
     .with_max_tokens(2048)
     .with_top_p(0.9)
     .with_stop(vec!["</s>".to_string()]);
+
+let model = OpenAiChatModel::new(config, Arc::new(HttpBackend::new()));
 ```
 
-For unlisted models:
+For unlisted models, pass a string directly:
 
 ```rust,ignore
-let config = TogetherConfig::new_custom("your-api-key", "custom-org/custom-model-v1");
+let model = together::chat_model("your-api-key", "custom-org/custom-model-v1", Arc::new(HttpBackend::new()));
 ```
 
 ## Available Models
@@ -57,13 +63,12 @@ let config = TogetherConfig::new_custom("your-api-key", "custom-org/custom-model
 ## Usage
 
 ```rust,ignore
-use synaptic::together::{TogetherChatModel, TogetherConfig, TogetherModel};
+use synaptic::openai::compat::together::{self, TogetherModel};
 use synaptic::core::{ChatModel, ChatRequest, Message};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = TogetherConfig::new("your-api-key", TogetherModel::Llama3_3_70bInstructTurbo);
-let model = TogetherChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = together::chat_model("your-api-key", TogetherModel::Llama3_3_70bInstructTurbo.to_string(), Arc::new(HttpBackend::new()));
 
 let request = ChatRequest::new(vec![
     Message::system("You are a concise assistant."),
@@ -105,11 +110,11 @@ match model.chat(request).await {
 
 ## Configuration Reference
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `api_key` | `String` | required | Together AI API key |
-| `model` | `String` | from enum | API model identifier |
-| `max_tokens` | `Option<u32>` | `None` | Maximum tokens to generate |
-| `temperature` | `Option<f64>` | `None` | Sampling temperature (0.0–2.0) |
-| `top_p` | `Option<f64>` | `None` | Nucleus sampling threshold |
-| `stop` | `Option<Vec<String>>` | `None` | Stop sequences |
+All configuration is done through `OpenAiConfig` builder methods. See the [OpenAI-Compatible Providers](openai-compatible.md) page for the full reference.
+
+| Method | Description |
+|--------|-------------|
+| `.with_temperature(f64)` | Sampling temperature (0.0-2.0) |
+| `.with_max_tokens(u32)` | Maximum tokens to generate |
+| `.with_top_p(f64)` | Nucleus sampling threshold |
+| `.with_stop(Vec<String>)` | Stop sequences |

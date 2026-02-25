@@ -30,6 +30,9 @@ impl ToolCaller for BaseToolCaller {
 /// Supports both regular `Tool` and `RuntimeAwareTool` instances.
 /// When a runtime-aware tool is registered, it receives the current graph
 /// state, store reference, and tool call ID via [`ToolRuntime`].
+///
+/// By default, tool calls are executed serially. Call [`ToolNode::with_parallel`]
+/// to enable concurrent execution of multiple tool calls within a single step.
 pub struct ToolNode {
     executor: SerialToolExecutor,
     middleware: Option<Arc<MiddlewareChain>>,
@@ -37,6 +40,8 @@ pub struct ToolNode {
     store: Option<Arc<dyn Store>>,
     /// Runtime-aware tools keyed by tool name.
     runtime_tools: HashMap<String, Arc<dyn RuntimeAwareTool>>,
+    /// When true and multiple tool calls exist, execute them concurrently.
+    parallel: bool,
 }
 
 impl ToolNode {
@@ -46,6 +51,7 @@ impl ToolNode {
             middleware: None,
             store: None,
             runtime_tools: HashMap::new(),
+            parallel: false,
         }
     }
 
@@ -56,7 +62,18 @@ impl ToolNode {
             middleware: Some(middleware),
             store: None,
             runtime_tools: HashMap::new(),
+            parallel: false,
         }
+    }
+
+    /// Enable parallel execution of tool calls.
+    ///
+    /// When enabled and multiple tool calls exist in the last AI message,
+    /// they are executed concurrently using `futures::future::join_all`.
+    /// Results are collected in the same order as the original tool calls.
+    pub fn with_parallel(mut self, parallel: bool) -> Self {
+        self.parallel = parallel;
+        self
     }
 
     /// Set the store reference for runtime-aware tool injection.
@@ -94,22 +111,58 @@ impl Node<MessageState> for ToolNode {
         // Serialize current state for context injection
         let state_value = serde_json::to_value(&state).ok();
 
-        for call in &tool_calls {
-            // Check if this is a runtime-aware tool
-            let result = if let Some(rt_tool) = self.runtime_tools.get(&call.name) {
-                let runtime = ToolRuntime {
-                    store: self.store.clone(),
-                    stream_writer: None,
-                    state: state_value.clone(),
-                    tool_call_id: call.id.clone(),
-                    config: None,
-                };
-                rt_tool
-                    .call_with_runtime(call.arguments.clone(), runtime)
-                    .await?
-            } else {
-                // Regular tool execution
-                if let Some(ref chain) = self.middleware {
+        if self.parallel && tool_calls.len() > 1 {
+            // Parallel execution: run all tool calls concurrently
+            let futs: Vec<_> = tool_calls
+                .iter()
+                .map(|call| {
+                    let executor = self.executor.clone();
+                    let middleware = self.middleware.clone();
+                    let rt_tool = self.runtime_tools.get(&call.name).cloned();
+                    let store = self.store.clone();
+                    let sv = state_value.clone();
+                    let call = call.clone();
+                    async move {
+                        if let Some(rt) = rt_tool {
+                            let runtime = ToolRuntime {
+                                store,
+                                stream_writer: None,
+                                state: sv,
+                                tool_call_id: call.id.clone(),
+                                config: None,
+                            };
+                            rt.call_with_runtime(call.arguments.clone(), runtime).await
+                        } else if let Some(ref chain) = middleware {
+                            let request = ToolCallRequest { call: call.clone() };
+                            let base = BaseToolCaller { executor };
+                            chain.call_tool(request, &base).await
+                        } else {
+                            executor.execute(&call.name, call.arguments.clone()).await
+                        }
+                    }
+                })
+                .collect();
+            let results = futures::future::join_all(futs).await;
+            for (call, result) in tool_calls.iter().zip(results) {
+                state
+                    .messages
+                    .push(Message::tool(result?.to_string(), &call.id));
+            }
+        } else {
+            // Serial execution (default)
+            for call in &tool_calls {
+                let result = if let Some(rt_tool) = self.runtime_tools.get(&call.name) {
+                    let runtime = ToolRuntime {
+                        store: self.store.clone(),
+                        stream_writer: None,
+                        state: state_value.clone(),
+                        tool_call_id: call.id.clone(),
+                        config: None,
+                    };
+                    rt_tool
+                        .call_with_runtime(call.arguments.clone(), runtime)
+                        .await?
+                } else if let Some(ref chain) = self.middleware {
                     let request = ToolCallRequest { call: call.clone() };
                     let base = BaseToolCaller {
                         executor: self.executor.clone(),
@@ -119,11 +172,11 @@ impl Node<MessageState> for ToolNode {
                     self.executor
                         .execute(&call.name, call.arguments.clone())
                         .await?
-                }
-            };
-            state
-                .messages
-                .push(Message::tool(result.to_string(), &call.id));
+                };
+                state
+                    .messages
+                    .push(Message::tool(result.to_string(), &call.id));
+            }
         }
 
         Ok(state.into())

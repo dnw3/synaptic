@@ -689,7 +689,7 @@ dependencies = [
 
 [[package]]
 name = "caching"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "synaptic",
  "tokio",
@@ -697,7 +697,7 @@ dependencies = [
 
 [[package]]
 name = "callbacks_tracing"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "synaptic",
  "tokio",
@@ -793,7 +793,7 @@ dependencies = [
 
 [[package]]
 name = "condenser_demo"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "synaptic",
  "tokio",
@@ -801,7 +801,7 @@ dependencies = [
 
 [[package]]
 name = "config_agent"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "synaptic",
  "tokio",
@@ -1308,7 +1308,7 @@ dependencies = [
 
 [[package]]
 name = "evaluation"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "synaptic",
  "tokio",
@@ -1356,7 +1356,7 @@ checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
 name = "file_persistence"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "serde_json",
  "synaptic",
@@ -1589,7 +1589,7 @@ dependencies = [
 
 [[package]]
 name = "graph_visualization"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde",
@@ -2189,7 +2189,7 @@ dependencies = [
 
 [[package]]
 name = "lark_rag"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "synaptic",
  "tokio",
@@ -2197,7 +2197,7 @@ dependencies = [
 
 [[package]]
 name = "lark_streaming_bot"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "synaptic",
@@ -2215,7 +2215,7 @@ dependencies = [
 
 [[package]]
 name = "lcel_chain"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "serde_json",
  "synaptic",
@@ -2392,7 +2392,7 @@ dependencies = [
 
 [[package]]
 name = "macros_showcase"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde_json",
@@ -2426,7 +2426,7 @@ checksum = "f8ca58f447f06ed17d5fc4043ce1b10dd205e060fb3ce5b979b8ed8e59ff3f79"
 
 [[package]]
 name = "memory_chat"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "synaptic",
  "tokio",
@@ -2434,7 +2434,7 @@ dependencies = [
 
 [[package]]
 name = "memory_strategy"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "serde_json",
  "synaptic",
@@ -2456,6 +2456,16 @@ name = "mime"
 version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
+
+[[package]]
+name = "mime_guess"
+version = "2.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7c44f8e672c00fe5308fa235f821cb4198414e1c77935c1ab6948d3fd78550e"
+dependencies = [
+ "mime",
+ "unicase",
+]
 
 [[package]]
 name = "minimal-lexical"
@@ -2991,7 +3001,7 @@ dependencies = [
 
 [[package]]
 name = "prompt_parser_chain"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "serde_json",
  "synaptic",
@@ -3140,7 +3150,7 @@ checksum = "dc33ff2d4973d518d823d61aa239014831e521c75da58e3df4840d3f47749d09"
 
 [[package]]
 name = "rag_pipeline"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "synaptic",
  "tokio",
@@ -3213,7 +3223,7 @@ checksum = "973443cf09a9c8656b574a866ab68dfa19f0867d0340648c7d2f6a71b8a8ea68"
 
 [[package]]
 name = "react_basic"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde_json",
@@ -3396,6 +3406,7 @@ dependencies = [
  "js-sys",
  "log",
  "mime",
+ "mime_guess",
  "percent-encoding",
  "pin-project-lite",
  "quinn",
@@ -3692,7 +3703,7 @@ dependencies = [
 
 [[package]]
 name = "secrets_demo"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "synaptic",
  "tokio",
@@ -3723,7 +3734,7 @@ dependencies = [
 
 [[package]]
 name = "security_demo"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "serde_json",
  "synaptic",
@@ -3861,7 +3872,7 @@ dependencies = [
 
 [[package]]
 name = "session_resume"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "synaptic",
  "tokio",
@@ -4190,7 +4201,7 @@ checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 
 [[package]]
 name = "streaming"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -4218,7 +4229,7 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "structured_output"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -4245,11 +4256,12 @@ dependencies = [
 
 [[package]]
 name = "synaptic"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "schemars",
  "synaptic-anthropic",
  "synaptic-bedrock",
+ "synaptic-browser",
  "synaptic-cache",
  "synaptic-callbacks",
  "synaptic-chroma",
@@ -4259,16 +4271,13 @@ dependencies = [
  "synaptic-confluence",
  "synaptic-core",
  "synaptic-deep",
- "synaptic-deepseek",
  "synaptic-e2b",
  "synaptic-elasticsearch",
  "synaptic-embeddings",
  "synaptic-eval",
- "synaptic-fireworks",
  "synaptic-flashrank",
  "synaptic-gemini",
  "synaptic-graph",
- "synaptic-groq",
  "synaptic-huggingface",
  "synaptic-jina",
  "synaptic-lancedb",
@@ -4278,9 +4287,9 @@ dependencies = [
  "synaptic-macros",
  "synaptic-mcp",
  "synaptic-memory",
+ "synaptic-metrics",
  "synaptic-middleware",
  "synaptic-milvus",
- "synaptic-mistral",
  "synaptic-models",
  "synaptic-mongodb",
  "synaptic-nomic",
@@ -4289,7 +4298,6 @@ dependencies = [
  "synaptic-opensearch",
  "synaptic-parsers",
  "synaptic-pdf",
- "synaptic-perplexity",
  "synaptic-pinecone",
  "synaptic-postgres",
  "synaptic-prompts",
@@ -4297,6 +4305,8 @@ dependencies = [
  "synaptic-redis",
  "synaptic-retrieval",
  "synaptic-runnables",
+ "synaptic-sandbox",
+ "synaptic-scheduler",
  "synaptic-secrets",
  "synaptic-session",
  "synaptic-slack",
@@ -4305,12 +4315,11 @@ dependencies = [
  "synaptic-sqltoolkit",
  "synaptic-store",
  "synaptic-tavily",
- "synaptic-together",
  "synaptic-tools",
  "synaptic-vectorstores",
+ "synaptic-voice",
  "synaptic-voyage",
  "synaptic-weaviate",
- "synaptic-xai",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -4318,7 +4327,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-anthropic"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -4333,7 +4342,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-bedrock"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -4347,8 +4356,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "synaptic-browser"
+version = "0.4.0"
+dependencies = [
+ "async-trait",
+ "reqwest 0.13.2",
+ "serde",
+ "serde_json",
+ "synaptic-core",
+ "tokio",
+]
+
+[[package]]
 name = "synaptic-cache"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde",
@@ -4361,7 +4382,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-callbacks"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "opentelemetry",
@@ -4372,7 +4393,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-chroma"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -4384,7 +4405,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-cohere"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -4397,7 +4418,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-condenser"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde_json",
@@ -4409,7 +4430,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-config"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "dirs",
  "serde",
@@ -4422,7 +4443,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-confluence"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "base64",
@@ -4435,7 +4456,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-core"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -4449,7 +4470,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-deep"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "regex",
@@ -4469,28 +4490,13 @@ dependencies = [
  "synaptic-store",
  "synaptic-tools",
  "tokio",
+ "toml",
  "tracing",
 ]
 
 [[package]]
-name = "synaptic-deepseek"
-version = "0.3.1"
-dependencies = [
- "async-stream",
- "async-trait",
- "bytes",
- "eventsource-stream",
- "futures",
- "serde_json",
- "synaptic-core",
- "synaptic-models",
- "synaptic-openai",
- "tokio",
-]
-
-[[package]]
 name = "synaptic-e2b"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -4502,7 +4508,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-elasticsearch"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -4514,7 +4520,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-embeddings"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde_json",
@@ -4526,7 +4532,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-eval"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "regex",
@@ -4539,20 +4545,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "synaptic-fireworks"
-version = "0.3.1"
-dependencies = [
- "async-trait",
- "serde_json",
- "synaptic-core",
- "synaptic-models",
- "synaptic-openai",
- "tokio",
-]
-
-[[package]]
 name = "synaptic-flashrank"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "synaptic-core",
@@ -4561,7 +4555,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-gemini"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -4576,7 +4570,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-graph"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -4596,24 +4590,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "synaptic-groq"
-version = "0.3.1"
-dependencies = [
- "async-stream",
- "async-trait",
- "bytes",
- "eventsource-stream",
- "futures",
- "serde_json",
- "synaptic-core",
- "synaptic-models",
- "synaptic-openai",
- "tokio",
-]
-
-[[package]]
 name = "synaptic-huggingface"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -4624,7 +4602,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-jina"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -4636,7 +4614,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-lancedb"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde",
@@ -4648,7 +4626,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-langfuse"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "base64",
@@ -4662,7 +4640,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-lark"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "dashmap",
@@ -4684,7 +4662,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-loaders"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "base64",
@@ -4700,7 +4678,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-macros"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "proc-macro-crate",
@@ -4720,20 +4698,23 @@ dependencies = [
 
 [[package]]
 name = "synaptic-mcp"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
+ "base64",
  "futures",
  "reqwest 0.13.2",
  "serde",
  "serde_json",
+ "sha2",
  "synaptic-core",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
 name = "synaptic-memory"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde",
@@ -4746,8 +4727,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "synaptic-metrics"
+version = "0.4.0"
+dependencies = [
+ "reqwest 0.13.2",
+ "synaptic-callbacks",
+ "synaptic-core",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "synaptic-middleware"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde",
@@ -4755,11 +4747,12 @@ dependencies = [
  "synaptic-core",
  "synaptic-macros",
  "tokio",
+ "uuid",
 ]
 
 [[package]]
 name = "synaptic-milvus"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -4770,24 +4763,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "synaptic-mistral"
-version = "0.3.1"
-dependencies = [
- "async-stream",
- "async-trait",
- "bytes",
- "eventsource-stream",
- "futures",
- "serde_json",
- "synaptic-core",
- "synaptic-models",
- "synaptic-openai",
- "tokio",
-]
-
-[[package]]
 name = "synaptic-models"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -4802,7 +4779,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-mongodb"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "bson",
@@ -4817,7 +4794,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-nomic"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -4829,7 +4806,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-ollama"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -4843,7 +4820,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-openai"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -4858,7 +4835,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-opensearch"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -4870,7 +4847,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-parsers"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde",
@@ -4883,7 +4860,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-pdf"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "pdf-extract",
@@ -4893,20 +4870,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "synaptic-perplexity"
-version = "0.3.1"
-dependencies = [
- "async-trait",
- "serde_json",
- "synaptic-core",
- "synaptic-models",
- "synaptic-openai",
- "tokio",
-]
-
-[[package]]
 name = "synaptic-pinecone"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -4919,7 +4884,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-postgres"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "pgvector",
@@ -4933,7 +4898,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-prompts"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde",
@@ -4947,7 +4912,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-qdrant"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "qdrant-client",
@@ -4959,7 +4924,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-redis"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "redis",
@@ -4972,7 +4937,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-retrieval"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde_json",
@@ -4984,7 +4949,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-runnables"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -4996,8 +4961,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "synaptic-sandbox"
+version = "0.4.0"
+dependencies = [
+ "async-trait",
+ "serde",
+ "serde_json",
+ "synaptic-core",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "synaptic-scheduler"
+version = "0.4.0"
+dependencies = [
+ "async-trait",
+ "serde",
+ "synaptic-core",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "synaptic-secrets"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "regex",
@@ -5009,7 +4997,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-session"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde",
@@ -5024,7 +5012,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-slack"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -5036,7 +5024,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-splitters"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "serde_json",
  "synaptic-core",
@@ -5045,7 +5033,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-sqlite"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "rusqlite",
@@ -5059,7 +5047,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-sqltoolkit"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde_json",
@@ -5070,7 +5058,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-store"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde",
@@ -5081,7 +5069,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-tavily"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -5092,20 +5080,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "synaptic-together"
-version = "0.3.1"
-dependencies = [
- "async-trait",
- "serde_json",
- "synaptic-core",
- "synaptic-models",
- "synaptic-openai",
- "tokio",
-]
-
-[[package]]
 name = "synaptic-tools"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "futures",
@@ -5120,7 +5096,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-vectorstores"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde_json",
@@ -5130,8 +5106,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "synaptic-voice"
+version = "0.4.0"
+dependencies = [
+ "async-trait",
+ "base64",
+ "bytes",
+ "futures",
+ "reqwest 0.13.2",
+ "serde",
+ "serde_json",
+ "synaptic-core",
+ "tokio",
+]
+
+[[package]]
 name = "synaptic-voyage"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -5143,7 +5134,7 @@ dependencies = [
 
 [[package]]
 name = "synaptic-weaviate"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "reqwest 0.13.2",
@@ -5152,18 +5143,6 @@ dependencies = [
  "synaptic-core",
  "tokio",
  "uuid",
-]
-
-[[package]]
-name = "synaptic-xai"
-version = "0.3.1"
-dependencies = [
- "async-trait",
- "serde_json",
- "synaptic-core",
- "synaptic-models",
- "synaptic-openai",
- "tokio",
 ]
 
 [[package]]
@@ -5354,7 +5333,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "token_budget_demo"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "synaptic",
  "tokio",
@@ -5563,7 +5542,7 @@ dependencies = [
 
 [[package]]
 name = "tool_calling_basic"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "serde_json",
@@ -5573,7 +5552,7 @@ dependencies = [
 
 [[package]]
 name = "tool_filter_demo"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "serde_json",
  "synaptic",
@@ -5770,6 +5749,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 
 [[package]]
+name = "unicase"
+version = "2.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dbc4bc3a9f746d862c45cb89d705aa10f187bb96c76001afab07a0d35ce60142"
+
+[[package]]
 name = "unicode-bidi"
 version = "0.3.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5877,7 +5862,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "volcengine_test"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "async-trait",
  "futures",

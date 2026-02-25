@@ -67,6 +67,35 @@ let options = AgentOptions {
 let graph = create_agent(model, tools, options)?;
 ```
 
+## 文件与 Shell 钩子
+
+Middleware trait 还提供了文件操作和 Shell 命令的钩子。这些钩子在 Deep Agent 工具执行文件系统或命令操作时被调用，允许你拦截并授权或拒绝操作。
+
+```rust,ignore
+use synaptic::middleware::{FileOp, FileOpDecision, CommandOp, CommandDecision};
+
+#[async_trait]
+impl AgentMiddleware for MySecurityMiddleware {
+    async fn before_file_op(&self, op: &FileOp) -> Result<FileOpDecision, SynapticError> {
+        if op.path.starts_with("/etc") {
+            Ok(FileOpDecision::Deny("不允许修改系统文件".to_string()))
+        } else {
+            Ok(FileOpDecision::Allow)
+        }
+    }
+
+    async fn before_command(&self, cmd: &CommandOp) -> Result<CommandDecision, SynapticError> {
+        if cmd.command.contains("rm -rf") {
+            Ok(CommandDecision::Deny("危险命令已被拦截".to_string()))
+        } else {
+            Ok(CommandDecision::Allow)
+        }
+    }
+}
+```
+
+四个钩子（`before_file_op`、`after_file_op`、`before_command`、`after_command`）都有默认实现，默认允许所有操作。`MiddlewareChain` 通过 `run_before_file_op()`、`run_after_file_op()`、`run_before_command()` 和 `run_after_command()` 分发这些钩子。
+
 ## 内置 Middleware
 
 | Middleware | 使用的钩子 | 说明 |
@@ -79,6 +108,8 @@ let graph = create_agent(model, tools, options)?;
 | [`TodoListMiddleware`](todo-list.md) | `before_model` | 向 Agent 上下文注入任务列表 |
 | [`HumanInTheLoopMiddleware`](human-in-the-loop.md) | `wrap_tool_call` | 在工具执行前暂停以等待人工审批 |
 | [`ContextEditingMiddleware`](context-editing.md) | `before_model` | 在模型调用前裁剪或过滤上下文 |
+| [`SsrfGuardMiddleware`](ssrf-guard.md) | `wrap_tool_call` | 拦截 SSRF 攻击（私有 IP、元数据端点） |
+| [`CircuitBreakerMiddleware`](circuit-breaker.md) | `wrap_tool_call` / `wrap_model_call` | 通过熔断器模式防止级联故障 |
 
 ## 编写自定义 Middleware
 

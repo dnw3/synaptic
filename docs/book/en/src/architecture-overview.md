@@ -1,6 +1,6 @@
 # Architecture Overview
 
-Synaptic is organized as a Cargo workspace with 26 library crates, 1 facade crate, and several example binaries. The crates form a layered architecture where each layer builds on the one below it.
+Synaptic is organized as a Cargo workspace with 19 library crates, 1 facade crate, and several example binaries. The crates form a layered architecture where each layer builds on the one below it.
 
 ## Crate Layers
 
@@ -126,7 +126,7 @@ All crates depend on `synaptic-core` for shared traits and types. Higher-level c
   └──────────────────┬──────────────────────────┘
                      │
   Provider crates (each depends on synaptic-core + synaptic-models):
-  openai, anthropic, gemini, ollama
+  openai (+ 10 compat submodules), anthropic, gemini, ollama
 
   Retrieval pipeline:
 

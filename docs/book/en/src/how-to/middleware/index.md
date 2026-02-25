@@ -67,6 +67,35 @@ let options = AgentOptions {
 let graph = create_agent(model, tools, options)?;
 ```
 
+## File & Shell Hooks
+
+The middleware trait also provides hooks for file operations and shell commands. These are called by Deep Agent tools when performing filesystem or command operations, allowing you to intercept and authorize or deny actions.
+
+```rust,ignore
+use synaptic::middleware::{FileOp, FileOpDecision, CommandOp, CommandDecision};
+
+#[async_trait]
+impl AgentMiddleware for MySecurityMiddleware {
+    async fn before_file_op(&self, op: &FileOp) -> Result<FileOpDecision, SynapticError> {
+        if op.path.starts_with("/etc") {
+            Ok(FileOpDecision::Deny("Cannot modify system files".to_string()))
+        } else {
+            Ok(FileOpDecision::Allow)
+        }
+    }
+
+    async fn before_command(&self, cmd: &CommandOp) -> Result<CommandDecision, SynapticError> {
+        if cmd.command.contains("rm -rf") {
+            Ok(CommandDecision::Deny("Dangerous command blocked".to_string()))
+        } else {
+            Ok(CommandDecision::Allow)
+        }
+    }
+}
+```
+
+All four hooks (`before_file_op`, `after_file_op`, `before_command`, `after_command`) have default implementations that allow all operations. The `MiddlewareChain` dispatches these through `run_before_file_op()`, `run_after_file_op()`, `run_before_command()`, and `run_after_command()`.
+
 ## Built-in Middlewares
 
 | Middleware | Hook Used | Description |
@@ -79,6 +108,8 @@ let graph = create_agent(model, tools, options)?;
 | [`TodoListMiddleware`](todo-list.md) | `before_model` | Injects a task list into the agent context |
 | [`HumanInTheLoopMiddleware`](human-in-the-loop.md) | `wrap_tool_call` | Pauses for human approval before tool execution |
 | [`ContextEditingMiddleware`](context-editing.md) | `before_model` | Trims or filters context before model calls |
+| [`SsrfGuardMiddleware`](ssrf-guard.md) | `wrap_tool_call` | Blocks SSRF attacks (private IPs, metadata endpoints) |
+| [`CircuitBreakerMiddleware`](circuit-breaker.md) | `wrap_tool_call` / `wrap_model_call` | Prevents cascading failures with circuit breaker pattern |
 
 ## Writing a Custom Middleware
 

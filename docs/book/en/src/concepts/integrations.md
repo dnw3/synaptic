@@ -7,15 +7,14 @@ Synaptic uses a **provider-centric** architecture for external service integrati
 ```text
 synaptic-core (defines traits)
   ├── synaptic-openai          (ChatModel + Embeddings)
+  │     └── compat/            (10 OpenAI-compatible provider submodules:
+  │           groq, deepseek, fireworks, together, xai, perplexity,
+  │           mistral, huggingface, cohere, openrouter)
   ├── synaptic-anthropic       (ChatModel)
   ├── synaptic-gemini          (ChatModel)
   ├── synaptic-ollama          (ChatModel + Embeddings)
   ├── synaptic-bedrock         (ChatModel)
-  ├── synaptic-groq            (ChatModel — OpenAI-compatible, LPU)
-  ├── synaptic-mistral         (ChatModel — OpenAI-compatible)
-  ├── synaptic-deepseek        (ChatModel — OpenAI-compatible)
   ├── synaptic-cohere          (DocumentCompressor + Embeddings)
-  ├── synaptic-huggingface     (Embeddings)
   ├── synaptic-qdrant          (VectorStore)
   ├── synaptic-postgres        (VectorStore + Store + LlmCache + Checkpointer)
   ├── synaptic-pinecone        (VectorStore)
@@ -41,8 +40,8 @@ All integration crates share a common pattern:
 
 | Trait | Purpose | Crate Implementations |
 |-------|---------|----------------------|
-| `ChatModel` | LLM chat completion | openai, anthropic, gemini, ollama, bedrock, groq, mistral, deepseek |
-| `Embeddings` | Text embedding vectors | openai, ollama, cohere, huggingface |
+| `ChatModel` | LLM chat completion | openai (+ 7 compat providers), anthropic, gemini, ollama, bedrock |
+| `Embeddings` | Text embedding vectors | openai (+ mistral, cohere, huggingface compat), ollama |
 | `VectorStore` | Vector similarity search | qdrant, postgres, pinecone, chroma, mongodb, elasticsearch, weaviate, (+ in-memory) |
 | `Store` | Key-value storage | redis, postgres, (+ in-memory) |
 | `LlmCache` | LLM response caching | redis, postgres, sqlite, (+ in-memory) |
@@ -96,16 +95,12 @@ synaptic = { version = "0.3", features = ["openai", "qdrant"] }
 
 | Feature | Integration |
 |---------|------------|
-| `openai` | OpenAI ChatModel + Embeddings (+ OpenAI-compatible providers + Azure) |
+| `openai` | OpenAI ChatModel + Embeddings + 10 OpenAI-compatible providers via `compat::` submodules (Groq, DeepSeek, Fireworks, Together, xAI, Perplexity, Mistral, HuggingFace, Cohere, OpenRouter) + Azure |
 | `anthropic` | Anthropic ChatModel |
 | `gemini` | Google Gemini ChatModel |
 | `ollama` | Ollama ChatModel + Embeddings |
 | `bedrock` | AWS Bedrock ChatModel |
-| `groq` | Groq ChatModel (ultra-fast LPU inference, OpenAI-compatible) |
-| `mistral` | Mistral ChatModel (OpenAI-compatible) |
-| `deepseek` | DeepSeek ChatModel (cost-efficient reasoning, OpenAI-compatible) |
 | `cohere` | Cohere Reranker + Embeddings |
-| `huggingface` | HuggingFace Inference API Embeddings |
 | `qdrant` | Qdrant vector store |
 | `postgres` | PostgreSQL store, cache, vector store, graph checkpointer |
 | `pinecone` | Pinecone vector store |
@@ -119,7 +114,7 @@ synaptic = { version = "0.3", features = ["openai", "qdrant"] }
 | `tavily` | Tavily search tool |
 | `sqltoolkit` | SQL database toolkit (ListTables, DescribeTable, ExecuteQuery) |
 
-Convenience combinations: `models` (all 9 LLM providers), `agent` (includes openai + graph), `rag` (includes openai + retrieval stack), `full` (everything).
+Convenience combinations: `models` (all 6 LLM provider crates), `agent` (graph + memory, provider-agnostic), `agent-openai` (agent + openai), `rag` (retrieval stack, provider-agnostic), `rag-openai` (rag + openai), `full` (everything).
 
 ## Provider Selection Guide
 
@@ -132,11 +127,20 @@ Choose a provider based on your requirements:
 | **Gemini** | API key (query param) | SSE | Yes | No | Google ecosystem, multimodal |
 | **Ollama** | None (local) | NDJSON | Yes | Yes | Privacy-sensitive, offline, development |
 | **Bedrock** | AWS IAM | AWS SDK | Yes | No | Enterprise AWS environments |
+| **Cohere** | API key (header) | -- | -- | Yes | Reranking + production-grade embeddings |
+
+OpenAI-compatible providers (available via `synaptic::openai::compat::*`, no extra feature flag needed beyond `openai`):
+
+| Provider | Auth | Streaming | Tool Calling | Embeddings | Best For |
+|----------|------|-----------|-------------|------------|----------|
 | **Groq** | API key (header) | SSE | Yes | No | Ultra-fast inference (LPU), latency-critical |
-| **Mistral** | API key (header) | SSE | Yes | No | EU compliance, cost-efficient tool calling |
 | **DeepSeek** | API key (header) | SSE | Yes | No | Cost-efficient reasoning (90%+ cheaper) |
-| **Cohere** | API key (header) | — | — | Yes | Reranking + production-grade embeddings |
-| **HuggingFace** | API key (optional) | — | — | Yes | Open-source sentence-transformers |
+| **Mistral** | API key (header) | SSE | Yes | Yes | EU compliance, cost-efficient tool calling |
+| **Fireworks** | API key (header) | SSE | Yes | No | Ultra-fast open model inference |
+| **Together** | API key (header) | SSE | Yes | No | Open-source model marketplace |
+| **xAI** | API key (header) | SSE | Yes | No | Grok models, real-time data |
+| **Perplexity** | API key (header) | SSE | No | No | Web search-augmented answers |
+| **HuggingFace** | API key (optional) | -- | -- | Yes | Open-source sentence-transformers |
 
 **Deciding factors:**
 

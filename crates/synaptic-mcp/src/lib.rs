@@ -4,6 +4,9 @@
 //! MCP-compatible servers over Stdio, SSE, or HTTP transports, discover their
 //! advertised tools, and expose each tool as a [`synaptic_core::Tool`] implementor.
 
+pub mod health;
+pub mod oauth;
+
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -13,6 +16,9 @@ use serde_json::Value;
 use tokio::sync::RwLock;
 
 use synaptic_core::{SynapticError, Tool};
+
+pub use health::{McpHealthHandle, McpHealthMonitor};
+pub use oauth::{McpOAuthConfig, OAuthTokenManager};
 
 // ---------------------------------------------------------------------------
 // Connection types
@@ -33,6 +39,9 @@ pub struct SseConnection {
     pub url: String,
     #[serde(default)]
     pub headers: HashMap<String, String>,
+    /// Optional OAuth 2.1 configuration for automatic token management.
+    #[serde(default)]
+    pub oauth: Option<McpOAuthConfig>,
 }
 
 /// HTTP (Streamable HTTP) transport connection config.
@@ -41,6 +50,9 @@ pub struct HttpConnection {
     pub url: String,
     #[serde(default)]
     pub headers: HashMap<String, String>,
+    /// Optional OAuth 2.1 configuration for automatic token management.
+    #[serde(default)]
+    pub oauth: Option<McpOAuthConfig>,
 }
 
 /// MCP server connection type.
@@ -65,6 +77,8 @@ struct McpTool {
     server_name: String,
     connection: McpConnection,
     client: reqwest::Client,
+    /// Optional OAuth token manager for automatic Bearer token injection.
+    oauth_manager: Option<Arc<OAuthTokenManager>>,
 }
 
 /// Leak a `String` into a `&'static str`.
@@ -92,28 +106,32 @@ impl Tool for McpTool {
     async fn call(&self, args: Value) -> Result<Value, SynapticError> {
         match &self.connection {
             McpConnection::Http(conn) => {
-                call_http(
-                    &self.client,
-                    &conn.url,
-                    &conn.headers,
-                    self.tool_name,
-                    &args,
-                )
-                .await
+                let headers = self.headers_with_oauth(&conn.headers).await?;
+                call_http(&self.client, &conn.url, &headers, self.tool_name, &args).await
             }
             McpConnection::Sse(conn) => {
                 // SSE uses the same HTTP POST for tool calls.
-                call_http(
-                    &self.client,
-                    &conn.url,
-                    &conn.headers,
-                    self.tool_name,
-                    &args,
-                )
-                .await
+                let headers = self.headers_with_oauth(&conn.headers).await?;
+                call_http(&self.client, &conn.url, &headers, self.tool_name, &args).await
             }
             McpConnection::Stdio(conn) => call_stdio(conn, self.tool_name, &args).await,
         }
+    }
+}
+
+impl McpTool {
+    /// Clone the provided headers and inject an `Authorization: Bearer` header
+    /// if an OAuth manager is configured.
+    async fn headers_with_oauth(
+        &self,
+        base_headers: &HashMap<String, String>,
+    ) -> Result<HashMap<String, String>, SynapticError> {
+        let mut headers = base_headers.clone();
+        if let Some(ref mgr) = self.oauth_manager {
+            let token = mgr.get_token().await?;
+            headers.insert("Authorization".to_string(), format!("Bearer {}", token));
+        }
+        Ok(headers)
     }
 }
 
@@ -363,6 +381,8 @@ pub struct MultiServerMcpClient {
     servers: HashMap<String, McpConnection>,
     prefix_tool_names: bool,
     tools: Arc<RwLock<Vec<Arc<dyn Tool>>>>,
+    /// Cached OAuth token managers, keyed by server name.
+    oauth_managers: Arc<RwLock<HashMap<String, Arc<OAuthTokenManager>>>>,
 }
 
 impl MultiServerMcpClient {
@@ -372,6 +392,7 @@ impl MultiServerMcpClient {
             servers,
             prefix_tool_names: true,
             tools: Arc::new(RwLock::new(Vec::new())),
+            oauth_managers: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
@@ -387,9 +408,29 @@ impl MultiServerMcpClient {
         let client = reqwest::Client::new();
         let mut all_tools = Vec::new();
 
+        // Build OAuth managers for connections that have oauth config.
+        let mut managers = self.oauth_managers.write().await;
         for (server_name, connection) in &self.servers {
+            let oauth_config = match connection {
+                McpConnection::Http(conn) => conn.oauth.as_ref(),
+                McpConnection::Sse(conn) => conn.oauth.as_ref(),
+                McpConnection::Stdio(_) => None,
+            };
+            if let Some(config) = oauth_config {
+                if !managers.contains_key(server_name) {
+                    managers.insert(
+                        server_name.clone(),
+                        Arc::new(OAuthTokenManager::new(config.clone())),
+                    );
+                }
+            }
+        }
+        drop(managers);
+
+        for (server_name, connection) in &self.servers {
+            let oauth_manager = self.oauth_managers.read().await.get(server_name).cloned();
             let tools = self
-                .discover_tools(server_name, connection, &client)
+                .discover_tools(server_name, connection, &client, oauth_manager)
                 .await?;
             all_tools.extend(tools);
         }
@@ -404,6 +445,7 @@ impl MultiServerMcpClient {
         server_name: &str,
         connection: &McpConnection,
         client: &reqwest::Client,
+        oauth_manager: Option<Arc<OAuthTokenManager>>,
     ) -> Result<Vec<Arc<dyn Tool>>, SynapticError> {
         let tools_list = match connection {
             McpConnection::Http(conn) => list_tools_http(client, &conn.url, &conn.headers).await?,
@@ -443,6 +485,7 @@ impl MultiServerMcpClient {
                     server_name: server_name.to_string(),
                     connection: connection.clone(),
                     client: client.clone(),
+                    oauth_manager: oauth_manager.clone(),
                 }));
             }
         }

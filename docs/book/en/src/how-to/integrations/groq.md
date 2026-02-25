@@ -2,49 +2,49 @@
 
 [Groq](https://groq.com/) delivers ultra-fast LLM inference using their proprietary LPU (Language Processing Unit) hardware. Response speeds regularly exceed 500 tokens per second, making Groq ideal for real-time applications, interactive agents, and latency-sensitive pipelines.
 
-The Groq API is fully compatible with the OpenAI API format. The `synaptic-groq` crate wraps `synaptic-openai` with the Groq base URL preset and a type-safe model name enum.
+The Groq API is fully compatible with the OpenAI API format. Groq is available as a compatibility submodule inside `synaptic-openai`. No separate crate is needed.
 
 ## Setup
 
-Add the `groq` feature to your `Cargo.toml`:
-
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["groq"] }
+synaptic = { version = "0.3", features = ["openai"] }
 ```
 
 Sign up at [console.groq.com](https://console.groq.com/) to obtain an API key. Keys are prefixed with `gsk-`.
 
 ## Configuration
 
-Create a `GroqConfig` with your API key and a `GroqModel` variant:
-
 ```rust,ignore
-use synaptic::groq::{GroqChatModel, GroqConfig, GroqModel};
+use synaptic::openai::compat::groq::{self, GroqModel};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = GroqConfig::new("gsk-your-api-key", GroqModel::Llama3_3_70bVersatile);
-let model = GroqChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = groq::chat_model("gsk-your-api-key", GroqModel::Llama3_3_70bVersatile.to_string(), Arc::new(HttpBackend::new()));
 ```
 
 ### Builder methods
 
-`GroqConfig` exposes a fluent builder for optional parameters:
+Use `OpenAiConfig` builder methods for customization:
 
 ```rust,ignore
-let config = GroqConfig::new("gsk-key", GroqModel::Llama3_3_70bVersatile)
+use synaptic::openai::compat::groq::{self, GroqModel};
+use synaptic::openai::OpenAiChatModel;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let config = groq::config("gsk-key", GroqModel::Llama3_3_70bVersatile.to_string())
     .with_temperature(0.7)
     .with_max_tokens(2048)
-    .with_top_p(0.9)
-    .with_seed(42)
-    .with_stop(vec\!["<|end|>".to_string()]);
+    .with_top_p(0.9);
+
+let model = OpenAiChatModel::new(config, Arc::new(HttpBackend::new()));
 ```
 
-To use a model not yet listed in `GroqModel`, use the custom variant:
+To use a model not yet listed in `GroqModel`, pass a string directly:
 
 ```rust,ignore
-let config = GroqConfig::new_custom("gsk-key", "llama-3.1-405b");
+let model = groq::chat_model("gsk-key", "llama-3.1-405b", Arc::new(HttpBackend::new()));
 ```
 
 ## Available Models
@@ -60,16 +60,15 @@ let config = GroqConfig::new_custom("gsk-key", "llama-3.1-405b");
 
 ## Usage
 
-`GroqChatModel` implements the `ChatModel` trait. Use `chat()` for a single response:
+The model returned by `chat_model()` implements the `ChatModel` trait. Use `chat()` for a single response:
 
 ```rust,ignore
-use synaptic::groq::{GroqChatModel, GroqConfig, GroqModel};
+use synaptic::openai::compat::groq::{self, GroqModel};
 use synaptic::core::{ChatModel, ChatRequest, Message};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = GroqConfig::new("gsk-key", GroqModel::Llama3_3_70bVersatile);
-let model = GroqChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = groq::chat_model("gsk-key", GroqModel::Llama3_3_70bVersatile.to_string(), Arc::new(HttpBackend::new()));
 
 let request = ChatRequest::new(vec![
     Message::system("You are a concise assistant."),
@@ -157,14 +156,12 @@ let retry_model = RetryChatModel::new(model, RetryConfig::default());
 
 ## Configuration Reference
 
-### GroqConfig
+All configuration is done through `OpenAiConfig` builder methods. See the [OpenAI-Compatible Providers](openai-compatible.md) page for the full reference.
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `api_key` | `String` | required | Groq API key (`gsk-...`) |
-| `model` | `String` | from enum | API model identifier |
-| `max_tokens` | `Option<u32>` | `None` | Maximum tokens to generate |
-| `temperature` | `Option<f64>` | `None` | Sampling temperature (0.0-2.0) |
-| `top_p` | `Option<f64>` | `None` | Nucleus sampling threshold |
-| `stop` | `Option<Vec<String>>` | `None` | Stop sequences |
-| `seed` | `Option<u64>` | `None` | Seed for reproducible output |
+| Method | Description |
+|--------|-------------|
+| `.with_temperature(f64)` | Sampling temperature (0.0-2.0) |
+| `.with_max_tokens(u32)` | Maximum tokens to generate |
+| `.with_top_p(f64)` | Nucleus sampling threshold |
+| `.with_stop(Vec<String>)` | Stop sequences |
+| `.with_seed(u64)` | Seed for reproducible output |

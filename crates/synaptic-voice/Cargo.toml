@@ -1,0 +1,33 @@
+[package]
+name = "synaptic-voice"
+description = "Voice TTS/STT providers for the Synaptic AI agent framework"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+readme.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+tokio.workspace = true
+serde = { workspace = true }
+serde_json.workspace = true
+synaptic-core = { version = "0.4", path = "../synaptic-core" }
+reqwest = { workspace = true, optional = true, features = ["multipart"] }
+base64.workspace = true
+futures.workspace = true
+bytes.workspace = true
+
+[features]
+openai = ["dep:reqwest"]
+elevenlabs = ["dep:reqwest"]
+deepgram = ["dep:reqwest"]
+azure = ["dep:reqwest"]
+google = ["dep:reqwest"]
+all-providers = ["openai", "elevenlabs", "deepgram", "azure", "google"]
+
+[dev-dependencies]
+tokio.workspace = true

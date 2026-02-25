@@ -64,6 +64,29 @@ assert!(results[0].score.unwrap() > results[1].score.unwrap());
 
 Without embeddings, `search()` falls back to substring matching on key and value.
 
+### Hybrid Search (BM25 + Embeddings)
+
+Hybrid search combines BM25 text scoring with embedding similarity using Reciprocal Rank Fusion (RRF). This often outperforms either method alone by capturing both exact keyword matches and semantic similarity.
+
+```rust,ignore
+use synaptic::store::InMemoryStore;
+use synaptic::openai::OpenAiEmbeddings;
+
+let embeddings = Arc::new(OpenAiEmbeddings::new("text-embedding-3-small"));
+let store = InMemoryStore::new()
+    .with_hybrid_search(embeddings);
+
+store.put(&["docs"], "rust", json!("Rust is a systems programming language focused on safety")).await?;
+store.put(&["docs"], "python", json!("Python is great for data science and AI")).await?;
+
+// Hybrid search uses both BM25 term matching and embedding similarity
+let results = store.search(&["docs"], Some("safe systems language"), 10).await?;
+```
+
+The fusion formula uses `score = Σ 1/(k + rank_i)` with `k=60`, where `rank_i` is the item's rank in each individual result list (BM25 and embedding). This balances exact keyword matches with semantic understanding.
+
+Use `with_embeddings()` for pure vector search, or `with_hybrid_search()` for the combined approach.
+
 ## Using with Agents
 
 ```rust,ignore

@@ -2,41 +2,49 @@
 
 [DeepSeek](https://deepseek.com/) 以极低的成本提供强大的语言和推理模型。DeepSeek 模型的价格通常比同类商业模型（如 GPT-4o）低 90% 以上，同时在许多基准测试中表现相当甚至更优。
 
-DeepSeek API 与 OpenAI API 格式完全兼容。`synaptic-deepseek` crate 对 `synaptic-openai` 进行封装，预设了 DeepSeek 的 base URL，并提供类型安全的 `DeepSeekModel` 枚举。
+DeepSeek API 与 OpenAI API 格式完全兼容。DeepSeek 作为 `synaptic-openai` 内的兼容子模块提供，无需单独的 crate。
 
 ## 设置
 
-在 `Cargo.toml` 中添加 `deepseek` feature：
-
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["deepseek"] }
+synaptic = { version = "0.3", features = ["openai"] }
 ```
 
 前往 [platform.deepseek.com](https://platform.deepseek.com/) 获取 API 密钥。密钥以 `sk-` 开头。
 
 ## 配置
 
-使用 API 密钥和 `DeepSeekModel` 变体创建 `DeepSeekConfig`：
-
 ```rust,ignore
-use synaptic::deepseek::{DeepSeekChatModel, DeepSeekConfig, DeepSeekModel};
+use synaptic::openai::compat::deepseek::{self, DeepSeekModel};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = DeepSeekConfig::new("sk-your-api-key", DeepSeekModel::DeepSeekChat);
-let model = DeepSeekChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = deepseek::chat_model("sk-your-api-key", DeepSeekModel::DeepSeekChat.to_string(), Arc::new(HttpBackend::new()));
 ```
 
 ### 构建器方法
 
-`DeepSeekConfig` 支持标准的流式构建器模式：
+使用 `OpenAiConfig` 的构建器方法进行自定义：
 
 ```rust,ignore
-let config = DeepSeekConfig::new("sk-key", DeepSeekModel::DeepSeekChat)
+use synaptic::openai::compat::deepseek::{self, DeepSeekModel};
+use synaptic::openai::OpenAiChatModel;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let config = deepseek::config("sk-key", DeepSeekModel::DeepSeekChat.to_string())
     .with_temperature(0.3)
     .with_max_tokens(4096)
     .with_top_p(0.9);
+
+let model = OpenAiChatModel::new(config, Arc::new(HttpBackend::new()));
+```
+
+使用未列出的模型，直接传入字符串：
+
+```rust,ignore
+let model = deepseek::chat_model("sk-key", "deepseek-chat", Arc::new(HttpBackend::new()));
 ```
 
 ## 可用模型
@@ -58,16 +66,15 @@ DeepSeek-V3（`DeepSeekChat`）的定价约为每百万输出 token 0.27 美元�
 
 ## 使用方法
 
-`DeepSeekChatModel` 实现了 `ChatModel` trait：
+`chat_model()` 返回的模型实现了 `ChatModel` trait：
 
 ```rust,ignore
-use synaptic::deepseek::{DeepSeekChatModel, DeepSeekConfig, DeepSeekModel};
+use synaptic::openai::compat::deepseek::{self, DeepSeekModel};
 use synaptic::core::{ChatModel, ChatRequest, Message};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = DeepSeekConfig::new("sk-key", DeepSeekModel::DeepSeekChat);
-let model = DeepSeekChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = deepseek::chat_model("sk-key", DeepSeekModel::DeepSeekChat.to_string(), Arc::new(HttpBackend::new()));
 
 let request = ChatRequest::new(vec![
     Message::system("You are a concise technical assistant."),
@@ -140,14 +147,12 @@ match model.chat(request).await {
 
 ## 配置参考
 
-### DeepSeekConfig
+所有配置通过 `OpenAiConfig` 构建器方法完成。完整参考请见 [OpenAI 兼容 Provider](openai-compatible.md) 页面。
 
-| 字段 | 类型 | 默认值 | 说明 |
-|-------|------|---------|-------------|
-| `api_key` | `String` | 必填 | DeepSeek API 密钥（`sk-...`） |
-| `model` | `String` | 来自枚举 | API 模型标识符 |
-| `max_tokens` | `Option<u32>` | `None` | 最大生成 token 数 |
-| `temperature` | `Option<f64>` | `None` | 采样温度（0.0-2.0） |
-| `top_p` | `Option<f64>` | `None` | 核采样阈值 |
-| `stop` | `Option<Vec<String>>` | `None` | 停止序列 |
-| `seed` | `Option<u64>` | `None` | 可复现输出的随机种子 |
+| 方法 | 说明 |
+|------|------|
+| `.with_temperature(f64)` | 采样温度（0.0-2.0） |
+| `.with_max_tokens(u32)` | 最大生成 token 数 |
+| `.with_top_p(f64)` | 核采样阈值 |
+| `.with_stop(Vec<String>)` | 停止序列 |
+| `.with_seed(u64)` | 可复现输出的随机种子 |

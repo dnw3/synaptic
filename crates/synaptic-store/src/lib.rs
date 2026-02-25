@@ -12,6 +12,32 @@ fn namespace_key(namespace: &[&str]) -> String {
     namespace.join("::")
 }
 
+/// BM25 scoring for a single query against a document.
+fn bm25_score(query: &str, document: &str, avg_doc_len: f64, total_docs: usize) -> f64 {
+    let k1 = 1.2;
+    let b = 0.75;
+    let query_terms: Vec<&str> = query.split_whitespace().collect();
+    let doc_terms: Vec<&str> = document.split_whitespace().collect();
+    let doc_len = doc_terms.len() as f64;
+
+    let mut score = 0.0;
+    for qt in &query_terms {
+        let qt_lower = qt.to_lowercase();
+        let tf = doc_terms
+            .iter()
+            .filter(|dt| dt.to_lowercase() == qt_lower)
+            .count() as f64;
+        if tf == 0.0 {
+            continue;
+        }
+        let idf = ((total_docs as f64 - 1.0 + 0.5) / (1.0 + 0.5) + 1.0).ln();
+        let numerator = tf * (k1 + 1.0);
+        let denominator = tf + k1 * (1.0 - b + b * doc_len / avg_doc_len.max(1.0));
+        score += idf * numerator / denominator;
+    }
+    score
+}
+
 /// Cosine similarity between two vectors.
 fn cosine_similarity(a: &[f32], b: &[f32]) -> f64 {
     if a.len() != b.len() || a.is_empty() {
@@ -44,6 +70,8 @@ pub struct InMemoryStore {
     embeddings: Option<Arc<dyn Embeddings>>,
     /// Pre-computed embedding vectors, keyed by `namespace_key::item_key`.
     vectors: Arc<RwLock<HashMap<String, Vec<f32>>>>,
+    /// When true, search uses hybrid BM25 + embedding via Reciprocal Rank Fusion.
+    hybrid: bool,
 }
 
 impl Default for InMemoryStore {
@@ -52,6 +80,7 @@ impl Default for InMemoryStore {
             data: Arc::new(RwLock::new(HashMap::new())),
             embeddings: None,
             vectors: Arc::new(RwLock::new(HashMap::new())),
+            hybrid: false,
         }
     }
 }
@@ -68,6 +97,19 @@ impl InMemoryStore {
     /// similarity and `Item::score` is populated.
     pub fn with_embeddings(mut self, embeddings: Arc<dyn Embeddings>) -> Self {
         self.embeddings = Some(embeddings);
+        self
+    }
+
+    /// Enable hybrid search combining BM25 text scoring and embedding similarity
+    /// via Reciprocal Rank Fusion (RRF).
+    ///
+    /// When configured, [`Store::search()`] with a query will:
+    /// 1. Compute cosine similarity scores using embeddings
+    /// 2. Compute BM25 text relevance scores
+    /// 3. Fuse rankings via RRF: `score = 1/(60+embed_rank) + 1/(60+bm25_rank)`
+    pub fn with_hybrid_search(mut self, embeddings: Arc<dyn Embeddings>) -> Self {
+        self.embeddings = Some(embeddings);
+        self.hybrid = true;
         self
     }
 }
@@ -93,7 +135,96 @@ impl Store for InMemoryStore {
             return Ok(vec![]);
         };
 
-        // If embeddings are configured and a query is provided, use semantic search
+        // Hybrid search: BM25 + embedding similarity fused via RRF
+        if self.hybrid {
+            if let (Some(ref embeddings), Some(q)) = (&self.embeddings, query) {
+                let query_vec = embeddings.embed_query(q).await?;
+                let vectors = self.vectors.read().await;
+
+                // Compute embedding scores
+                let mut embed_scored: Vec<(&String, f64)> = ns
+                    .keys()
+                    .map(|key| {
+                        let vec_key = format!("{}::{}", ns_key, key);
+                        let score = vectors
+                            .get(&vec_key)
+                            .map(|v| cosine_similarity(v, &query_vec))
+                            .unwrap_or(0.0);
+                        (key, score)
+                    })
+                    .collect();
+                embed_scored
+                    .sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+
+                // Build embed rank map (rank 0 = best)
+                let embed_rank: HashMap<&String, usize> = embed_scored
+                    .iter()
+                    .enumerate()
+                    .map(|(rank, (key, _))| (*key, rank))
+                    .collect();
+
+                // Compute BM25 scores
+                let total_docs = ns.len();
+                let avg_doc_len = if total_docs > 0 {
+                    ns.values()
+                        .map(|item| {
+                            let text = item
+                                .value
+                                .as_str()
+                                .unwrap_or(&item.value.to_string())
+                                .to_string();
+                            text.split_whitespace().count() as f64
+                        })
+                        .sum::<f64>()
+                        / total_docs as f64
+                } else {
+                    1.0
+                };
+
+                let mut bm25_scored: Vec<(&String, f64)> = ns
+                    .iter()
+                    .map(|(key, item)| {
+                        let text = item
+                            .value
+                            .as_str()
+                            .unwrap_or(&item.value.to_string())
+                            .to_string();
+                        let score = bm25_score(q, &text, avg_doc_len, total_docs);
+                        (key, score)
+                    })
+                    .collect();
+                bm25_scored
+                    .sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+
+                // Build BM25 rank map
+                let bm25_rank: HashMap<&String, usize> = bm25_scored
+                    .iter()
+                    .enumerate()
+                    .map(|(rank, (key, _))| (*key, rank))
+                    .collect();
+
+                // Reciprocal Rank Fusion
+                let k = 60.0;
+                let mut fused: Vec<(Item, f64)> = ns
+                    .iter()
+                    .map(|(key, item)| {
+                        let e_rank = embed_rank.get(key).copied().unwrap_or(ns.len()) as f64;
+                        let b_rank = bm25_rank.get(key).copied().unwrap_or(ns.len()) as f64;
+                        let fused_score = 1.0 / (k + e_rank) + 1.0 / (k + b_rank);
+                        let mut item = item.clone();
+                        item.score = Some(fused_score);
+                        (item, fused_score)
+                    })
+                    .collect();
+
+                fused.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+                fused.truncate(limit);
+
+                return Ok(fused.into_iter().map(|(item, _)| item).collect());
+            }
+        }
+
+        // If embeddings are configured (non-hybrid) and a query is provided, use semantic search
         if let (Some(ref embeddings), Some(q)) = (&self.embeddings, query) {
             let query_vec = embeddings.embed_query(q).await?;
             let vectors = self.vectors.read().await;
@@ -373,5 +504,58 @@ mod tests {
 
         store.delete(&["ns"], "k").await.unwrap();
         assert!(store.vectors.read().await.is_empty());
+    }
+
+    #[tokio::test]
+    async fn hybrid_search_combines_bm25_and_embeddings() {
+        let store = InMemoryStore::new().with_hybrid_search(Arc::new(TestEmbeddings));
+        store
+            .put(&["docs"], "a", json!("rust programming language guide"))
+            .await
+            .unwrap();
+        store
+            .put(&["docs"], "b", json!("python web development"))
+            .await
+            .unwrap();
+        store
+            .put(&["docs"], "c", json!("rust cargo build system"))
+            .await
+            .unwrap();
+
+        let results = store.search(&["docs"], Some("rust"), 10).await.unwrap();
+        assert_eq!(results.len(), 3);
+        for item in &results {
+            assert!(item.score.is_some());
+        }
+        // Scores should be descending
+        let scores: Vec<f64> = results.iter().map(|i| i.score.unwrap()).collect();
+        for w in scores.windows(2) {
+            assert!(w[0] >= w[1], "scores not sorted: {:?}", scores);
+        }
+    }
+
+    #[tokio::test]
+    async fn hybrid_search_respects_limit() {
+        let store = InMemoryStore::new().with_hybrid_search(Arc::new(TestEmbeddings));
+        for i in 0..5 {
+            store
+                .put(&["ns"], &format!("k{}", i), json!(format!("item {}", i)))
+                .await
+                .unwrap();
+        }
+        let results = store.search(&["ns"], Some("item"), 2).await.unwrap();
+        assert_eq!(results.len(), 2);
+    }
+
+    #[test]
+    fn bm25_score_basic() {
+        let score = bm25_score("rust", "rust programming language", 3.0, 10);
+        assert!(score > 0.0);
+    }
+
+    #[test]
+    fn bm25_score_zero_for_no_match() {
+        let score = bm25_score("python", "rust programming language", 3.0, 10);
+        assert_eq!(score, 0.0);
     }
 }

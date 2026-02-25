@@ -17,25 +17,25 @@ Synaptic provides fine-grained feature flags, similar to tokio:
 ```toml
 [dependencies]
 # Full — everything enabled (equivalent to previous default)
-synaptic = { version = "0.2", features = ["full"] }
+synaptic = { version = "0.3", features = ["full"] }
 
-# Agent development (OpenAI + tools + graph + memory, etc.)
-synaptic = { version = "0.2", features = ["agent"] }
+# Agent development (tools + graph + memory + your chosen provider)
+synaptic = { version = "0.3", features = ["agent-openai"] }
 
-# RAG applications (OpenAI + retrieval + loaders + splitters + embeddings + vectorstores, etc.)
-synaptic = { version = "0.2", features = ["rag"] }
+# RAG applications (retrieval + loaders + splitters + embeddings + vectorstores + your chosen provider)
+synaptic = { version = "0.3", features = ["rag-openai"] }
 
 # Agent + RAG
-synaptic = { version = "0.2", features = ["agent", "rag"] }
+synaptic = { version = "0.3", features = ["agent", "rag"] }
 
 # Just OpenAI model calls
-synaptic = { version = "0.2", features = ["openai"] }
+synaptic = { version = "0.3", features = ["openai"] }
 
 # All 4 providers (OpenAI + Anthropic + Gemini + Ollama)
-synaptic = { version = "0.2", features = ["models"] }
+synaptic = { version = "0.3", features = ["models"] }
 
 # Fine-grained: one provider + specific modules
-synaptic = { version = "0.2", features = ["anthropic", "graph", "cache"] }
+synaptic = { version = "0.3", features = ["anthropic", "graph", "cache"] }
 ```
 
 **Composite features:**
@@ -43,8 +43,11 @@ synaptic = { version = "0.2", features = ["anthropic", "graph", "cache"] }
 | Feature | Description |
 |---------|-------------|
 | **`default`** | `model-utils`, `runnables`, `prompts`, `parsers`, `tools`, `callbacks` |
-| **`agent`** | `default` + `openai`, `graph`, `memory` |
-| **`rag`** | `default` + `openai`, `retrieval`, `loaders`, `splitters`, `embeddings`, `vectorstores` |
+| **`agent`** | `default` + `graph`, `memory` (provider-agnostic; combine with e.g. `openai` or `anthropic`) |
+| **`agent-openai`** | `agent` + `openai` |
+| **`agent-anthropic`** | `agent` + `anthropic` |
+| **`rag`** | `default` + `retrieval`, `loaders`, `splitters`, `embeddings`, `vectorstores` (provider-agnostic) |
+| **`rag-openai`** | `rag` + `openai` |
 | **`models`** | All 6 providers: `openai` + `anthropic` + `gemini` + `ollama` + `bedrock` + `cohere` |
 | **`full`** | All features enabled |
 
@@ -93,7 +96,7 @@ The `core` module (traits and types) is always available regardless of feature s
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["agent"] }
+synaptic = { version = "0.3", features = ["agent"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 

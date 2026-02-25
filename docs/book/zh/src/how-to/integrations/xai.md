@@ -2,13 +2,13 @@
 
 [xAI](https://x.ai/) 开发了 Grok 系列大语言模型，以实时推理能力和 X（Twitter）数据集成著称。Grok API 与 OpenAI API 兼容。
 
-`synaptic-xai` crate 封装了 `synaptic-openai`，预设了 xAI 的 base URL 并提供类型安全的模型枚举。
+xAI 作为 `synaptic-openai` 内的兼容子模块提供，无需单独的 crate。
 
 ## 安装
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["xai"] }
+synaptic = { version = "0.3", features = ["openai"] }
 ```
 
 在 [x.ai](https://x.ai/) 注册以获取 API 密钥。
@@ -16,20 +16,28 @@ synaptic = { version = "0.2", features = ["xai"] }
 ## 配置
 
 ```rust,ignore
-use synaptic::xai::{XaiChatModel, XaiConfig, XaiModel};
+use synaptic::openai::compat::xai::{self, XaiModel};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = XaiConfig::new("xai-your-api-key", XaiModel::Grok2Latest);
-let model = XaiChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = xai::chat_model("xai-your-api-key", XaiModel::Grok2Latest.to_string(), Arc::new(HttpBackend::new()));
 ```
 
 ### Builder 方法
 
+使用 `OpenAiConfig` 的构建器方法进行自定义：
+
 ```rust,ignore
-let config = XaiConfig::new("xai-your-api-key", XaiModel::Grok2Latest)
+use synaptic::openai::compat::xai::{self, XaiModel};
+use synaptic::openai::OpenAiChatModel;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let config = xai::config("xai-your-api-key", XaiModel::Grok2Latest.to_string())
     .with_temperature(0.7)
     .with_max_tokens(8192);
+
+let model = OpenAiChatModel::new(config, Arc::new(HttpBackend::new()));
 ```
 
 ## 可用模型
@@ -44,13 +52,12 @@ let config = XaiConfig::new("xai-your-api-key", XaiModel::Grok2Latest)
 ## 使用示例
 
 ```rust,ignore
-use synaptic::xai::{XaiChatModel, XaiConfig, XaiModel};
+use synaptic::openai::compat::xai::{self, XaiModel};
 use synaptic::core::{ChatModel, ChatRequest, Message};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = XaiConfig::new("xai-your-api-key", XaiModel::Grok2Latest);
-let model = XaiChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = xai::chat_model("xai-your-api-key", XaiModel::Grok2Latest.to_string(), Arc::new(HttpBackend::new()));
 
 let request = ChatRequest::new(vec![
     Message::system("你是 Grok，一个有趣且有用的 AI。"),
@@ -75,13 +82,13 @@ while let Some(chunk) = stream.next().await {
 println!();
 ```
 
-## 配置参数
+## 配置参考
 
-| 字段 | 类型 | 默认值 | 说明 |
-|-------|------|---------|-------------|
-| `api_key` | `String` | 必填 | xAI API 密钥 |
-| `model` | `String` | 枚举决定 | API 模型标识符 |
-| `max_tokens` | `Option<u32>` | `None` | 最大生成 token 数 |
-| `temperature` | `Option<f64>` | `None` | 采样温度（0.0–2.0） |
-| `top_p` | `Option<f64>` | `None` | 核采样阈值 |
-| `stop` | `Option<Vec<String>>` | `None` | 停止序列 |
+所有配置通过 `OpenAiConfig` 构建器方法完成。完整参考请见 [OpenAI 兼容 Provider](openai-compatible.md) 页面。
+
+| 方法 | 说明 |
+|------|------|
+| `.with_temperature(f64)` | 采样温度（0.0-2.0） |
+| `.with_max_tokens(u32)` | 最大生成 token 数 |
+| `.with_top_p(f64)` | 核采样阈值 |
+| `.with_stop(Vec<String>)` | 停止序列 |

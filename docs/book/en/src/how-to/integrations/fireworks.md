@@ -2,13 +2,13 @@
 
 [Fireworks AI](https://fireworks.ai/) delivers the fastest open-source model inference available, with sub-100ms time-to-first-token for popular models. It uses an OpenAI-compatible API and supports Llama, DeepSeek, Qwen, and other leading open models.
 
-The `synaptic-fireworks` crate wraps `synaptic-openai` with Fireworks AI's base URL preset and a type-safe model enum.
+Fireworks AI is available as a compatibility submodule inside `synaptic-openai`. No separate crate is needed.
 
 ## Setup
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["fireworks"] }
+synaptic = { version = "0.3", features = ["openai"] }
 ```
 
 Sign up at [fireworks.ai](https://fireworks.ai/) to obtain an API key (prefixed with `fw-`).
@@ -16,21 +16,29 @@ Sign up at [fireworks.ai](https://fireworks.ai/) to obtain an API key (prefixed 
 ## Configuration
 
 ```rust,ignore
-use synaptic::fireworks::{FireworksChatModel, FireworksConfig, FireworksModel};
+use synaptic::openai::compat::fireworks::{self, FireworksModel};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = FireworksConfig::new("fw-your-api-key", FireworksModel::Llama3_1_70bInstruct);
-let model = FireworksChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = fireworks::chat_model("fw-your-api-key", FireworksModel::Llama3_1_70bInstruct.to_string(), Arc::new(HttpBackend::new()));
 ```
 
 ### Builder methods
 
+Use `OpenAiConfig` builder methods for customization:
+
 ```rust,ignore
-let config = FireworksConfig::new("fw-your-api-key", FireworksModel::Llama3_1_70bInstruct)
+use synaptic::openai::compat::fireworks::{self, FireworksModel};
+use synaptic::openai::OpenAiChatModel;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let config = fireworks::config("fw-your-api-key", FireworksModel::Llama3_1_70bInstruct.to_string())
     .with_temperature(0.7)
     .with_max_tokens(4096)
     .with_top_p(0.95);
+
+let model = OpenAiChatModel::new(config, Arc::new(HttpBackend::new()));
 ```
 
 ## Available Models
@@ -46,13 +54,12 @@ let config = FireworksConfig::new("fw-your-api-key", FireworksModel::Llama3_1_70
 ## Usage
 
 ```rust,ignore
-use synaptic::fireworks::{FireworksChatModel, FireworksConfig, FireworksModel};
+use synaptic::openai::compat::fireworks::{self, FireworksModel};
 use synaptic::core::{ChatModel, ChatRequest, Message};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = FireworksConfig::new("fw-your-api-key", FireworksModel::Llama3_1_70bInstruct);
-let model = FireworksChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = fireworks::chat_model("fw-your-api-key", FireworksModel::Llama3_1_70bInstruct.to_string(), Arc::new(HttpBackend::new()));
 
 let request = ChatRequest::new(vec![
     Message::system("You are a helpful assistant."),
@@ -81,11 +88,11 @@ println!();
 
 ## Configuration Reference
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `api_key` | `String` | required | Fireworks AI API key (`fw-...`) |
-| `model` | `String` | from enum | API model identifier |
-| `max_tokens` | `Option<u32>` | `None` | Maximum tokens to generate |
-| `temperature` | `Option<f64>` | `None` | Sampling temperature (0.0–2.0) |
-| `top_p` | `Option<f64>` | `None` | Nucleus sampling threshold |
-| `stop` | `Option<Vec<String>>` | `None` | Stop sequences |
+All configuration is done through `OpenAiConfig` builder methods. See the [OpenAI-Compatible Providers](openai-compatible.md) page for the full reference.
+
+| Method | Description |
+|--------|-------------|
+| `.with_temperature(f64)` | Sampling temperature (0.0-2.0) |
+| `.with_max_tokens(u32)` | Maximum tokens to generate |
+| `.with_top_p(f64)` | Nucleus sampling threshold |
+| `.with_stop(Vec<String>)` | Stop sequences |

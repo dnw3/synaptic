@@ -10,7 +10,7 @@ A Rust agent framework with LangChain-compatible architecture and Rust-native as
 
 ## Features
 
-- **LLM Providers** — OpenAI, Anthropic, Gemini, Ollama, AWS Bedrock, Groq, Mistral AI, DeepSeek, and any OpenAI-compatible API (xAI, Together, Fireworks, OpenRouter…)
+- **LLM Providers** — OpenAI, Anthropic, Gemini, Ollama, AWS Bedrock, and 10 OpenAI-compatible APIs via `compat::` submodules (Groq, DeepSeek, Mistral, Fireworks, Together, xAI, Perplexity, HuggingFace, Cohere, OpenRouter)
 - **LCEL Composition** — `Runnable` trait with pipe operator (`|`), streaming, bind, parallel, branch, assign/pick, fallbacks
 - **Graph Orchestration** — LangGraph-style `StateGraph` with conditional edges, persistent checkpointing (Redis + PostgreSQL), human-in-the-loop, streaming
 - **ReAct Agent** — `create_react_agent(model, tools)` with automatic tool dispatch
@@ -40,15 +40,12 @@ synaptic = { version = "0.2", features = ["agent"] }
 | Feature | Contents |
 |---------|----------|
 | `default` | runnables + prompts + parsers + tools + callbacks |
-| `openai` | OpenAI ChatModel + Embeddings |
+| `openai` | OpenAI ChatModel + Embeddings + 10 OpenAI-compatible providers via `compat::` |
 | `anthropic` | Anthropic Claude ChatModel |
 | `gemini` | Google Gemini ChatModel |
 | `ollama` | Ollama ChatModel + Embeddings |
 | `bedrock` | AWS Bedrock ChatModel |
-| `groq` | Groq ChatModel (ultra-fast LPU inference) |
-| `mistral` | Mistral AI ChatModel + Embeddings |
-| `deepseek` | DeepSeek ChatModel (R1 reasoning + V3) |
-| `models` | All chat model providers |
+| `models` | All chat model provider crates (openai + anthropic + gemini + ollama + bedrock + cohere) |
 | `qdrant` | Qdrant vector store |
 | `postgres` | PostgreSQL store, cache, vector store, graph checkpointer |
 | `redis` | Redis store + LLM cache + graph checkpointer |
@@ -71,8 +68,10 @@ synaptic = { version = "0.2", features = ["agent"] }
 | `mcp` | MCP server client |
 | `macros` | Proc-macros |
 | `deep` | Deep Agent harness |
-| `agent` | default + openai + graph + memory + middleware + store |
-| `rag` | default + openai + embeddings + retrieval + loaders + splitters + vectorstores |
+| `agent` | default + graph + memory + middleware + store (provider-agnostic) |
+| `agent-openai` | agent + openai |
+| `rag` | default + embeddings + retrieval + loaders + splitters + vectorstores (provider-agnostic) |
+| `rag-openai` | rag + openai |
 | `full` | Everything |
 
 ## Quick Start
@@ -94,7 +93,7 @@ let result = graph.invoke(state).await?;
 
 ## Workspace Layout
 
-45+ library crates in `crates/`, examples in `examples/`:
+38+ library crates in `crates/`, examples in `examples/`:
 
 ### Core
 
@@ -127,14 +126,11 @@ let result = graph.invoke(state).await?;
 
 | Crate | Provider |
 |-------|----------|
-| `synaptic-openai` | OpenAI (GPT-4o, o1, o3…) + Azure OpenAI + 9 OpenAI-compatible APIs |
-| `synaptic-anthropic` | Anthropic (Claude 4.6, Claude Haiku…) |
-| `synaptic-gemini` | Google Gemini (1.5 Pro, 2.0 Flash…) |
+| `synaptic-openai` | OpenAI (GPT-4o, o1, o3...) + Azure OpenAI + 10 OpenAI-compatible APIs via `compat::` submodules (Groq, DeepSeek, Mistral, Fireworks, Together, xAI, Perplexity, HuggingFace, Cohere, OpenRouter) |
+| `synaptic-anthropic` | Anthropic (Claude 4.6, Claude Haiku...) |
+| `synaptic-gemini` | Google Gemini (1.5 Pro, 2.0 Flash...) |
 | `synaptic-ollama` | Ollama (local models) |
 | `synaptic-bedrock` | AWS Bedrock (Titan, Claude, Llama via Bedrock) |
-| `synaptic-groq` | Groq (Llama 3.3 70B, Mixtral 8x7B — fastest inference via LPU) |
-| `synaptic-mistral` | Mistral AI (Mistral Large, Codestral, Mistral NeMo) |
-| `synaptic-deepseek` | DeepSeek (V3 chat + R1 reasoning — ultra-low cost) |
 
 ### Embeddings
 

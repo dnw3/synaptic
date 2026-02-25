@@ -31,24 +31,17 @@ members = [
   "crates/synaptic-pdf",
   "crates/synaptic-bedrock",
   "crates/synaptic-cohere",
-  "crates/synaptic-perplexity",
   "crates/synaptic-pinecone",
   "crates/synaptic-chroma",
   "crates/synaptic-mongodb",
   "crates/synaptic-elasticsearch",
   "crates/synaptic-sqlite",
   "crates/synaptic-tavily",
-  "crates/synaptic-groq",
-  "crates/synaptic-together",
-  "crates/synaptic-fireworks",
-  "crates/synaptic-mistral",
-  "crates/synaptic-deepseek",
   "crates/synaptic-huggingface",
   "crates/synaptic-voyage",
   "crates/synaptic-nomic",
   "crates/synaptic-jina",
   "crates/synaptic-weaviate",
-  "crates/synaptic-xai",
   "crates/synaptic-sqltoolkit",
   "crates/synaptic-e2b",
   "crates/synaptic-confluence",
@@ -63,6 +56,11 @@ members = [
   "crates/synaptic-config",
   "crates/synaptic-secrets",
   "crates/synaptic-session",
+  "crates/synaptic-metrics",
+  "crates/synaptic-scheduler",
+  "crates/synaptic-voice",
+  "crates/synaptic-browser",
+  "crates/synaptic-sandbox",
   "crates/synaptic",
   "examples/react_basic",
   "examples/tool_calling_basic",
@@ -94,7 +92,7 @@ resolver = "2"
 
 [workspace.package]
 edition = "2021"
-version = "0.3.1"
+version = "0.4.0"
 license = "MIT"
 authors = ["Synaptic Contributors"]
 rust-version = "1.88"
@@ -123,12 +121,12 @@ regex = "1"
 base64 = "0.22"
 uuid = { version = "1", features = ["v4"] }
 schemars = { version = "1", features = ["derive"] }
-synaptic-core = { version = "0.3", path = "crates/synaptic-core" }
-synaptic-mcp = { version = "0.3", path = "crates/synaptic-mcp" }
-synaptic-macros = { version = "0.3", path = "crates/synaptic-macros" }
-synaptic-middleware = { version = "0.3", path = "crates/synaptic-middleware" }
-synaptic-runnables = { version = "0.3", path = "crates/synaptic-runnables" }
-synaptic-deep = { version = "0.3", path = "crates/synaptic-deep" }
+synaptic-core = { version = "0.4", path = "crates/synaptic-core" }
+synaptic-mcp = { version = "0.4", path = "crates/synaptic-mcp" }
+synaptic-macros = { version = "0.4", path = "crates/synaptic-macros" }
+synaptic-middleware = { version = "0.4", path = "crates/synaptic-middleware" }
+synaptic-runnables = { version = "0.4", path = "crates/synaptic-runnables" }
+synaptic-deep = { version = "0.4", path = "crates/synaptic-deep" }
 toml = "0.8"
 serde_yml = "0.0.12"
 dirs = "6"

@@ -1,0 +1,19 @@
+[package]
+name = "synaptic-metrics"
+description = "Prometheus metrics exporter for Synaptic agent telemetry"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+synaptic-core = { version = "0.4", path = "../synaptic-core" }
+synaptic-callbacks = { version = "0.4", path = "../synaptic-callbacks" }
+tokio = { workspace = true, features = ["net", "io-util"] }
+tracing.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
+reqwest.workspace = true

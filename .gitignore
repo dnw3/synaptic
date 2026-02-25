@@ -9,3 +9,4 @@ docs/plans/
 .env.*
 .DS_Store
 *.png
+AGENTS.md

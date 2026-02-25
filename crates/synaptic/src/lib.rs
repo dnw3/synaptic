@@ -13,9 +13,14 @@
 //! | `anthropic` | Anthropic ChatModel |
 //! | `gemini` | Gemini ChatModel |
 //! | `ollama` | Ollama ChatModel + Embeddings |
-//! | `models` | All providers: openai + anthropic + gemini + ollama |
-//! | `agent` | `default` + openai + graph + memory + middleware + store |
-//! | `rag` | `default` + openai + retrieval + loaders + splitters + embeddings + vectorstores |
+//! | `models` | All providers: openai + anthropic + gemini + ollama + bedrock + cohere |
+//! | `agent` | Agent capabilities (graph, memory, middleware, store, etc.) — no provider included |
+//! | `rag` | RAG pipeline (embeddings, retrieval, loaders, etc.) — no provider included |
+//! | `agent-openai` | `agent` + openai provider |
+//! | `agent-anthropic` | `agent` + anthropic provider |
+//! | `rag-openai` | `rag` + openai provider |
+//! | `deep` | `agent` + deep agent harness (no implicit provider) |
+//! | `deep-config` | `deep` + config + openai (config-builder requires openai) |
 //! | `full` | All features enabled |
 //!
 //! # Quick Start
@@ -208,18 +213,6 @@ pub use synaptic_sqlite as sqlite;
 #[cfg(feature = "tavily")]
 pub use synaptic_tavily as tavily;
 
-/// Groq ChatModel (OpenAI-compatible, ultra-fast LPU inference).
-#[cfg(feature = "groq")]
-pub use synaptic_groq as groq;
-
-/// Mistral ChatModel (OpenAI-compatible).
-#[cfg(feature = "mistral")]
-pub use synaptic_mistral as mistral;
-
-/// DeepSeek ChatModel (OpenAI-compatible, cost-efficient reasoning).
-#[cfg(feature = "deepseek")]
-pub use synaptic_deepseek as deepseek;
-
 /// HuggingFace Inference API Embeddings.
 #[cfg(feature = "huggingface")]
 pub use synaptic_huggingface as huggingface;
@@ -243,22 +236,6 @@ pub use synaptic_weaviate as weaviate;
 /// SQL database toolkit: ListTables, DescribeTable, ExecuteQuery (read-only).
 #[cfg(feature = "sqltoolkit")]
 pub use synaptic_sqltoolkit as sqltoolkit;
-
-/// Together AI ChatModel (OpenAI-compatible, open-source model marketplace).
-#[cfg(feature = "together")]
-pub use synaptic_together as together;
-
-/// Fireworks AI ChatModel (OpenAI-compatible, fastest open model inference).
-#[cfg(feature = "fireworks")]
-pub use synaptic_fireworks as fireworks;
-
-/// xAI Grok ChatModel (OpenAI-compatible).
-#[cfg(feature = "xai")]
-pub use synaptic_xai as xai;
-
-/// Perplexity AI ChatModel (OpenAI-compatible, online search-augmented).
-#[cfg(feature = "perplexity")]
-pub use synaptic_perplexity as perplexity;
 
 /// E2B cloud code execution sandbox.
 #[cfg(feature = "e2b")]
@@ -295,3 +272,23 @@ pub use synaptic_langfuse as langfuse;
 /// Feishu/Lark integration: LarkConfig, LarkDocLoader, LarkMessageTool, LarkBitableTool.
 #[cfg(feature = "lark")]
 pub use synaptic_lark as lark;
+
+/// Voice TTS/STT providers: TtsProvider, SttProvider, OpenAiVoice.
+#[cfg(feature = "voice")]
+pub use synaptic_voice as voice;
+
+/// Browser automation tools: NavigateTool, ScreenshotTool, EvalJsTool.
+#[cfg(feature = "browser")]
+pub use synaptic_browser as browser;
+
+/// Job scheduling: cron + interval tasks, TokioScheduler.
+#[cfg(feature = "scheduler")]
+pub use synaptic_scheduler as scheduler;
+
+/// Container sandbox: Docker and Apple Container backends for secure code execution.
+#[cfg(feature = "sandbox")]
+pub use synaptic_sandbox as sandbox;
+
+/// Prometheus metrics exporter: render and serve /metrics endpoint.
+#[cfg(feature = "metrics")]
+pub use synaptic_metrics as metrics;

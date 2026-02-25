@@ -7,15 +7,14 @@ Synaptic 采用**以 Provider 为中心**的集成架构。每个集成位于独
 ```text
 synaptic-core（定义 trait）
   ├── synaptic-openai         (ChatModel + Embeddings)
+  │     └── compat/           (10 个 OpenAI 兼容 Provider 子模块：
+  │           groq, deepseek, fireworks, together, xai, perplexity,
+  │           mistral, huggingface, cohere, openrouter)
   ├── synaptic-anthropic      (ChatModel)
   ├── synaptic-gemini         (ChatModel)
   ├── synaptic-ollama         (ChatModel + Embeddings)
   ├── synaptic-bedrock        (ChatModel)
-  ├── synaptic-groq           (ChatModel — OpenAI 兼容，LPU)
-  ├── synaptic-mistral        (ChatModel — OpenAI 兼容)
-  ├── synaptic-deepseek       (ChatModel — OpenAI 兼容)
   ├── synaptic-cohere         (Reranker / DocumentCompressor + Embeddings)
-  ├── synaptic-huggingface    (Embeddings)
   ├── synaptic-qdrant         (VectorStore)
   ├── synaptic-postgres       (VectorStore + Store + LlmCache + Checkpointer)
   ├── synaptic-pinecone       (VectorStore)
@@ -41,8 +40,8 @@ synaptic-core（定义 trait）
 
 | Trait | 用途 | 实现 Crate |
 |-------|------|-----------|
-| `ChatModel` | LLM 聊天补全 | openai, anthropic, gemini, ollama, bedrock, groq, mistral, deepseek |
-| `Embeddings` | 文本嵌入向量 | openai, ollama, cohere, huggingface |
+| `ChatModel` | LLM 聊天补全 | openai（+ 7 个 compat provider）, anthropic, gemini, ollama, bedrock |
+| `Embeddings` | 文本嵌入向量 | openai（+ mistral, cohere, huggingface compat）, ollama |
 | `VectorStore` | 向量相似度搜索 | qdrant, postgres, pinecone, chroma, mongodb, elasticsearch, weaviate, (+ in-memory) |
 | `Store` | 键值存储 | redis, postgres, (+ in-memory) |
 | `LlmCache` | LLM 响应缓存 | redis, sqlite, postgres, (+ in-memory) |
@@ -93,21 +92,17 @@ let results = store.similarity_search("query", 5, &embeddings).await?;
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai", "qdrant"] }
+synaptic = { version = "0.3", features = ["openai", "qdrant"] }
 ```
 
 | Feature | 集成 |
 |---------|-----|
-| `openai` | OpenAI ChatModel + Embeddings |
+| `openai` | OpenAI ChatModel + Embeddings + 10 个 OpenAI 兼容 Provider（通过 `compat::` 子模块：Groq、DeepSeek、Fireworks、Together、xAI、Perplexity、Mistral、HuggingFace、Cohere、OpenRouter）+ Azure |
 | `anthropic` | Anthropic ChatModel |
 | `gemini` | Google Gemini ChatModel |
 | `ollama` | Ollama ChatModel + Embeddings |
 | `bedrock` | AWS Bedrock ChatModel |
-| `groq` | Groq ChatModel（超快 LPU 推理，OpenAI 兼容） |
-| `mistral` | Mistral ChatModel（OpenAI 兼容） |
-| `deepseek` | DeepSeek ChatModel（成本极低，OpenAI 兼容） |
 | `cohere` | Cohere Reranker + Embeddings |
-| `huggingface` | HuggingFace Inference API Embeddings |
 | `qdrant` | Qdrant 向量存储 |
 | `postgres` | PostgreSQL 集成（VectorStore + Store + Cache + 检查点） |
 | `pinecone` | Pinecone 向量存储 |
@@ -121,7 +116,7 @@ synaptic = { version = "0.2", features = ["openai", "qdrant"] }
 | `tavily` | Tavily 搜索工具 |
 | `sqltoolkit` | SQL 数据库工具包（ListTables、DescribeTable、ExecuteQuery） |
 
-便捷组合：`models`（全部 9 个 LLM provider）、`agent`（包含 openai + graph）、`rag`（包含 openai + 检索栈）、`full`（全部）。
+便捷组合：`models`（全部 6 个 LLM provider crate）、`agent`（graph + memory，与 Provider 无关）、`agent-openai`（agent + openai）、`rag`（检索栈，与 Provider 无关）、`rag-openai`（rag + openai）、`full`（全部）。
 
 ## Provider 选型指南
 
@@ -134,11 +129,20 @@ synaptic = { version = "0.2", features = ["openai", "qdrant"] }
 | **Gemini** | API key (查询参数) | SSE | 支持 | 不支持 | Google 生态、多模态 |
 | **Ollama** | 无需认证（本地） | NDJSON | 支持 | 支持 | 隐私敏感、离线、开发调试 |
 | **Bedrock** | AWS IAM | AWS SDK | 支持 | 不支持 | 企业 AWS 环境 |
+| **Cohere** | API key (Header) | -- | -- | 支持 | Reranker + 生产级嵌入 |
+
+OpenAI 兼容 Provider（通过 `synaptic::openai::compat::*` 使用，只需 `openai` feature，无需额外 feature flag）：
+
+| Provider | 认证方式 | 流式传输 | 工具调用 | 嵌入 | 适用场景 |
+|----------|---------|---------|---------|------|---------|
 | **Groq** | API key (Header) | SSE | 支持 | 不支持 | 超快推理（LPU），延迟敏感场景 |
-| **Mistral** | API key (Header) | SSE | 支持 | 不支持 | 欧盟合规，低成本工具调用 |
 | **DeepSeek** | API key (Header) | SSE | 支持 | 不支持 | 成本极低（比 GPT-4o 便宜 90%+），国内首选 |
-| **Cohere** | API key (Header) | — | — | 支持 | Reranker + 生产级嵌入 |
-| **HuggingFace** | API key（可选） | — | — | 支持 | 开源 sentence-transformers |
+| **Mistral** | API key (Header) | SSE | 支持 | 支持 | 欧盟合规，低成本工具调用 |
+| **Fireworks** | API key (Header) | SSE | 支持 | 不支持 | 超快开源模型推理 |
+| **Together** | API key (Header) | SSE | 支持 | 不支持 | 开源模型市场 |
+| **xAI** | API key (Header) | SSE | 支持 | 不支持 | Grok 模型，实时数据 |
+| **Perplexity** | API key (Header) | SSE | 不支持 | 不支持 | 联网搜索增强回答 |
+| **HuggingFace** | API key（可选） | -- | -- | 支持 | 开源 sentence-transformers |
 
 **决策因素：**
 

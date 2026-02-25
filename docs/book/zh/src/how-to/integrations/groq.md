@@ -2,49 +2,49 @@
 
 [Groq](https://groq.com/) 利用其专有的 LPU（语言处理单元）硬件，提供超高速的 LLM 推理服务。响应速度通常超过每秒 500 个 token，使 Groq 非常适合实时应用、交互式 Agent 和对延迟敏感的流水线。
 
-Groq API 与 OpenAI API 格式完全兼容。`synaptic-groq` crate 对 `synaptic-openai` 进行封装，预设了 Groq 的 base URL，并提供类型安全的模型名称枚举。
+Groq API 与 OpenAI API 格式完全兼容。Groq 作为 `synaptic-openai` 内的兼容子模块提供，无需单独的 crate。
 
 ## 设置
 
-在 `Cargo.toml` 中添加 `groq` feature：
-
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["groq"] }
+synaptic = { version = "0.3", features = ["openai"] }
 ```
 
 前往 [console.groq.com](https://console.groq.com/) 注册并获取 API 密钥。密钥以 `gsk-` 开头。
 
 ## 配置
 
-使用 API 密钥和 `GroqModel` 变体创建 `GroqConfig`：
-
 ```rust,ignore
-use synaptic::groq::{GroqChatModel, GroqConfig, GroqModel};
+use synaptic::openai::compat::groq::{self, GroqModel};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = GroqConfig::new("gsk-your-api-key", GroqModel::Llama3_3_70bVersatile);
-let model = GroqChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = groq::chat_model("gsk-your-api-key", GroqModel::Llama3_3_70bVersatile.to_string(), Arc::new(HttpBackend::new()));
 ```
 
 ### 构建器方法
 
-`GroqConfig` 提供流式构建器用于设置可选参数：
+使用 `OpenAiConfig` 的构建器方法进行自定义：
 
 ```rust,ignore
-let config = GroqConfig::new("gsk-key", GroqModel::Llama3_3_70bVersatile)
+use synaptic::openai::compat::groq::{self, GroqModel};
+use synaptic::openai::OpenAiChatModel;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let config = groq::config("gsk-key", GroqModel::Llama3_3_70bVersatile.to_string())
     .with_temperature(0.7)
     .with_max_tokens(2048)
-    .with_top_p(0.9)
-    .with_seed(42)
-    .with_stop(vec\!["<|end|>".to_string()]);
+    .with_top_p(0.9);
+
+let model = OpenAiChatModel::new(config, Arc::new(HttpBackend::new()));
 ```
 
-如需使用 `GroqModel` 中未列出的模型，可使用自定义变体：
+如需使用 `GroqModel` 中未列出的模型，直接传入字符串：
 
 ```rust,ignore
-let config = GroqConfig::new_custom("gsk-key", "llama-3.1-405b");
+let model = groq::chat_model("gsk-key", "llama-3.1-405b", Arc::new(HttpBackend::new()));
 ```
 
 ## 可用模型
@@ -60,16 +60,15 @@ let config = GroqConfig::new_custom("gsk-key", "llama-3.1-405b");
 
 ## 使用方法
 
-`GroqChatModel` 实现了 `ChatModel` trait。使用 `chat()` 获取单次响应：
+`chat_model()` 返回的模型实现了 `ChatModel` trait。使用 `chat()` 获取单次响应：
 
 ```rust,ignore
-use synaptic::groq::{GroqChatModel, GroqConfig, GroqModel};
+use synaptic::openai::compat::groq::{self, GroqModel};
 use synaptic::core::{ChatModel, ChatRequest, Message};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = GroqConfig::new("gsk-key", GroqModel::Llama3_3_70bVersatile);
-let model = GroqChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = groq::chat_model("gsk-key", GroqModel::Llama3_3_70bVersatile.to_string(), Arc::new(HttpBackend::new()));
 
 let request = ChatRequest::new(vec![
     Message::system("You are a concise assistant."),
@@ -156,14 +155,12 @@ let retry_model = RetryChatModel::new(model, RetryConfig::default());
 
 ## 配置参考
 
-### GroqConfig
+所有配置通过 `OpenAiConfig` 构建器方法完成。完整参考请见 [OpenAI 兼容 Provider](openai-compatible.md) 页面。
 
-| 字段 | 类型 | 默认值 | 说明 |
-|-------|------|---------|-------------|
-| `api_key` | `String` | 必填 | Groq API 密钥（`gsk-...`） |
-| `model` | `String` | 来自枚举 | API 模型标识符 |
-| `max_tokens` | `Option<u32>` | `None` | 最大生成 token 数 |
-| `temperature` | `Option<f64>` | `None` | 采样温度（0.0-2.0） |
-| `top_p` | `Option<f64>` | `None` | 核采样阈值 |
-| `stop` | `Option<Vec<String>>` | `None` | 停止序列 |
-| `seed` | `Option<u64>` | `None` | 可复现输出的随机种子 |
+| 方法 | 说明 |
+|------|------|
+| `.with_temperature(f64)` | 采样温度（0.0-2.0） |
+| `.with_max_tokens(u32)` | 最大生成 token 数 |
+| `.with_top_p(f64)` | 核采样阈值 |
+| `.with_stop(Vec<String>)` | 停止序列 |
+| `.with_seed(u64)` | 可复现输出的随机种子 |

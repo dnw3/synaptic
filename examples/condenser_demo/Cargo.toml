@@ -9,5 +9,5 @@ name = "condenser_demo"
 path = "src/main.rs"
 
 [dependencies]
-synaptic = { version = "0.3", path = "../../crates/synaptic", features = ["condenser", "model-utils"] }
+synaptic = { version = "0.4", path = "../../crates/synaptic", features = ["condenser", "model-utils"] }
 tokio = { workspace = true }

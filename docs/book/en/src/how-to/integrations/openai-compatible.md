@@ -1,6 +1,6 @@
 # OpenAI-Compatible Providers
 
-Many LLM providers expose an OpenAI-compatible API. Synaptic ships convenience constructors for nine popular providers so you can connect without building configuration by hand.
+Many LLM providers expose an OpenAI-compatible API. Synaptic ships convenience constructors for eleven popular providers as submodules of `synaptic::openai::compat`, so you can connect without building configuration by hand.
 
 ## Setup
 
@@ -8,31 +8,32 @@ Add the `openai` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai"] }
+synaptic = { version = "0.3", features = ["openai"] }
 ```
 
 All OpenAI-compatible providers use the `synaptic-openai` crate under the hood, so only the `openai` feature is required.
 
 ## Supported Providers
 
-The `synaptic::openai::compat` module provides two functions per provider:
+The `synaptic::openai::compat` module provides a submodule per provider, each with two functions:
 
-- `{provider}_config(api_key, model)` -- returns an `OpenAiConfig` pre-configured with the correct base URL.
-- `{provider}_chat_model(api_key, model, backend)` -- returns a ready-to-use `OpenAiChatModel`.
+- `config(api_key, model)` -- returns an `OpenAiConfig` pre-configured with the correct base URL.
+- `chat_model(api_key, model, backend)` -- returns a ready-to-use `OpenAiChatModel`.
 
 Some providers also offer embeddings variants.
 
-| Provider | Config function | Chat model function | Embeddings? |
-|----------|----------------|---------------------|-------------|
-| Groq | `groq_config` | `groq_chat_model` | No |
-| DeepSeek | `deepseek_config` | `deepseek_chat_model` | No |
-| Fireworks | `fireworks_config` | `fireworks_chat_model` | No |
-| Together | `together_config` | `together_chat_model` | No |
-| xAI | `xai_config` | `xai_chat_model` | No |
-| MistralAI | `mistral_config` | `mistral_chat_model` | Yes |
-| HuggingFace | `huggingface_config` | `huggingface_chat_model` | Yes |
-| Cohere | `cohere_config` | `cohere_chat_model` | Yes |
-| OpenRouter | `openrouter_config` | `openrouter_chat_model` | No |
+| Provider | Submodule | Embeddings? |
+|----------|-----------|-------------|
+| Groq | `compat::groq` | No |
+| DeepSeek | `compat::deepseek` | No |
+| Fireworks | `compat::fireworks` | No |
+| Together | `compat::together` | No |
+| xAI | `compat::xai` | No |
+| Perplexity | `compat::perplexity` | No |
+| MistralAI | `compat::mistral` | Yes |
+| HuggingFace | `compat::huggingface` | Yes |
+| Cohere | `compat::cohere` | Yes |
+| OpenRouter | `compat::openrouter` | No |
 
 ## Usage
 
@@ -40,19 +41,19 @@ Some providers also offer embeddings variants.
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic::openai::compat::{groq_chat_model, deepseek_chat_model};
+use synaptic::openai::compat::{groq, deepseek};
 use synaptic::models::HttpBackend;
 use synaptic::core::{ChatModel, ChatRequest, Message};
 
 let backend = Arc::new(HttpBackend::new());
 
 // Groq
-let model = groq_chat_model("gsk-...", "llama-3.3-70b-versatile", backend.clone());
+let model = groq::chat_model("gsk-...", "llama-3.3-70b-versatile", backend.clone());
 let request = ChatRequest::new(vec![Message::human("Hello from Groq!")]);
 let response = model.chat(&request).await?;
 
 // DeepSeek
-let model = deepseek_chat_model("sk-...", "deepseek-chat", backend.clone());
+let model = deepseek::chat_model("sk-...", "deepseek-chat", backend.clone());
 let response = model.chat(&request).await?;
 ```
 
@@ -62,38 +63,48 @@ If you need to customize the config further before creating the model:
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic::openai::compat::fireworks_config;
+use synaptic::openai::compat::fireworks;
 use synaptic::openai::OpenAiChatModel;
 use synaptic::models::HttpBackend;
 
-let config = fireworks_config("fw-...", "accounts/fireworks/models/llama-v3p1-70b-instruct")
+let config = fireworks::config("fw-...", "accounts/fireworks/models/llama-v3p1-70b-instruct")
     .with_temperature(0.7)
     .with_max_tokens(2048);
 
 let model = OpenAiChatModel::new(config, Arc::new(HttpBackend::new()));
 ```
 
+### Type-safe model enums
+
+Each provider submodule exports a model enum with common variants:
+
+```rust,ignore
+use synaptic::openai::compat::groq::{self, GroqModel};
+
+let model = groq::chat_model("gsk-...", GroqModel::Llama3_3_70bVersatile.to_string(), backend.clone());
+```
+
 ### Embeddings
 
-Providers that support embeddings have `{provider}_embeddings_config` and `{provider}_embeddings` functions:
+Providers that support embeddings have `embeddings_config` and `embeddings` functions:
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic::openai::compat::{mistral_embeddings, cohere_embeddings, huggingface_embeddings};
+use synaptic::openai::compat::{mistral, cohere, huggingface};
 use synaptic::models::HttpBackend;
 use synaptic::core::Embeddings;
 
 let backend = Arc::new(HttpBackend::new());
 
 // MistralAI embeddings
-let embeddings = mistral_embeddings("sk-...", "mistral-embed", backend.clone());
+let embeddings = mistral::embeddings("sk-...", "mistral-embed", backend.clone());
 let vectors = embeddings.embed_documents(&["Hello world"]).await?;
 
 // Cohere embeddings
-let embeddings = cohere_embeddings("co-...", "embed-english-v3.0", backend.clone());
+let embeddings = cohere::embeddings("co-...", "embed-english-v3.0", backend.clone());
 
 // HuggingFace embeddings
-let embeddings = huggingface_embeddings("hf_...", "BAAI/bge-small-en-v1.5", backend.clone());
+let embeddings = huggingface::embeddings("hf_...", "BAAI/bge-small-en-v1.5", backend.clone());
 ```
 
 ## Unlisted providers
@@ -141,6 +152,7 @@ while let Some(chunk) = stream.next().await {
 | Fireworks | `https://api.fireworks.ai/inference/v1` | `FIREWORKS_API_KEY` |
 | Together | `https://api.together.xyz/v1` | `TOGETHER_API_KEY` |
 | xAI | `https://api.x.ai/v1` | `XAI_API_KEY` |
+| Perplexity | `https://api.perplexity.ai` | `PERPLEXITY_API_KEY` |
 | MistralAI | `https://api.mistral.ai/v1` | `MISTRAL_API_KEY` |
 | HuggingFace | `https://api-inference.huggingface.co/v1` | `HUGGINGFACE_API_KEY` |
 | Cohere | `https://api.cohere.com/v1` | `CO_API_KEY` |

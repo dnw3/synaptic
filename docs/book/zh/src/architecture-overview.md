@@ -1,6 +1,6 @@
 # 架构概览
 
-Synaptic 采用 Cargo workspace 组织，包含 22 个库 crate、1 个门面 crate 和若干示例二进制文件。这些 crate 形成分层架构，每一层建立在下一层之上。
+Synaptic 采用 Cargo workspace 组织，包含 19 个库 crate、1 个门面 crate 和若干示例二进制文件。这些 crate 形成分层架构，每一层建立在下一层之上。
 
 ## Crate 层级
 

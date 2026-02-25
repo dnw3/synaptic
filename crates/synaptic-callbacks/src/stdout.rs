@@ -69,6 +69,45 @@ impl CallbackHandler for StdOutCallbackHandler {
             RunEvent::RunFailed { run_id, error } => {
                 println!("[RunFailed] run_id={run_id} error={error}");
             }
+            RunEvent::BeforeToolCall {
+                run_id,
+                tool_name,
+                arguments,
+            } => {
+                if self.verbose {
+                    println!("[BeforeToolCall] run_id={run_id} tool={tool_name} args={arguments}");
+                }
+            }
+            RunEvent::AfterToolCall {
+                run_id,
+                tool_name,
+                result,
+            } => {
+                if self.verbose {
+                    let truncated = if result.len() > 100 {
+                        format!("{}...", &result[..100])
+                    } else {
+                        result
+                    };
+                    println!("[AfterToolCall] run_id={run_id} tool={tool_name} result={truncated}");
+                }
+            }
+            RunEvent::BeforeMessage {
+                run_id,
+                message_count,
+            } => {
+                if self.verbose {
+                    println!("[BeforeMessage] run_id={run_id} messages={message_count}");
+                }
+            }
+            RunEvent::AfterMessage {
+                run_id,
+                response_length,
+            } => {
+                if self.verbose {
+                    println!("[AfterMessage] run_id={run_id} response_len={response_length}");
+                }
+            }
         }
         Ok(())
     }

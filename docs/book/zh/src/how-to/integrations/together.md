@@ -2,15 +2,13 @@
 
 [Together AI](https://www.together.ai/) 通过 OpenAI 兼容 API 提供领先的开源模型访问（Llama、DeepSeek、Qwen、Mixtral）。其 Serverless 推理定价具有竞争力，适合需要前沿开源模型的生产工作负载。
 
-`synaptic-together` crate 封装了 `synaptic-openai`，预设了 Together AI 的 base URL 并提供类型安全的模型枚举。
+Together AI 作为 `synaptic-openai` 内的兼容子模块提供，无需单独的 crate。
 
 ## 安装
 
-在 `Cargo.toml` 中启用 `together` feature：
-
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["together"] }
+synaptic = { version = "0.3", features = ["openai"] }
 ```
 
 在 [api.together.xyz](https://api.together.xyz/) 注册以获取 API 密钥。
@@ -18,28 +16,36 @@ synaptic = { version = "0.2", features = ["together"] }
 ## 配置
 
 ```rust,ignore
-use synaptic::together::{TogetherChatModel, TogetherConfig, TogetherModel};
+use synaptic::openai::compat::together::{self, TogetherModel};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = TogetherConfig::new("your-api-key", TogetherModel::Llama3_3_70bInstructTurbo);
-let model = TogetherChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = together::chat_model("your-api-key", TogetherModel::Llama3_3_70bInstructTurbo.to_string(), Arc::new(HttpBackend::new()));
 ```
 
 ### Builder 方法
 
+使用 `OpenAiConfig` 的构建器方法进行自定义：
+
 ```rust,ignore
-let config = TogetherConfig::new("your-api-key", TogetherModel::Llama3_3_70bInstructTurbo)
+use synaptic::openai::compat::together::{self, TogetherModel};
+use synaptic::openai::OpenAiChatModel;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let config = together::config("your-api-key", TogetherModel::Llama3_3_70bInstructTurbo.to_string())
     .with_temperature(0.7)
     .with_max_tokens(2048)
     .with_top_p(0.9)
     .with_stop(vec!["</s>".to_string()]);
+
+let model = OpenAiChatModel::new(config, Arc::new(HttpBackend::new()));
 ```
 
-使用未列出的模型：
+使用未列出的模型，直接传入字符串：
 
 ```rust,ignore
-let config = TogetherConfig::new_custom("your-api-key", "custom-org/custom-model-v1");
+let model = together::chat_model("your-api-key", "custom-org/custom-model-v1", Arc::new(HttpBackend::new()));
 ```
 
 ## 可用模型
@@ -57,13 +63,12 @@ let config = TogetherConfig::new_custom("your-api-key", "custom-org/custom-model
 ## 使用示例
 
 ```rust,ignore
-use synaptic::together::{TogetherChatModel, TogetherConfig, TogetherModel};
+use synaptic::openai::compat::together::{self, TogetherModel};
 use synaptic::core::{ChatModel, ChatRequest, Message};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = TogetherConfig::new("your-api-key", TogetherModel::Llama3_3_70bInstructTurbo);
-let model = TogetherChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = together::chat_model("your-api-key", TogetherModel::Llama3_3_70bInstructTurbo.to_string(), Arc::new(HttpBackend::new()));
 
 let request = ChatRequest::new(vec![
     Message::system("你是一个简洁的助手。"),
@@ -103,13 +108,13 @@ match model.chat(request).await {
 }
 ```
 
-## 配置参数
+## 配置参考
 
-| 字段 | 类型 | 默认值 | 说明 |
-|-------|------|---------|-------------|
-| `api_key` | `String` | 必填 | Together AI API 密钥 |
-| `model` | `String` | 枚举决定 | API 模型标识符 |
-| `max_tokens` | `Option<u32>` | `None` | 最大生成 token 数 |
-| `temperature` | `Option<f64>` | `None` | 采样温度（0.0–2.0） |
-| `top_p` | `Option<f64>` | `None` | 核采样阈值 |
-| `stop` | `Option<Vec<String>>` | `None` | 停止序列 |
+所有配置通过 `OpenAiConfig` 构建器方法完成。完整参考请见 [OpenAI 兼容 Provider](openai-compatible.md) 页面。
+
+| 方法 | 说明 |
+|------|------|
+| `.with_temperature(f64)` | 采样温度（0.0-2.0） |
+| `.with_max_tokens(u32)` | 最大生成 token 数 |
+| `.with_top_p(f64)` | 核采样阈值 |
+| `.with_stop(Vec<String>)` | 停止序列 |

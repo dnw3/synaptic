@@ -1,0 +1,21 @@
+[package]
+name = "synaptic-scheduler"
+description = "Job scheduling (cron + interval) for the Synaptic AI agent framework"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+readme.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+tokio.workspace = true
+synaptic-core = { version = "0.4", path = "../synaptic-core" }
+serde = { workspace = true }
+uuid.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true

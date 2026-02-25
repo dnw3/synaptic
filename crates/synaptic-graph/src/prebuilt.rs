@@ -184,6 +184,8 @@ pub struct AgentOptions {
     pub post_model_hook: Option<PostModelHook>,
     /// Optional JSON schema for structured output on the final model call.
     pub response_format: Option<Value>,
+    /// Enable parallel tool execution in ToolNode (default false).
+    pub parallel_tools: bool,
 }
 
 /// Create a prebuilt agent graph with full middleware and store support.
@@ -214,7 +216,8 @@ pub fn create_agent(
         response_format: options.response_format,
     };
 
-    let mut tool_node = ToolNode::with_middleware(executor, middleware_chain);
+    let mut tool_node =
+        ToolNode::with_middleware(executor, middleware_chain).with_parallel(options.parallel_tools);
     if let Some(ref store) = options.store {
         tool_node = tool_node.with_store(store.clone());
     }

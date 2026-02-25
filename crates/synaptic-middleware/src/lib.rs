@@ -1,13 +1,18 @@
+mod callback_adapter;
+mod circuit_breaker;
 mod context_editing;
 mod human_in_the_loop;
 mod model_call_limit;
 mod model_fallback;
 mod security;
+mod ssrf_guard;
 mod summarization;
 mod todo_list;
 mod tool_call_limit;
 mod tool_retry;
 
+pub use callback_adapter::CallbackMiddleware;
+pub use circuit_breaker::{CircuitBreakerConfig, CircuitBreakerMiddleware, CircuitState};
 pub use context_editing::{ContextEditingMiddleware, ContextStrategy};
 pub use human_in_the_loop::{ApprovalCallback, HumanInTheLoopMiddleware};
 pub use model_call_limit::ModelCallLimitMiddleware;
@@ -16,6 +21,7 @@ pub use security::{
     ConfirmationPolicy, RiskLevel, RuleBasedAnalyzer, SecurityAnalyzer,
     SecurityConfirmationCallback, SecurityMiddleware, ThresholdConfirmationPolicy,
 };
+pub use ssrf_guard::{SsrfGuardConfig, SsrfGuardMiddleware};
 pub use summarization::SummarizationMiddleware;
 pub use todo_list::TodoListMiddleware;
 pub use tool_call_limit::ToolCallLimitMiddleware;
@@ -86,6 +92,64 @@ impl From<ChatResponse> for ModelResponse {
 #[derive(Debug, Clone)]
 pub struct ToolCallRequest {
     pub call: ToolCall,
+}
+
+// ---------------------------------------------------------------------------
+// File/Shell hook types
+// ---------------------------------------------------------------------------
+
+/// Describes a file operation intercepted by middleware.
+#[derive(Debug, Clone)]
+pub struct FileOp {
+    pub path: String,
+    pub kind: FileOpKind,
+}
+
+/// The kind of file operation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FileOpKind {
+    Read,
+    Write,
+    Delete,
+}
+
+/// Result of a file operation.
+#[derive(Debug, Clone)]
+pub struct FileOpResult {
+    pub success: bool,
+    pub error: Option<String>,
+}
+
+/// Decision for a file operation.
+#[derive(Debug, Clone)]
+pub enum FileOpDecision {
+    /// Allow the operation to proceed.
+    Allow,
+    /// Deny the operation with a reason.
+    Deny(String),
+}
+
+/// Describes a shell command intercepted by middleware.
+#[derive(Debug, Clone)]
+pub struct CommandOp {
+    pub command: String,
+    pub args: Vec<String>,
+    pub working_dir: Option<String>,
+}
+
+/// Result of a command execution.
+#[derive(Debug, Clone)]
+pub struct CommandResult {
+    pub exit_code: i32,
+    pub stdout: String,
+    pub stderr: String,
+}
+
+/// Decision for a command execution.
+#[derive(Debug, Clone)]
+pub enum CommandDecision {
+    Allow,
+    Deny(String),
 }
 
 // ---------------------------------------------------------------------------
@@ -168,6 +232,34 @@ pub trait AgentMiddleware: Send + Sync {
         next: &dyn ToolCaller,
     ) -> Result<Value, SynapticError> {
         next.call(request).await
+    }
+
+    /// Called before a file operation. Return `Deny` to block it.
+    async fn before_file_op(&self, _op: &FileOp) -> Result<FileOpDecision, SynapticError> {
+        Ok(FileOpDecision::Allow)
+    }
+
+    /// Called after a file operation completes.
+    async fn after_file_op(
+        &self,
+        _op: &FileOp,
+        _result: &FileOpResult,
+    ) -> Result<(), SynapticError> {
+        Ok(())
+    }
+
+    /// Called before a shell command. Return `Deny` to block it.
+    async fn before_command(&self, _cmd: &CommandOp) -> Result<CommandDecision, SynapticError> {
+        Ok(CommandDecision::Allow)
+    }
+
+    /// Called after a shell command completes.
+    async fn after_command(
+        &self,
+        _cmd: &CommandOp,
+        _result: &CommandResult,
+    ) -> Result<(), SynapticError> {
+        Ok(())
     }
 }
 
@@ -267,6 +359,51 @@ impl MiddlewareChain {
             };
             chain.call(request).await
         }
+    }
+
+    pub async fn run_before_file_op(&self, op: &FileOp) -> Result<FileOpDecision, SynapticError> {
+        for mw in &self.middlewares {
+            match mw.before_file_op(op).await? {
+                FileOpDecision::Allow => continue,
+                deny => return Ok(deny),
+            }
+        }
+        Ok(FileOpDecision::Allow)
+    }
+
+    pub async fn run_after_file_op(
+        &self,
+        op: &FileOp,
+        result: &FileOpResult,
+    ) -> Result<(), SynapticError> {
+        for mw in self.middlewares.iter().rev() {
+            mw.after_file_op(op, result).await?;
+        }
+        Ok(())
+    }
+
+    pub async fn run_before_command(
+        &self,
+        cmd: &CommandOp,
+    ) -> Result<CommandDecision, SynapticError> {
+        for mw in &self.middlewares {
+            match mw.before_command(cmd).await? {
+                CommandDecision::Allow => continue,
+                deny => return Ok(deny),
+            }
+        }
+        Ok(CommandDecision::Allow)
+    }
+
+    pub async fn run_after_command(
+        &self,
+        cmd: &CommandOp,
+        result: &CommandResult,
+    ) -> Result<(), SynapticError> {
+        for mw in self.middlewares.iter().rev() {
+            mw.after_command(cmd, result).await?;
+        }
+        Ok(())
     }
 }
 
@@ -417,5 +554,30 @@ mod tests {
         };
         let chat_req = req.to_chat_request();
         assert_eq!(chat_req.messages.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn file_hook_default_allows() {
+        let mw: Arc<dyn AgentMiddleware> = Arc::new(CountingMiddleware::new());
+        let chain = MiddlewareChain::new(vec![mw]);
+        let op = FileOp {
+            path: "/tmp/test".to_string(),
+            kind: FileOpKind::Write,
+        };
+        let decision = chain.run_before_file_op(&op).await.unwrap();
+        assert!(matches!(decision, FileOpDecision::Allow));
+    }
+
+    #[tokio::test]
+    async fn command_hook_default_allows() {
+        let mw: Arc<dyn AgentMiddleware> = Arc::new(CountingMiddleware::new());
+        let chain = MiddlewareChain::new(vec![mw]);
+        let cmd = CommandOp {
+            command: "ls".to_string(),
+            args: vec![],
+            working_dir: None,
+        };
+        let decision = chain.run_before_command(&cmd).await.unwrap();
+        assert!(matches!(decision, CommandDecision::Allow));
     }
 }

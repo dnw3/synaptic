@@ -9,5 +9,5 @@ name = "token_budget_demo"
 path = "src/main.rs"
 
 [dependencies]
-synaptic = { version = "0.3", path = "../../crates/synaptic" }
+synaptic = { version = "0.4", path = "../../crates/synaptic" }
 tokio = { workspace = true }

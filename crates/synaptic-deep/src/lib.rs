@@ -21,6 +21,7 @@ pub mod backend;
 #[cfg(feature = "config-builder")]
 pub mod builder;
 pub mod middleware;
+pub mod skill;
 pub mod tools;
 
 use std::sync::Arc;
@@ -72,6 +73,8 @@ pub struct DeepAgentOptions {
     pub enable_skills: bool,
     /// Enable memory middleware (default true).
     pub enable_memory: bool,
+    /// Enable parallel tool execution in ToolNode (default false).
+    pub parallel_tools: bool,
 }
 
 impl DeepAgentOptions {
@@ -95,6 +98,7 @@ impl DeepAgentOptions {
             enable_filesystem: true,
             enable_skills: true,
             enable_memory: true,
+            parallel_tools: false,
         }
     }
 }
@@ -195,6 +199,7 @@ pub fn create_deep_agent(
         pre_model_hook: None,
         post_model_hook: None,
         response_format: None,
+        parallel_tools: options.parallel_tools,
     };
 
     create_agent(model, all_tools, agent_options)

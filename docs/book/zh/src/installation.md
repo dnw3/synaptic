@@ -18,35 +18,38 @@ Synaptic 提供类似 tokio 的细粒度 feature flags：
 ```toml
 [dependencies]
 # 全量引入（等同之前的默认行为）
-synaptic = { version = "0.2", features = ["full"] }
+synaptic = { version = "0.3", features = ["full"] }
 
-# Agent 开发（自动包含 openai, tools, graph, memory 等）
-synaptic = { version = "0.2", features = ["agent"] }
+# Agent 开发（tools + graph + memory + 选择的 Provider）
+synaptic = { version = "0.3", features = ["agent-openai"] }
 
-# RAG 应用（自动包含 openai, retrieval, loaders, splitters, embeddings, vectorstores 等）
-synaptic = { version = "0.2", features = ["rag"] }
+# RAG 应用（retrieval + loaders + splitters + embeddings + vectorstores + 选择的 Provider）
+synaptic = { version = "0.3", features = ["rag-openai"] }
 
 # Agent + RAG
-synaptic = { version = "0.2", features = ["agent", "rag"] }
+synaptic = { version = "0.3", features = ["agent", "rag"] }
 
 # 最小化 — 只要 OpenAI 模型调用
-synaptic = { version = "0.2", features = ["openai"] }
+synaptic = { version = "0.3", features = ["openai"] }
 
 # 使用 Anthropic
-synaptic = { version = "0.2", features = ["anthropic"] }
+synaptic = { version = "0.3", features = ["anthropic"] }
 
 # 全部四个提供商
-synaptic = { version = "0.2", features = ["models"] }
+synaptic = { version = "0.3", features = ["models"] }
 
 # 精细控制
-synaptic = { version = "0.2", features = ["openai", "graph", "cache"] }
+synaptic = { version = "0.3", features = ["openai", "graph", "cache"] }
 ```
 
 | Feature | 说明 |
 |---------|------|
 | **`default`** | `runnables`, `prompts`, `parsers`, `tools`, `callbacks`（不包含任何提供商） |
-| **`agent`** | `default` + `openai`, `graph`, `memory` |
-| **`rag`** | `default` + `openai`, `retrieval`, `loaders`, `splitters`, `embeddings`, `vectorstores` |
+| **`agent`** | `default` + `graph`, `memory`（与 Provider 无关；可组合 `openai` 或 `anthropic` 等） |
+| **`agent-openai`** | `agent` + `openai` |
+| **`agent-anthropic`** | `agent` + `anthropic` |
+| **`rag`** | `default` + `retrieval`, `loaders`, `splitters`, `embeddings`, `vectorstores`（与 Provider 无关） |
+| **`rag-openai`** | `rag` + `openai` |
 | **`full`** | 启用全部 features |
 
 **提供商 features：**
@@ -118,7 +121,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai"] }
+synaptic = { version = "0.3", features = ["openai"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -126,7 +129,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["agent"] }
+synaptic = { version = "0.3", features = ["agent"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 async-trait = "0.1"
 ```
@@ -135,7 +138,7 @@ async-trait = "0.1"
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["rag"] }
+synaptic = { version = "0.3", features = ["rag"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 

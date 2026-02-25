@@ -2,42 +2,49 @@
 
 [Mistral AI](https://mistral.ai/) 提供最先进的开源和商业语言模型，具备出色的多语言支持和强大的函数调用能力。Mistral API 与 OpenAI API 格式完全兼容。
 
-`synaptic-mistral` crate 对 `synaptic-openai` 进行封装，预设了 Mistral 的 base URL，并提供类型安全的 `MistralModel` 枚举。同时，它还提供了 `mistral_embeddings` 辅助函数用于访问 Mistral 嵌入向量 API。
+Mistral AI 作为 `synaptic-openai` 内的兼容子模块提供，无需单独的 crate。该子模块还提供 `embeddings` 辅助函数用于访问 Mistral 嵌入向量 API。
 
 ## 设置
 
-在 `Cargo.toml` 中添加 `mistral` feature：
-
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["mistral"] }
+synaptic = { version = "0.3", features = ["openai"] }
 ```
 
 前往 [console.mistral.ai](https://console.mistral.ai/) 获取 API 密钥。
 
 ## 配置
 
-使用 API 密钥和 `MistralModel` 变体创建 `MistralConfig`：
-
 ```rust,ignore
-use synaptic::mistral::{MistralChatModel, MistralConfig, MistralModel};
+use synaptic::openai::compat::mistral::{self, MistralModel};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = MistralConfig::new("your-api-key", MistralModel::MistralLargeLatest);
-let model = MistralChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = mistral::chat_model("your-api-key", MistralModel::MistralLargeLatest.to_string(), Arc::new(HttpBackend::new()));
 ```
 
 ### 构建器方法
 
-`MistralConfig` 支持与其他 Provider 相同的流式构建器模式：
+使用 `OpenAiConfig` 的构建器方法进行自定义：
 
 ```rust,ignore
-let config = MistralConfig::new("key", MistralModel::MistralLargeLatest)
+use synaptic::openai::compat::mistral::{self, MistralModel};
+use synaptic::openai::OpenAiChatModel;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let config = mistral::config("key", MistralModel::MistralLargeLatest.to_string())
     .with_temperature(0.7)
     .with_max_tokens(4096)
-    .with_top_p(0.95)
-    .with_seed(123);
+    .with_top_p(0.95);
+
+let model = OpenAiChatModel::new(config, Arc::new(HttpBackend::new()));
+```
+
+使用未列出的模型，直接传入字符串：
+
+```rust,ignore
+let model = mistral::chat_model("key", "mistral-large-2411", Arc::new(HttpBackend::new()));
 ```
 
 ## 可用模型
@@ -52,24 +59,23 @@ let config = MistralConfig::new("key", MistralModel::MistralLargeLatest)
 
 ## 使用方法
 
-`MistralChatModel` 实现了 `ChatModel` trait：
+`chat_model()` 返回的模型实现了 `ChatModel` trait：
 
 ```rust,ignore
-use synaptic::mistral::{MistralChatModel, MistralConfig, MistralModel};
+use synaptic::openai::compat::mistral::{self, MistralModel};
 use synaptic::core::{ChatModel, ChatRequest, Message};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = MistralConfig::new("key", MistralModel::MistralLargeLatest);
-let model = MistralChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = mistral::chat_model("key", MistralModel::MistralLargeLatest.to_string(), Arc::new(HttpBackend::new()));
 
-let request = ChatRequest::new(vec\![
+let request = ChatRequest::new(vec![
     Message::system("You are a helpful multilingual assistant."),
-    Message::human("Bonjour\! Explain Rust ownership in one sentence."),
+    Message::human("Bonjour! Explain Rust ownership in one sentence."),
 ]);
 
 let response = model.chat(request).await?;
-println\!("{}", response.message.content().unwrap_or_default());
+println!("{}", response.message.content().unwrap_or_default());
 ```
 
 ## 流式输出
@@ -120,15 +126,15 @@ for tc in response.message.tool_calls() {
 
 ## 嵌入向量
 
-Mistral 提供与聊天 API 相同 base URL 的嵌入向量 API。使用 `mistral_embeddings` 辅助函数：
+Mistral 提供与聊天 API 相同 base URL 的嵌入向量 API。使用 `embeddings` 辅助函数：
 
 ```rust,ignore
-use synaptic::mistral::mistral_embeddings;
+use synaptic::openai::compat::mistral;
 use synaptic::models::HttpBackend;
 use synaptic::core::Embeddings;
 use std::sync::Arc;
 
-let embeddings = mistral_embeddings(
+let embeddings = mistral::embeddings(
     "your-api-key",
     "mistral-embed",
     Arc::new(HttpBackend::new()),
@@ -160,14 +166,12 @@ match model.chat(request).await {
 
 ## 配置参考
 
-### MistralConfig
+所有配置通过 `OpenAiConfig` 构建器方法完成。完整参考请见 [OpenAI 兼容 Provider](openai-compatible.md) 页面。
 
-| 字段 | 类型 | 默认值 | 说明 |
-|-------|------|---------|-------------|
-| `api_key` | `String` | 必填 | Mistral AI API 密钥 |
-| `model` | `String` | 来自枚举 | API 模型标识符 |
-| `max_tokens` | `Option<u32>` | `None` | 最大生成 token 数 |
-| `temperature` | `Option<f64>` | `None` | 采样温度（0.0-1.0） |
-| `top_p` | `Option<f64>` | `None` | 核采样阈值 |
-| `stop` | `Option<Vec<String>>` | `None` | 停止序列 |
-| `seed` | `Option<u64>` | `None` | 可复现输出的随机种子 |
+| 方法 | 说明 |
+|------|------|
+| `.with_temperature(f64)` | 采样温度（0.0-1.0） |
+| `.with_max_tokens(u32)` | 最大生成 token 数 |
+| `.with_top_p(f64)` | 核采样阈值 |
+| `.with_stop(Vec<String>)` | 停止序列 |
+| `.with_seed(u64)` | 可复现输出的随机种子 |

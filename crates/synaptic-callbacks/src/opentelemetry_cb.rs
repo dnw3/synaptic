@@ -90,6 +90,56 @@ impl CallbackHandler for OpenTelemetryCallback {
                     .start(&tracer);
                 span.end();
             }
+            RunEvent::BeforeToolCall {
+                run_id, tool_name, ..
+            } => {
+                let mut span = tracer
+                    .span_builder(format!("tool.before.{}", tool_name))
+                    .with_attributes(vec![
+                        KeyValue::new("synaptic.run_id", run_id.to_string()),
+                        KeyValue::new("tool.name", tool_name.clone()),
+                    ])
+                    .start(&tracer);
+                span.end();
+            }
+            RunEvent::AfterToolCall {
+                run_id, tool_name, ..
+            } => {
+                let mut span = tracer
+                    .span_builder(format!("tool.after.{}", tool_name))
+                    .with_attributes(vec![
+                        KeyValue::new("synaptic.run_id", run_id.to_string()),
+                        KeyValue::new("tool.name", tool_name.clone()),
+                    ])
+                    .start(&tracer);
+                span.end();
+            }
+            RunEvent::BeforeMessage {
+                run_id,
+                message_count,
+            } => {
+                let mut span = tracer
+                    .span_builder("synaptic.before_message")
+                    .with_attributes(vec![
+                        KeyValue::new("synaptic.run_id", run_id.to_string()),
+                        KeyValue::new("llm.message_count", *message_count as i64),
+                    ])
+                    .start(&tracer);
+                span.end();
+            }
+            RunEvent::AfterMessage {
+                run_id,
+                response_length,
+            } => {
+                let mut span = tracer
+                    .span_builder("synaptic.after_message")
+                    .with_attributes(vec![
+                        KeyValue::new("synaptic.run_id", run_id.to_string()),
+                        KeyValue::new("llm.response_length", *response_length as i64),
+                    ])
+                    .start(&tracer);
+                span.end();
+            }
         }
         Ok(())
     }

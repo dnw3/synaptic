@@ -2,13 +2,13 @@
 
 [xAI](https://x.ai/) develops the Grok family of LLMs known for their real-time reasoning capabilities and integration with X (Twitter) data. The Grok API is OpenAI-compatible.
 
-The `synaptic-xai` crate wraps `synaptic-openai` with xAI's base URL preset and a type-safe model enum.
+xAI is available as a compatibility submodule inside `synaptic-openai`. No separate crate is needed.
 
 ## Setup
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["xai"] }
+synaptic = { version = "0.3", features = ["openai"] }
 ```
 
 Sign up at [x.ai](https://x.ai/) to obtain an API key.
@@ -16,20 +16,28 @@ Sign up at [x.ai](https://x.ai/) to obtain an API key.
 ## Configuration
 
 ```rust,ignore
-use synaptic::xai::{XaiChatModel, XaiConfig, XaiModel};
+use synaptic::openai::compat::xai::{self, XaiModel};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = XaiConfig::new("xai-your-api-key", XaiModel::Grok2Latest);
-let model = XaiChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = xai::chat_model("xai-your-api-key", XaiModel::Grok2Latest.to_string(), Arc::new(HttpBackend::new()));
 ```
 
 ### Builder methods
 
+Use `OpenAiConfig` builder methods for customization:
+
 ```rust,ignore
-let config = XaiConfig::new("xai-your-api-key", XaiModel::Grok2Latest)
+use synaptic::openai::compat::xai::{self, XaiModel};
+use synaptic::openai::OpenAiChatModel;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let config = xai::config("xai-your-api-key", XaiModel::Grok2Latest.to_string())
     .with_temperature(0.7)
     .with_max_tokens(8192);
+
+let model = OpenAiChatModel::new(config, Arc::new(HttpBackend::new()));
 ```
 
 ## Available Models
@@ -44,13 +52,12 @@ let config = XaiConfig::new("xai-your-api-key", XaiModel::Grok2Latest)
 ## Usage
 
 ```rust,ignore
-use synaptic::xai::{XaiChatModel, XaiConfig, XaiModel};
+use synaptic::openai::compat::xai::{self, XaiModel};
 use synaptic::core::{ChatModel, ChatRequest, Message};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = XaiConfig::new("xai-your-api-key", XaiModel::Grok2Latest);
-let model = XaiChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = xai::chat_model("xai-your-api-key", XaiModel::Grok2Latest.to_string(), Arc::new(HttpBackend::new()));
 
 let request = ChatRequest::new(vec![
     Message::system("You are Grok, a helpful AI with wit and humor."),
@@ -79,11 +86,11 @@ println!();
 
 ## Configuration Reference
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `api_key` | `String` | required | xAI API key |
-| `model` | `String` | from enum | API model identifier |
-| `max_tokens` | `Option<u32>` | `None` | Maximum tokens to generate |
-| `temperature` | `Option<f64>` | `None` | Sampling temperature (0.0–2.0) |
-| `top_p` | `Option<f64>` | `None` | Nucleus sampling threshold |
-| `stop` | `Option<Vec<String>>` | `None` | Stop sequences |
+All configuration is done through `OpenAiConfig` builder methods. See the [OpenAI-Compatible Providers](openai-compatible.md) page for the full reference.
+
+| Method | Description |
+|--------|-------------|
+| `.with_temperature(f64)` | Sampling temperature (0.0-2.0) |
+| `.with_max_tokens(u32)` | Maximum tokens to generate |
+| `.with_top_p(f64)` | Nucleus sampling threshold |
+| `.with_stop(Vec<String>)` | Stop sequences |

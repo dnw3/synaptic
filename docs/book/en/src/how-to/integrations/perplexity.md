@@ -2,13 +2,13 @@
 
 [Perplexity AI](https://www.perplexity.ai/) provides online search-augmented language models through its Sonar model family. Unlike traditional LLMs, Sonar models access real-time web information and return cited sources, making them ideal for factual queries and research tasks.
 
-The `synaptic-perplexity` crate wraps `synaptic-openai` with Perplexity's base URL and a type-safe model enum.
+Perplexity AI is available as a compatibility submodule inside `synaptic-openai`. No separate crate is needed.
 
 ## Setup
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["perplexity"] }
+synaptic = { version = "0.3", features = ["openai"] }
 ```
 
 Sign up at [perplexity.ai](https://www.perplexity.ai/) to obtain an API key (prefixed with `pplx-`).
@@ -16,20 +16,28 @@ Sign up at [perplexity.ai](https://www.perplexity.ai/) to obtain an API key (pre
 ## Configuration
 
 ```rust,ignore
-use synaptic::perplexity::{PerplexityChatModel, PerplexityConfig, PerplexityModel};
+use synaptic::openai::compat::perplexity::{self, PerplexityModel};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = PerplexityConfig::new("pplx-your-api-key", PerplexityModel::SonarLarge);
-let model = PerplexityChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = perplexity::chat_model("pplx-your-api-key", PerplexityModel::SonarLarge.to_string(), Arc::new(HttpBackend::new()));
 ```
 
 ### Builder methods
 
+Use `OpenAiConfig` builder methods for customization:
+
 ```rust,ignore
-let config = PerplexityConfig::new("pplx-your-api-key", PerplexityModel::SonarLarge)
+use synaptic::openai::compat::perplexity::{self, PerplexityModel};
+use synaptic::openai::OpenAiChatModel;
+use synaptic::models::HttpBackend;
+use std::sync::Arc;
+
+let config = perplexity::config("pplx-your-api-key", PerplexityModel::SonarLarge.to_string())
     .with_temperature(0.2)
     .with_max_tokens(1024);
+
+let model = OpenAiChatModel::new(config, Arc::new(HttpBackend::new()));
 ```
 
 ## Available Models
@@ -45,13 +53,12 @@ let config = PerplexityConfig::new("pplx-your-api-key", PerplexityModel::SonarLa
 ## Usage
 
 ```rust,ignore
-use synaptic::perplexity::{PerplexityChatModel, PerplexityConfig, PerplexityModel};
+use synaptic::openai::compat::perplexity::{self, PerplexityModel};
 use synaptic::core::{ChatModel, ChatRequest, Message};
 use synaptic::models::HttpBackend;
 use std::sync::Arc;
 
-let config = PerplexityConfig::new("pplx-your-api-key", PerplexityModel::SonarLarge);
-let model = PerplexityChatModel::new(config, Arc::new(HttpBackend::new()));
+let model = perplexity::chat_model("pplx-your-api-key", PerplexityModel::SonarLarge.to_string(), Arc::new(HttpBackend::new()));
 
 let request = ChatRequest::new(vec![
     Message::system("Be precise and concise. Cite your sources."),
@@ -92,11 +99,11 @@ match model.chat(request).await {
 
 ## Configuration Reference
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `api_key` | `String` | required | Perplexity API key (`pplx-...`) |
-| `model` | `String` | from enum | API model identifier |
-| `max_tokens` | `Option<u32>` | `None` | Maximum tokens to generate |
-| `temperature` | `Option<f64>` | `None` | Sampling temperature (0.0–2.0) |
-| `top_p` | `Option<f64>` | `None` | Nucleus sampling threshold |
-| `stop` | `Option<Vec<String>>` | `None` | Stop sequences |
+All configuration is done through `OpenAiConfig` builder methods. See the [OpenAI-Compatible Providers](openai-compatible.md) page for the full reference.
+
+| Method | Description |
+|--------|-------------|
+| `.with_temperature(f64)` | Sampling temperature (0.0-2.0) |
+| `.with_max_tokens(u32)` | Maximum tokens to generate |
+| `.with_top_p(f64)` | Nucleus sampling threshold |
+| `.with_stop(Vec<String>)` | Stop sequences |

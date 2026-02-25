@@ -64,6 +64,29 @@ assert!(results[0].score.unwrap() > results[1].score.unwrap());
 
 未配置嵌入模型时，`search()` 回退到对键和值的子字符串匹配。
 
+### 混合搜索（BM25 + 嵌入）
+
+混合搜索通过倒数排名融合（RRF）将 BM25 文本评分与嵌入相似度结合。这通常比单独使用任一方法效果更好，既能捕获精确关键词匹配，又能理解语义相似性。
+
+```rust,ignore
+use synaptic::store::InMemoryStore;
+use synaptic::openai::OpenAiEmbeddings;
+
+let embeddings = Arc::new(OpenAiEmbeddings::new("text-embedding-3-small"));
+let store = InMemoryStore::new()
+    .with_hybrid_search(embeddings);
+
+store.put(&["docs"], "rust", json!("Rust 是一门注重安全性的系统编程语言")).await?;
+store.put(&["docs"], "python", json!("Python 非常适合数据科学和 AI")).await?;
+
+// 混合搜索同时使用 BM25 词频匹配和嵌入语义相似度
+let results = store.search(&["docs"], Some("安全的系统语言"), 10).await?;
+```
+
+融合公式使用 `score = Σ 1/(k + rank_i)`，其中 `k=60`，`rank_i` 是项目在各自结果列表（BM25 和嵌入）中的排名。这在精确关键词匹配和语义理解之间取得了平衡。
+
+使用 `with_embeddings()` 进行纯向量搜索，或使用 `with_hybrid_search()` 进行混合搜索。
+
 ## 与 Agent 配合使用
 
 ```rust,ignore

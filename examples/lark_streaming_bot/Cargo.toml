@@ -11,4 +11,4 @@ path = "src/main.rs"
 [dependencies]
 tokio.workspace = true
 async-trait.workspace = true
-synaptic = { version = "0.3", path = "../../crates/synaptic", features = ["lark", "lark-bot"] }
+synaptic = { version = "0.4", path = "../../crates/synaptic", features = ["lark", "lark-bot"] }

@@ -1,8 +1,14 @@
 mod composite;
+mod cost_tracking;
+mod metrics;
 mod stdout;
 mod tracing_cb;
 
 pub use composite::CompositeCallback;
+pub use cost_tracking::{
+    default_pricing, CostTrackingCallback, ModelPricing, ModelUsage, UsageSnapshot,
+};
+pub use metrics::{MetricsCallback, MetricsSnapshot, ToolMetrics};
 pub use stdout::StdOutCallbackHandler;
 pub use tracing_cb::TracingCallback;
 

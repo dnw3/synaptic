@@ -913,6 +913,28 @@ pub enum RunEvent {
         run_id: String,
         error: String,
     },
+    /// Emitted before a tool call is executed.
+    BeforeToolCall {
+        run_id: String,
+        tool_name: String,
+        arguments: String,
+    },
+    /// Emitted after a tool call completes.
+    AfterToolCall {
+        run_id: String,
+        tool_name: String,
+        result: String,
+    },
+    /// Emitted before a message is sent to the model.
+    BeforeMessage {
+        run_id: String,
+        message_count: usize,
+    },
+    /// Emitted after a model response is received.
+    AfterMessage {
+        run_id: String,
+        response_length: usize,
+    },
 }
 
 // ---------------------------------------------------------------------------
@@ -964,6 +986,8 @@ pub enum SynapticError {
     Config(String),
     #[error("mcp error: {0}")]
     Mcp(String),
+    #[error("security error: {0}")]
+    Security(String),
 }
 
 // ---------------------------------------------------------------------------
