@@ -13,9 +13,15 @@ use thiserror::Error;
 pub use schemars;
 
 pub mod context_budget;
+pub mod delivery;
+pub mod provenance;
 pub mod token_counter;
 
-pub use context_budget::{ContextBudget, ContextSlot, Priority};
+pub use context_budget::{ContextBudget, ContextSlot, Priority, SlotTrimStrategy};
+pub use delivery::DeliveryContext;
+pub use provenance::{InputProvenance, ProvenanceKind};
+#[cfg(feature = "tiktoken")]
+pub use token_counter::TiktokenCounter;
 pub use token_counter::{HeuristicTokenCounter, TokenCounter};
 
 // ---------------------------------------------------------------------------
@@ -700,6 +706,9 @@ pub fn get_buffer_string(messages: &[Message], human_prefix: &str, ai_prefix: &s
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct AIMessageChunk {
     pub content: String,
+    /// Reasoning / thinking content from extended thinking models.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub reasoning: String,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub tool_calls: Vec<ToolCall>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -714,7 +723,13 @@ pub struct AIMessageChunk {
 
 impl AIMessageChunk {
     pub fn into_message(self) -> Message {
-        Message::ai_with_tool_calls(self.content, self.tool_calls)
+        let mut msg = Message::ai_with_tool_calls(self.content, self.tool_calls);
+        if !self.reasoning.is_empty() {
+            msg = msg.with_content_blocks(vec![ContentBlock::Reasoning {
+                content: self.reasoning,
+            }]);
+        }
+        msg
     }
 }
 
@@ -730,6 +745,7 @@ impl std::ops::Add for AIMessageChunk {
 impl std::ops::AddAssign for AIMessageChunk {
     fn add_assign(&mut self, rhs: Self) {
         self.content.push_str(&rhs.content);
+        self.reasoning.push_str(&rhs.reasoning);
         self.tool_calls.extend(rhs.tool_calls);
         self.tool_call_chunks.extend(rhs.tool_call_chunks);
         self.invalid_tool_calls.extend(rhs.invalid_tool_calls);
@@ -788,11 +804,15 @@ pub struct ToolCallChunk {
 }
 
 /// Schema definition for a tool, including its name, description, and JSON Schema for parameters.
+///
+/// The `input_schema` field follows the MCP / Anthropic convention. When serialized it also
+/// accepts the aliases `"inputSchema"` and `"parameters"` for backward compatibility.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ToolDefinition {
     pub name: String,
     pub description: String,
-    pub parameters: Value,
+    #[serde(alias = "inputSchema", alias = "parameters")]
+    pub input_schema: Value,
     /// Provider-specific parameters (e.g., Anthropic's `cache_control`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub extras: Option<HashMap<String, Value>>,
@@ -812,6 +832,21 @@ pub enum ToolChoice {
 // Chat request / response
 // ---------------------------------------------------------------------------
 
+/// Configuration for extended thinking / reasoning mode.
+///
+/// When enabled, models that support it (e.g. Anthropic Claude) will produce
+/// detailed reasoning before their final response. The `budget_tokens` field
+/// controls how many tokens the model may use for reasoning.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ThinkingConfig {
+    /// Whether extended thinking is enabled.
+    pub enabled: bool,
+    /// Maximum number of tokens the model may use for reasoning.
+    /// If None, the provider's default budget is used.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub budget_tokens: Option<u32>,
+}
+
 /// A request to a chat model containing messages, optional tool definitions, and tool choice configuration.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ChatRequest {
@@ -820,6 +855,8 @@ pub struct ChatRequest {
     pub tools: Vec<ToolDefinition>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tool_choice: Option<ToolChoice>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thinking: Option<ThinkingConfig>,
 }
 
 impl ChatRequest {
@@ -828,6 +865,7 @@ impl ChatRequest {
             messages,
             tools: vec![],
             tool_choice: None,
+            thinking: None,
         }
     }
 
@@ -838,6 +876,11 @@ impl ChatRequest {
 
     pub fn with_tool_choice(mut self, choice: ToolChoice) -> Self {
         self.tool_choice = Some(choice);
+        self
+    }
+
+    pub fn with_thinking(mut self, config: ThinkingConfig) -> Self {
+        self.thinking = Some(config);
         self
     }
 }
@@ -1053,7 +1096,7 @@ pub trait Tool: Send + Sync {
         ToolDefinition {
             name: self.name().to_string(),
             description: self.description().to_string(),
-            parameters: self
+            input_schema: self
                 .parameters()
                 .unwrap_or(serde_json::json!({"type": "object", "properties": {}})),
             extras: None,
@@ -1149,6 +1192,46 @@ pub struct Item {
     pub score: Option<f64>,
 }
 
+/// Options for advanced store search with temporal decay and score filtering.
+#[derive(Debug, Clone)]
+pub struct SearchOptions {
+    /// Text query (same as the query parameter in `Store::search`).
+    pub query: Option<String>,
+    /// Maximum number of results to return.
+    pub limit: usize,
+    /// Temporal decay half-life in seconds. Scores are multiplied by
+    /// `exp(-ln2 / half_life * age_secs)` so older items decay exponentially.
+    pub decay_half_life_secs: Option<u64>,
+    /// Minimum score threshold (after decay). Items below are excluded.
+    pub min_score: Option<f64>,
+}
+
+impl SearchOptions {
+    pub fn new(limit: usize) -> Self {
+        Self {
+            query: None,
+            limit,
+            decay_half_life_secs: None,
+            min_score: None,
+        }
+    }
+
+    pub fn with_query(mut self, query: impl Into<String>) -> Self {
+        self.query = Some(query.into());
+        self
+    }
+
+    pub fn with_decay(mut self, half_life_secs: u64) -> Self {
+        self.decay_half_life_secs = Some(half_life_secs);
+        self
+    }
+
+    pub fn with_min_score(mut self, min_score: f64) -> Self {
+        self.min_score = Some(min_score);
+        self
+    }
+}
+
 /// Persistent key-value store trait for cross-invocation state.
 ///
 /// Namespaces are hierarchical (represented as slices of strings) and
@@ -1166,6 +1249,43 @@ pub trait Store: Send + Sync {
         limit: usize,
     ) -> Result<Vec<Item>, SynapticError>;
 
+    /// Advanced search with temporal decay and score filtering.
+    ///
+    /// Default implementation delegates to `search()` and applies decay post-hoc.
+    async fn search_with_options(
+        &self,
+        namespace: &[&str],
+        options: &SearchOptions,
+    ) -> Result<Vec<Item>, SynapticError> {
+        let mut items = self
+            .search(namespace, options.query.as_deref(), options.limit * 2)
+            .await?;
+
+        if let Some(half_life) = options.decay_half_life_secs {
+            let now = chrono::Utc::now();
+            let lambda = std::f64::consts::LN_2 / half_life as f64;
+            for item in &mut items {
+                let age_secs = parse_age_secs(&item.created_at, now);
+                let decay = (-lambda * age_secs).exp();
+                let base_score = item.score.unwrap_or(1.0);
+                item.score = Some(base_score * decay);
+            }
+            items.sort_by(|a, b| {
+                b.score
+                    .unwrap_or(0.0)
+                    .partial_cmp(&a.score.unwrap_or(0.0))
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            });
+        }
+
+        if let Some(min) = options.min_score {
+            items.retain(|item| item.score.unwrap_or(0.0) >= min);
+        }
+
+        items.truncate(options.limit);
+        Ok(items)
+    }
+
     /// Put (upsert) an item.
     async fn put(&self, namespace: &[&str], key: &str, value: Value) -> Result<(), SynapticError>;
 
@@ -1174,6 +1294,17 @@ pub trait Store: Send + Sync {
 
     /// List all namespaces, optionally filtered by prefix.
     async fn list_namespaces(&self, prefix: &[&str]) -> Result<Vec<Vec<String>>, SynapticError>;
+}
+
+/// Parse an ISO 8601 timestamp and return the age in seconds relative to `now`.
+pub fn parse_age_secs(timestamp: &str, now: chrono::DateTime<chrono::Utc>) -> f64 {
+    chrono::DateTime::parse_from_rfc3339(timestamp)
+        .or_else(|_| {
+            chrono::NaiveDateTime::parse_from_str(timestamp, "%Y-%m-%dT%H:%M:%S%.f")
+                .map(|dt| dt.and_utc().fixed_offset())
+        })
+        .map(|dt| (now - dt.with_timezone(&chrono::Utc)).num_seconds().max(0) as f64)
+        .unwrap_or(0.0)
 }
 
 // ---------------------------------------------------------------------------
@@ -1246,7 +1377,7 @@ pub trait RuntimeAwareTool: Send + Sync {
         ToolDefinition {
             name: self.name().to_string(),
             description: self.description().to_string(),
-            parameters: self
+            input_schema: self
                 .parameters()
                 .unwrap_or(serde_json::json!({"type": "object", "properties": {}})),
             extras: None,
@@ -1383,6 +1514,26 @@ pub trait VectorStore: Send + Sync {
         embedding: &[f32],
         k: usize,
     ) -> Result<Vec<Document>, SynapticError>;
+
+    /// Maximum Marginal Relevance search for diverse results.
+    ///
+    /// `lambda_mult` controls the trade-off between relevance and diversity:
+    /// - 1.0 = pure relevance (equivalent to standard similarity search)
+    /// - 0.0 = maximum diversity
+    ///
+    /// `fetch_k` is the number of initial candidates to fetch before MMR re-ranking.
+    /// Default implementation falls back to `similarity_search`.
+    async fn mmr_search(
+        &self,
+        query: &str,
+        k: usize,
+        fetch_k: usize,
+        lambda_mult: f32,
+        embeddings: &dyn Embeddings,
+    ) -> Result<Vec<Document>, SynapticError> {
+        let _ = (fetch_k, lambda_mult);
+        self.similarity_search(query, k, embeddings).await
+    }
 
     /// Delete documents by ID.
     async fn delete(&self, ids: &[&str]) -> Result<(), SynapticError>;

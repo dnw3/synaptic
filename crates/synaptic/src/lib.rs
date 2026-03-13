@@ -47,6 +47,12 @@ pub extern crate synaptic_runnables;
 /// Always available.
 pub use synaptic_core as core;
 
+/// Unified routing metadata for cross-channel message delivery.
+pub use synaptic_core::DeliveryContext;
+
+/// Message origin tracking for auditing and routing decisions.
+pub use synaptic_core::{InputProvenance, ProvenanceKind};
+
 /// ProviderBackend abstraction, ScriptedChatModel, and ChatModel wrappers
 /// (Retry, RateLimit, TokenBucket, StructuredOutput, BoundTools).
 #[cfg(feature = "model-utils")]
