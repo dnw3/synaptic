@@ -23,12 +23,32 @@ use synaptic_middleware::{
 /// `after_agent`).
 pub struct EventBusMiddleware {
     bus: Arc<EventBus>,
+    /// Optional model name injected into `LlmOutput` events for subscriber use.
+    model_name: Option<String>,
+    /// Optional provider name injected into `LlmOutput` events.
+    provider_name: Option<String>,
 }
 
 impl EventBusMiddleware {
     /// Create a new bridge middleware backed by the given `EventBus`.
     pub fn new(bus: Arc<EventBus>) -> Self {
-        Self { bus }
+        Self {
+            bus,
+            model_name: None,
+            provider_name: None,
+        }
+    }
+
+    /// Set optional model and provider names that will be included in
+    /// `LlmOutput` event payloads.
+    pub fn with_model_info(
+        mut self,
+        model: impl Into<String>,
+        provider: impl Into<String>,
+    ) -> Self {
+        self.model_name = Some(model.into());
+        self.provider_name = Some(provider.into());
+        self
     }
 }
 
@@ -76,15 +96,23 @@ impl AgentMiddleware for EventBusMiddleware {
         // --- LlmOutput (Parallel / fire-and-forget) ---
         let content_preview: String = response.message.content().chars().take(500).collect();
         let tool_call_count = response.message.tool_calls().len();
-        let output_payload = json!({
+        let mut output_payload = json!({
             "content_preview": content_preview,
             "tool_call_count": tool_call_count,
-            "usage": response.usage.as_ref().map(|u| json!({
-                "input_tokens": u.input_tokens,
-                "output_tokens": u.output_tokens,
-                "total_tokens": u.total_tokens,
-            })),
         });
+        // Flatten usage fields at top level so subscribers can read them directly.
+        if let Some(ref u) = response.usage {
+            output_payload["input_tokens"] = json!(u.input_tokens);
+            output_payload["output_tokens"] = json!(u.output_tokens);
+            output_payload["total_tokens"] = json!(u.total_tokens);
+        }
+        // Include model/provider info when available.
+        if let Some(ref model) = self.model_name {
+            output_payload["model"] = json!(model);
+        }
+        if let Some(ref provider) = self.provider_name {
+            output_payload["provider"] = json!(provider);
+        }
         let mut output_event =
             Event::new(EventKind::LlmOutput, output_payload).with_source("deep_agent");
         // Fire-and-forget — ignore errors from parallel subscribers.

@@ -311,9 +311,11 @@ pub fn create_deep_agent(
 
     // 8. EventBus bridge middleware — emits lifecycle events for subscribers
     if let Some(ref bus) = options.event_bus {
-        all_middleware.push(Arc::new(middleware::event_bus::EventBusMiddleware::new(
-            bus.clone(),
-        )));
+        let mut event_mw = middleware::event_bus::EventBusMiddleware::new(bus.clone());
+        if let Some(profile) = model.profile() {
+            event_mw = event_mw.with_model_info(profile.name, profile.provider);
+        }
+        all_middleware.push(Arc::new(event_mw));
     }
 
     // 9. Reflection middleware (runs after agent completes; last added = first in after_agent)
