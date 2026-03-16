@@ -50,8 +50,19 @@ pub use synaptic_core as core;
 /// Unified routing metadata for cross-channel message delivery.
 pub use synaptic_core::DeliveryContext;
 
+/// DM access control policy and enforcement.
+pub use synaptic_core::{
+    DmAccessDenied, DmPolicy, DmPolicyEnforcer, PairingChallenge, PairingError,
+};
+
 /// Message origin tracking for auditing and routing decisions.
 pub use synaptic_core::{InputProvenance, ProvenanceKind};
+
+/// Channel connection status tracking types.
+pub use synaptic_core::{
+    ChannelAccountSnapshot, ChannelProbe, ChannelState, ChannelStatusHandle, ChannelStatusPatch,
+    DisconnectInfo,
+};
 
 /// ProviderBackend abstraction, ScriptedChatModel, and ChatModel wrappers
 /// (Retry, RateLimit, TokenBucket, StructuredOutput, BoundTools).
@@ -126,6 +137,10 @@ pub use synaptic_graph as graph;
 /// Middleware system: AgentMiddleware trait, lifecycle hooks, built-in middlewares.
 #[cfg(feature = "middleware")]
 pub use synaptic_middleware as middleware;
+
+/// Event-driven system: EventBus, event subscriptions, pub-sub patterns.
+#[cfg(feature = "events")]
+pub use synaptic_events as events;
 
 /// Key-value storage: Store trait, InMemoryStore.
 #[cfg(feature = "store")]

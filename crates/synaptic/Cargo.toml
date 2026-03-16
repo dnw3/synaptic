@@ -72,6 +72,7 @@ synaptic-browser = { version = "0.4", path = "../synaptic-browser", optional = t
 synaptic-scheduler = { version = "0.4", path = "../synaptic-scheduler", optional = true }
 synaptic-sandbox = { version = "0.4", path = "../synaptic-sandbox", optional = true }
 synaptic-metrics = { version = "0.4", path = "../synaptic-metrics", optional = true }
+synaptic-events = { version = "0.4", path = "../synaptic-events", optional = true }
 schemars = { workspace = true, optional = true }
 
 [features]
@@ -94,6 +95,7 @@ embeddings = ["dep:synaptic-embeddings"]
 vectorstores = ["dep:synaptic-vectorstores"]
 graph = ["tools", "dep:synaptic-graph"]
 middleware = ["graph", "dep:synaptic-middleware"]
+events = ["dep:synaptic-events"]
 store = ["dep:synaptic-store"]
 cache = ["dep:synaptic-cache"]
 eval = ["embeddings", "dep:synaptic-eval"]
@@ -106,6 +108,7 @@ secrets = ["middleware", "dep:synaptic-secrets"]
 config = ["dep:synaptic-config"]
 session = ["graph", "memory", "store", "dep:synaptic-session"]
 store-filesystem = ["store", "synaptic-store/filesystem"]
+message-ir = ["synaptic-core/message-ir"]
 deep-config = ["deep", "config", "openai", "synaptic-deep/config-builder"]
 
 # Provider integrations (each pulls model-utils for Backend + wrappers)
@@ -149,7 +152,7 @@ metrics = ["callbacks", "dep:synaptic-metrics"]
 
 # Convenience combinations
 models = ["openai", "anthropic", "gemini", "ollama", "bedrock", "cohere"]
-agent = ["default", "graph", "memory", "middleware", "store", "condenser", "secrets", "config", "session"]
+agent = ["default", "graph", "memory", "middleware", "events", "store", "condenser", "secrets", "config", "session"]
 rag = ["default", "embeddings", "retrieval", "loaders", "splitters", "vectorstores"]
 agent-openai = ["agent", "openai"]
 agent-anthropic = ["agent", "anthropic"]
