@@ -132,9 +132,7 @@ pub trait ChannelAdapter: Send + Sync {
 /// Adapters typically spawn a background task that feeds incoming messages into
 /// an internal `mpsc` channel; this method returns a `Stream` over that channel.
 pub trait Inbound: ChannelAdapter {
-    fn message_stream(
-        &self,
-    ) -> Pin<Box<dyn futures::Stream<Item = MessageEnvelope> + Send>>;
+    fn message_stream(&self) -> Pin<Box<dyn futures::Stream<Item = MessageEnvelope> + Send>>;
 }
 
 /// Outbound message sending.
@@ -144,11 +142,7 @@ pub trait Outbound: ChannelAdapter {
     async fn send(&self, envelope: &MessageEnvelope) -> Result<(), crate::SynapticError>;
 
     /// Edit a previously sent message (default: unsupported).
-    async fn edit(
-        &self,
-        _msg_id: &str,
-        _content: &str,
-    ) -> Result<(), crate::SynapticError> {
+    async fn edit(&self, _msg_id: &str, _content: &str) -> Result<(), crate::SynapticError> {
         Err(crate::SynapticError::Tool("edit not supported".into()))
     }
 }
@@ -198,18 +192,10 @@ pub trait Groups: ChannelAdapter {
 #[async_trait]
 pub trait Reactions: ChannelAdapter {
     /// Add an emoji reaction to message `msg_id`.
-    async fn add_reaction(
-        &self,
-        msg_id: &str,
-        emoji: &str,
-    ) -> Result<(), crate::SynapticError>;
+    async fn add_reaction(&self, msg_id: &str, emoji: &str) -> Result<(), crate::SynapticError>;
 
     /// Remove a previously added emoji reaction.
-    async fn remove_reaction(
-        &self,
-        msg_id: &str,
-        emoji: &str,
-    ) -> Result<(), crate::SynapticError>;
+    async fn remove_reaction(&self, msg_id: &str, emoji: &str) -> Result<(), crate::SynapticError>;
 }
 
 /// @mention handling (synchronous — no I/O required).
