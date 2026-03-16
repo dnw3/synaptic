@@ -1,6 +1,9 @@
+pub mod environment;
+pub mod event_bus;
 pub mod filesystem;
 pub mod memory;
 pub mod patch_tool_calls;
+pub mod reflection;
 pub mod skills;
 pub mod subagent;
 pub mod summarization;
