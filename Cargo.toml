@@ -57,6 +57,7 @@ members = [
   "crates/synaptic-secrets",
   "crates/synaptic-session",
   "crates/synaptic-events",
+  "crates/synaptic-plugin",
   "crates/synaptic-metrics",
   "crates/synaptic-scheduler",
   "crates/synaptic-voice",

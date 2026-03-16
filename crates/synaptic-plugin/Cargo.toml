@@ -1,0 +1,16 @@
+[package]
+name = "synaptic-plugin"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+async-trait = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+thiserror = "2"
+synaptic-core = { version = "0.4", path = "../synaptic-core" }
+synaptic-events = { version = "0.4", path = "../synaptic-events" }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

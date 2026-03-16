@@ -12,13 +12,20 @@ use thiserror::Error;
 #[cfg(feature = "schemars")]
 pub use schemars;
 
+pub mod channel;
+pub mod channel_status;
 pub mod context_budget;
 pub mod delivery;
+pub mod dm_policy;
+pub mod message_ir;
 pub mod provenance;
 pub mod token_counter;
 
+pub use channel::*;
+pub use channel_status::*;
 pub use context_budget::{ContextBudget, ContextSlot, Priority, SlotTrimStrategy};
 pub use delivery::DeliveryContext;
+pub use dm_policy::{DmAccessDenied, DmPolicy, DmPolicyEnforcer, PairingChallenge, PairingError};
 pub use provenance::{InputProvenance, ProvenanceKind};
 #[cfg(feature = "tiktoken")]
 pub use token_counter::TiktokenCounter;

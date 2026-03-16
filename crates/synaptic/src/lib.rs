@@ -142,6 +142,10 @@ pub use synaptic_middleware as middleware;
 #[cfg(feature = "events")]
 pub use synaptic_events as events;
 
+/// Plugin system: Plugin trait, PluginManifest, PluginRegistry.
+#[cfg(feature = "plugin")]
+pub use synaptic_plugin as plugin;
+
 /// Key-value storage: Store trait, InMemoryStore.
 #[cfg(feature = "store")]
 pub use synaptic_store as store;

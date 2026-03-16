@@ -73,6 +73,7 @@ synaptic-scheduler = { version = "0.4", path = "../synaptic-scheduler", optional
 synaptic-sandbox = { version = "0.4", path = "../synaptic-sandbox", optional = true }
 synaptic-metrics = { version = "0.4", path = "../synaptic-metrics", optional = true }
 synaptic-events = { version = "0.4", path = "../synaptic-events", optional = true }
+synaptic-plugin = { version = "0.4", path = "../synaptic-plugin", optional = true }
 schemars = { workspace = true, optional = true }
 
 [features]
@@ -96,6 +97,7 @@ vectorstores = ["dep:synaptic-vectorstores"]
 graph = ["tools", "dep:synaptic-graph"]
 middleware = ["graph", "dep:synaptic-middleware"]
 events = ["dep:synaptic-events"]
+plugin = ["events", "dep:synaptic-plugin"]
 store = ["dep:synaptic-store"]
 cache = ["dep:synaptic-cache"]
 eval = ["embeddings", "dep:synaptic-eval"]
@@ -152,7 +154,7 @@ metrics = ["callbacks", "dep:synaptic-metrics"]
 
 # Convenience combinations
 models = ["openai", "anthropic", "gemini", "ollama", "bedrock", "cohere"]
-agent = ["default", "graph", "memory", "middleware", "events", "store", "condenser", "secrets", "config", "session"]
+agent = ["default", "graph", "memory", "middleware", "events", "plugin", "store", "condenser", "secrets", "config", "session"]
 rag = ["default", "embeddings", "retrieval", "loaders", "splitters", "vectorstores"]
 agent-openai = ["agent", "openai"]
 agent-anthropic = ["agent", "anthropic"]
