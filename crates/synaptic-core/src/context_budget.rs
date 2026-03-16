@@ -13,6 +13,16 @@ impl Priority {
     pub const LOW: Priority = Priority(192);
 }
 
+/// Strategy for trimming a context slot when it doesn't fit the budget.
+#[derive(Default)]
+pub enum SlotTrimStrategy {
+    /// Include all messages or none (current behavior).
+    #[default]
+    AllOrNone,
+    /// Keep most recent messages that fit within the remaining budget.
+    KeepRecent,
+}
+
 /// A slot of context to include in the budget.
 pub struct ContextSlot {
     pub name: String,
@@ -20,6 +30,8 @@ pub struct ContextSlot {
     pub messages: Vec<Message>,
     /// Minimum reserved tokens for this slot (guaranteed if budget allows).
     pub reserved_tokens: usize,
+    /// Strategy for handling slots that exceed the remaining budget.
+    pub trim_strategy: SlotTrimStrategy,
 }
 
 /// Assembles messages from multiple context slots within a token budget.
@@ -46,6 +58,9 @@ impl ContextBudget {
     /// Each slot's messages are included if they fit. Slots with
     /// `reserved_tokens > 0` are guaranteed inclusion (if total reserved
     /// fits within budget).
+    ///
+    /// For slots with `SlotTrimStrategy::KeepRecent`, the most recent messages
+    /// that fit within the remaining budget are kept.
     pub fn assemble(&self, mut slots: Vec<ContextSlot>) -> Vec<Message> {
         // Sort by priority (lower value = higher priority)
         slots.sort_by_key(|s| s.priority);
@@ -55,18 +70,39 @@ impl ContextBudget {
 
         for slot in slots {
             let slot_tokens = self.counter.count_messages(&slot.messages);
+            let remaining = self.max_tokens.saturating_sub(used_tokens);
 
-            if slot.reserved_tokens > 0 {
-                // Reserved slots are always included (up to budget)
-                if used_tokens + slot_tokens <= self.max_tokens {
-                    used_tokens += slot_tokens;
-                    result.extend(slot.messages);
-                }
-            } else if used_tokens + slot_tokens <= self.max_tokens {
+            if slot_tokens <= remaining {
+                // Fits entirely
                 used_tokens += slot_tokens;
                 result.extend(slot.messages);
+            } else if slot.reserved_tokens > 0 && slot_tokens <= remaining {
+                used_tokens += slot_tokens;
+                result.extend(slot.messages);
+            } else {
+                match slot.trim_strategy {
+                    SlotTrimStrategy::KeepRecent if remaining > 0 => {
+                        // Keep the most recent messages that fit
+                        let mut kept = Vec::new();
+                        let mut kept_tokens = 0;
+                        for msg in slot.messages.into_iter().rev() {
+                            let msg_tokens = self.counter.count_text(msg.content()) + 4;
+                            if kept_tokens + msg_tokens <= remaining {
+                                kept_tokens += msg_tokens;
+                                kept.push(msg);
+                            } else {
+                                break;
+                            }
+                        }
+                        kept.reverse();
+                        used_tokens += kept_tokens;
+                        result.extend(kept);
+                    }
+                    _ => {
+                        // AllOrNone or no remaining budget: skip
+                    }
+                }
             }
-            // If doesn't fit and not reserved, skip
         }
 
         result
