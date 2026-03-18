@@ -30,6 +30,7 @@ mod api;
 mod auth;
 #[cfg(feature = "bot")]
 pub mod bot;
+pub mod card_elements;
 pub mod events;
 pub mod loaders;
 pub mod store;

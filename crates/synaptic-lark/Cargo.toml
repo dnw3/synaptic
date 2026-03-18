@@ -18,7 +18,7 @@ serde.workspace = true
 tokio = { workspace = true }
 tracing = { workspace = true }
 futures.workspace = true
-synaptic-core = { version = "0.4", path = "../synaptic-core" }
+synaptic-core = { version = "0.4", path = "../synaptic-core", features = ["message-ir"] }
 synaptic-graph = { version = "0.4", path = "../synaptic-graph", optional = true }
 hmac = "0.12"
 sha2 = "0.10"
