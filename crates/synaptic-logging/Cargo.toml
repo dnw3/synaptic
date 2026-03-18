@@ -1,0 +1,23 @@
+[package]
+name = "synaptic-logging"
+description = "Structured logging infrastructure for synaptic agent framework"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+keywords = ["logging", "tracing", "agent", "observability"]
+categories = ["development-tools::debugging"]
+
+[dependencies]
+chrono = { workspace = true }
+dirs = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["sync", "rt"] }
+tracing = { workspace = true }
+tracing-appender = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter", "registry", "json"] }
+uuid = { workspace = true, features = ["v4"] }
