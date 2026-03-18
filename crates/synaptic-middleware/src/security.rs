@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
@@ -148,6 +150,7 @@ impl ConfirmationPolicy for ThresholdConfirmationPolicy {
 }
 
 /// Middleware that assesses tool call risk and optionally requires confirmation.
+#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct SecurityMiddleware {
     analyzer: Arc<dyn SecurityAnalyzer>,
     policy: Arc<dyn ConfirmationPolicy>,
@@ -177,6 +180,7 @@ impl SecurityMiddleware {
     }
 }
 
+#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for SecurityMiddleware {
     async fn wrap_tool_call(

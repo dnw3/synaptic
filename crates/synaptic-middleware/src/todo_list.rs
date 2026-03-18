@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -21,6 +23,7 @@ pub struct TodoItem {
 /// The middleware maintains a shared todo list. Before each model call,
 /// it appends the current todo state to the system prompt, giving the
 /// model awareness of remaining tasks.
+#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct TodoListMiddleware {
     items: Arc<Mutex<Vec<TodoItem>>>,
     next_id: Arc<Mutex<usize>>,
@@ -85,6 +88,7 @@ impl Default for TodoListMiddleware {
     }
 }
 
+#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for TodoListMiddleware {
     async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError> {

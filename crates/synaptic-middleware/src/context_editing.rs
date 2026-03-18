@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use async_trait::async_trait;
 use synaptic_core::{Message, SynapticError};
 
@@ -20,6 +22,7 @@ pub enum ContextStrategy {
 ///
 /// This is useful for keeping the context window manageable without
 /// full summarization.
+#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct ContextEditingMiddleware {
     strategy: ContextStrategy,
 }
@@ -72,6 +75,7 @@ impl ContextEditingMiddleware {
     }
 }
 
+#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for ContextEditingMiddleware {
     async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError> {

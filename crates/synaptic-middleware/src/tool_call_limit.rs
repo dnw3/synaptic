@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use async_trait::async_trait;
@@ -10,6 +12,7 @@ use crate::{AgentMiddleware, ToolCallRequest, ToolCaller};
 ///
 /// When the limit is exceeded, `wrap_tool_call` returns a
 /// `SynapticError::MaxStepsExceeded` error.
+#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct ToolCallLimitMiddleware {
     max_calls: usize,
     count: AtomicUsize,
@@ -32,6 +35,7 @@ impl ToolCallLimitMiddleware {
     }
 }
 
+#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for ToolCallLimitMiddleware {
     async fn wrap_tool_call(

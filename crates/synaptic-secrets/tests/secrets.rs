@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use std::sync::Arc;
 
 use synaptic_core::Message;
@@ -76,6 +78,7 @@ async fn middleware_redacts() {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
     let mut response = ModelResponse {
         message: Message::ai("Your key is sk-secret"),
@@ -99,6 +102,7 @@ async fn middleware_injects() {
         tools: vec![],
         tool_choice: None,
         system_prompt: Some("Use token: {{secret:token}}".to_string()),
+        thinking: None,
     };
 
     mw.before_model(&mut request).await.unwrap();

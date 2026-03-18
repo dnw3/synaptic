@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use async_trait::async_trait;
 use std::sync::Arc;
 use synaptic_core::SynapticError;
@@ -9,6 +11,7 @@ use crate::backend::Backend;
 ///
 /// On each model call, reads the configured memory file (default `AGENTS.md`) and
 /// appends its contents wrapped in `<agent_memory>` tags to the system prompt.
+#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct DeepMemoryMiddleware {
     backend: Arc<dyn Backend>,
     memory_file: String,
@@ -23,6 +26,7 @@ impl DeepMemoryMiddleware {
     }
 }
 
+#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for DeepMemoryMiddleware {
     async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError> {

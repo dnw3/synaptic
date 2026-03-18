@@ -1,4 +1,5 @@
 //! Integration tests for the middleware attribute macros.
+#![allow(deprecated)]
 
 use std::sync::Arc;
 
@@ -45,6 +46,7 @@ async fn test_before_model_middleware() {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
     mw.before_model(&mut req).await.unwrap();
     assert_eq!(req.system_prompt.as_deref(), Some("Be helpful"));
@@ -72,6 +74,7 @@ async fn test_after_model_middleware() {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
     let mut resp = ModelResponse {
         message: Message::ai("original"),
@@ -117,6 +120,7 @@ async fn test_dynamic_prompt_middleware() {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
     mw.before_model(&mut req).await.unwrap();
     assert_eq!(
@@ -181,6 +185,7 @@ async fn test_before_agent_default_methods_are_noop() {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
     mw.before_model(&mut req).await.unwrap();
     assert!(req.system_prompt.is_none());
@@ -238,6 +243,7 @@ async fn test_before_model_with_field() {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
     mw.before_model(&mut req).await.unwrap();
     assert_eq!(req.system_prompt.as_deref(), Some("You are a pirate"));
@@ -265,6 +271,7 @@ async fn test_after_model_with_field() {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
     let mut resp = ModelResponse {
         message: Message::ai("hi"),
@@ -313,6 +320,7 @@ async fn test_dynamic_prompt_with_field() {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
     mw.before_model(&mut req).await.unwrap();
     assert_eq!(

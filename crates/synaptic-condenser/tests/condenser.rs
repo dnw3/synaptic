@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -129,6 +131,7 @@ async fn middleware_applies() {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
 
     mw.before_model(&mut request).await.unwrap();
