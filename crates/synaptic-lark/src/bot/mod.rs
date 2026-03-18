@@ -7,5 +7,6 @@ pub use client::{BotInfo, LarkBotClient};
 pub use longconn::{LarkLongConnListener, MessageHandler};
 pub use session::LarkMessageEvent;
 pub use streaming::{
-    build_card_json, build_card_json_streaming, StreamingCardOptions, StreamingCardWriter,
+    build_card_json, build_card_json_streaming, build_card_json_with_options, StreamingCardOptions,
+    StreamingCardWriter,
 };

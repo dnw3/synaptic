@@ -184,6 +184,7 @@ impl<S: State> StateGraph<S> {
             cache_policies: self.cache_policies,
             cache: Arc::new(RwLock::new(HashMap::new())),
             deferred: self.deferred,
+            max_iterations: 100,
         })
     }
 }

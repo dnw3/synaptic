@@ -19,9 +19,12 @@ serde_json.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 schemars = { workspace = true, optional = true }
+chrono.workspace = true
 
 [features]
 schemars = ["dep:schemars"]
+message-ir = []
+tiktoken = []
 
 [dev-dependencies]
 serde_json.workspace = true

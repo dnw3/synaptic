@@ -1,6 +1,8 @@
 #![cfg(feature = "bot")]
 
-use synaptic_lark::bot::{build_card_json, build_card_json_streaming, StreamingCardOptions};
+use synaptic_lark::bot::{
+    build_card_json, build_card_json_streaming, build_card_json_with_options, StreamingCardOptions,
+};
 use synaptic_lark::LarkConfig;
 
 // ── Card JSON builder ────────────────────────────────────────────
@@ -11,6 +13,7 @@ fn build_card_json_with_title() {
     assert_eq!(card["schema"], "2.0");
     assert_eq!(card["config"]["update_multi"], true);
     assert_eq!(card["header"]["title"]["content"], "AI Response");
+    assert_eq!(card["header"]["template"], "blue");
     assert_eq!(card["body"]["elements"][0]["tag"], "markdown");
     assert_eq!(card["body"]["elements"][0]["content"], "Hello world");
     assert_eq!(
@@ -69,6 +72,48 @@ fn build_card_json_streaming_disabled() {
     assert_eq!(card["body"]["elements"][0]["content"], "final content");
 }
 
+// ── build_card_json_with_options ────────────────────────────────
+
+#[test]
+fn build_card_json_with_options_template_and_icon() {
+    let opts = StreamingCardOptions::new()
+        .with_title("Styled Card")
+        .with_template("green")
+        .with_icon("chat_outlined");
+    let card = build_card_json_with_options("hello", false, &opts);
+    assert_eq!(card["header"]["template"], "green");
+    assert_eq!(card["header"]["icon"]["tag"], "standard_icon");
+    assert_eq!(card["header"]["icon"]["token"], "chat_outlined");
+    assert_eq!(card["header"]["title"]["content"], "Styled Card");
+}
+
+#[test]
+fn build_card_json_with_options_no_icon() {
+    let opts = StreamingCardOptions::new().with_title("No Icon");
+    let card = build_card_json_with_options("content", false, &opts);
+    assert_eq!(card["header"]["template"], "blue");
+    assert!(card["header"].get("icon").is_none());
+}
+
+#[test]
+fn build_card_json_with_options_no_title_omits_header() {
+    let opts = StreamingCardOptions::new()
+        .with_template("red")
+        .with_icon("star");
+    let card = build_card_json_with_options("content", false, &opts);
+    assert!(card.get("header").is_none());
+}
+
+#[test]
+fn build_card_json_with_options_streaming_enabled() {
+    let opts = StreamingCardOptions::new()
+        .with_title("Stream")
+        .with_template("purple");
+    let card = build_card_json_with_options("", true, &opts);
+    assert_eq!(card["config"]["streaming_mode"], true);
+    assert_eq!(card["header"]["template"], "purple");
+}
+
 // ── StreamingCardOptions ─────────────────────────────────────────
 
 #[test]
@@ -76,15 +121,21 @@ fn streaming_options_defaults() {
     let opts = StreamingCardOptions::default();
     assert_eq!(opts.title, "");
     assert_eq!(opts.throttle, std::time::Duration::from_millis(500));
+    assert_eq!(opts.template, "blue");
+    assert_eq!(opts.icon, "");
 }
 
 #[test]
 fn streaming_options_builder() {
     let opts = StreamingCardOptions::new()
         .with_title("My Title")
-        .with_throttle(std::time::Duration::from_millis(200));
+        .with_throttle(std::time::Duration::from_millis(200))
+        .with_template("green")
+        .with_icon("chat_outlined");
     assert_eq!(opts.title, "My Title");
     assert_eq!(opts.throttle, std::time::Duration::from_millis(200));
+    assert_eq!(opts.template, "green");
+    assert_eq!(opts.icon, "chat_outlined");
 }
 
 // ── LarkBotClient card method existence ──────────────────────────

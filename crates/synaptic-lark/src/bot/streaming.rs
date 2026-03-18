@@ -18,6 +18,10 @@ pub struct StreamingCardOptions {
     pub title: String,
     /// Throttle interval between updates.  Defaults to 500ms.
     pub throttle: Duration,
+    /// Card header template color (e.g. "blue"). Default: "blue".
+    pub template: String,
+    /// Card header icon token (e.g. "chat_outlined"). Default: empty (no icon).
+    pub icon: String,
 }
 
 impl Default for StreamingCardOptions {
@@ -25,6 +29,8 @@ impl Default for StreamingCardOptions {
         Self {
             title: String::new(),
             throttle: Duration::from_millis(DEFAULT_THROTTLE_MS),
+            template: "blue".to_string(),
+            icon: String::new(),
         }
     }
 }
@@ -41,6 +47,16 @@ impl StreamingCardOptions {
 
     pub fn with_throttle(mut self, dur: Duration) -> Self {
         self.throttle = dur;
+        self
+    }
+
+    pub fn with_template(mut self, template: impl Into<String>) -> Self {
+        self.template = template.into();
+        self
+    }
+
+    pub fn with_icon(mut self, icon: impl Into<String>) -> Self {
+        self.icon = icon.into();
         self
     }
 }
@@ -100,7 +116,7 @@ impl StreamingCardWriter {
         let cardkit = CardKitApi::new(config.clone());
         let msg_api = MessageApi::new(config);
 
-        let card_json = build_card_json_streaming(&options.title, "", true);
+        let card_json = build_card_json_with_options("", true, &options);
         let card_id = cardkit.create(&card_json).await?;
 
         let content_json = json!({
@@ -135,7 +151,7 @@ impl StreamingCardWriter {
         let cardkit = CardKitApi::new(config.clone());
         let msg_api = MessageApi::new(config);
 
-        let card_json = build_card_json_streaming(&options.title, "", true);
+        let card_json = build_card_json_with_options("", true, &options);
         let card_id = cardkit.create(&card_json).await?;
 
         let content_json = json!({
@@ -194,11 +210,32 @@ impl StreamingCardWriter {
         state.finished = true;
         // Final update with streaming_mode off to clear "Generating..." state.
         state.sequence += 1;
-        let card_json = build_card_json_streaming(&self.options.title, &state.content, false);
+        let card_json = build_card_json_with_options(&state.content, false, &self.options);
         self.cardkit
             .update(&state.card_id, state.sequence, &card_json)
             .await?;
         state.last_update = Instant::now();
+        Ok(())
+    }
+
+    /// End streaming and replace entire card with the provided Card JSON 2.0.
+    /// The card_json should have `config.streaming_mode: false`.
+    /// Internally calls `cardkit.update(card_id, sequence, card_json)`.
+    pub async fn finish_with_card(
+        &self,
+        card_json: serde_json::Value,
+    ) -> Result<(), SynapticError> {
+        let mut state = self.state.lock().await;
+        if state.finished {
+            return Ok(());
+        }
+        state.finished = true;
+        state.sequence += 1;
+        let sequence = state.sequence;
+        let card_id = state.card_id.clone();
+        drop(state); // Release lock before API call
+
+        self.cardkit.update(&card_id, sequence, &card_json).await?;
         Ok(())
     }
 
@@ -249,6 +286,22 @@ pub fn build_card_json(title: &str, markdown_content: &str) -> Value {
 /// - `streaming = true` — enables typewriter animation on the Feishu client
 /// - `streaming = false` — static card (or final update to end the animation)
 pub fn build_card_json_streaming(title: &str, markdown_content: &str, streaming: bool) -> Value {
+    let opts = StreamingCardOptions {
+        title: title.to_string(),
+        ..Default::default()
+    };
+    build_card_json_with_options(markdown_content, streaming, &opts)
+}
+
+/// Build a Card JSON 2.0 structure using full [`StreamingCardOptions`].
+///
+/// This is the core builder that respects `template` and `icon` fields from options.
+/// Use [`build_card_json`] or [`build_card_json_streaming`] for simpler call sites.
+pub fn build_card_json_with_options(
+    markdown_content: &str,
+    streaming: bool,
+    options: &StreamingCardOptions,
+) -> Value {
     let mut config = json!({ "update_multi": true });
     if streaming {
         config["streaming_mode"] = json!(true);
@@ -270,13 +323,21 @@ pub fn build_card_json_streaming(title: &str, markdown_content: &str, streaming:
             }]
         }
     });
-    if !title.is_empty() {
-        card["header"] = json!({
+    if !options.title.is_empty() {
+        let mut header = json!({
             "title": {
                 "tag": "plain_text",
-                "content": title
-            }
+                "content": &options.title
+            },
+            "template": &options.template
         });
+        if !options.icon.is_empty() {
+            header["icon"] = json!({
+                "tag": "standard_icon",
+                "token": &options.icon
+            });
+        }
+        card["header"] = header;
     }
     card
 }

@@ -18,6 +18,9 @@ tokio.workspace = true
 synaptic-core = { version = "0.4", path = "../synaptic-core" }
 synaptic-runnables = { version = "0.4", path = "../synaptic-runnables" }
 
+[features]
+viking = []
+
 [dev-dependencies]
 tokio.workspace = true
 synaptic-models = { version = "0.4", path = "../synaptic-models" }

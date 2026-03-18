@@ -108,6 +108,8 @@ pub struct CompiledGraph<S: State> {
     pub(crate) cache: Arc<RwLock<HashMap<String, HashMap<u64, CachedEntry<S>>>>>,
     /// Nodes marked as deferred (wait for all incoming edges).
     pub(crate) deferred: HashSet<String>,
+    /// Maximum iterations (safety guard). Default: 100.
+    pub(crate) max_iterations: usize,
 }
 
 impl<S: State> std::fmt::Debug for CompiledGraph<S> {
@@ -177,6 +179,12 @@ impl<S: State> CompiledGraph<S> {
     /// Set a checkpointer for state persistence.
     pub fn with_checkpointer(mut self, checkpointer: Arc<dyn Checkpointer>) -> Self {
         self.checkpointer = Some(checkpointer);
+        self
+    }
+
+    /// Set the maximum number of node transitions (safety guard). Default: 100.
+    pub fn with_max_iterations(mut self, max: usize) -> Self {
+        self.max_iterations = max;
         self
     }
 
