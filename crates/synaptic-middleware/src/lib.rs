@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 mod callback_adapter;
 mod circuit_breaker;
 mod context_editing;
@@ -32,8 +34,8 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::Value;
 use synaptic_core::{
-    ChatModel, ChatRequest, ChatResponse, Message, SynapticError, TokenUsage, ToolCall, ToolChoice,
-    ToolDefinition,
+    ChatModel, ChatRequest, ChatResponse, Message, SynapticError, ThinkingConfig, TokenUsage,
+    ToolCall, ToolChoice, ToolDefinition,
 };
 
 // ---------------------------------------------------------------------------
@@ -50,6 +52,7 @@ pub struct ModelRequest {
     pub tools: Vec<ToolDefinition>,
     pub tool_choice: Option<ToolChoice>,
     pub system_prompt: Option<String>,
+    pub thinking: Option<ThinkingConfig>,
 }
 
 impl ModelRequest {
@@ -63,6 +66,9 @@ impl ModelRequest {
         let mut req = ChatRequest::new(messages).with_tools(self.tools.clone());
         if let Some(ref choice) = self.tool_choice {
             req = req.with_tool_choice(choice.clone());
+        }
+        if let Some(ref thinking) = self.thinking {
+            req = req.with_thinking(thinking.clone());
         }
         req
     }
@@ -190,6 +196,14 @@ pub trait ToolCaller: Send + Sync {
 ///   }
 /// after_agent
 /// ```
+///
+/// # Deprecation
+///
+/// This trait is deprecated. Use [`synaptic_events::EventSubscriber`] instead.
+/// The `EventBusMiddleware` bridges EventBus events into the agent execution loop,
+/// replacing the need for direct middleware implementations.
+/// This trait will be removed in a future version.
+#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 #[async_trait]
 pub trait AgentMiddleware: Send + Sync {
     /// Called once when the agent starts executing.
@@ -268,10 +282,12 @@ pub trait AgentMiddleware: Send + Sync {
 // ---------------------------------------------------------------------------
 
 /// A chain of middlewares that executes them in order.
+#[allow(deprecated)]
 pub struct MiddlewareChain {
     middlewares: Vec<Arc<dyn AgentMiddleware>>,
 }
 
+#[allow(deprecated)]
 impl MiddlewareChain {
     pub fn new(middlewares: Vec<Arc<dyn AgentMiddleware>>) -> Self {
         Self { middlewares }
@@ -409,12 +425,14 @@ impl MiddlewareChain {
 
 // Internal chain helpers for recursive wrap_model_call / wrap_tool_call
 
+#[allow(deprecated)]
 struct WrapModelChain<'a> {
     middlewares: &'a [Arc<dyn AgentMiddleware>],
     index: usize,
     base: &'a dyn ModelCaller,
 }
 
+#[allow(deprecated)]
 #[async_trait]
 impl ModelCaller for WrapModelChain<'_> {
     async fn call(&self, request: ModelRequest) -> Result<ModelResponse, SynapticError> {
@@ -433,12 +451,14 @@ impl ModelCaller for WrapModelChain<'_> {
     }
 }
 
+#[allow(deprecated)]
 struct WrapToolChain<'a> {
     middlewares: &'a [Arc<dyn AgentMiddleware>],
     index: usize,
     base: &'a dyn ToolCaller,
 }
 
+#[allow(deprecated)]
 #[async_trait]
 impl ToolCaller for WrapToolChain<'_> {
     async fn call(&self, request: ToolCallRequest) -> Result<Value, SynapticError> {
@@ -482,6 +502,7 @@ impl ModelCaller for BaseChatModelCaller {
 }
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     use super::*;
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -537,6 +558,7 @@ mod tests {
             tools: vec![],
             tool_choice: None,
             system_prompt: Some("You are helpful.".to_string()),
+            thinking: None,
         };
         let chat_req = req.to_chat_request();
         assert_eq!(chat_req.messages.len(), 2);
@@ -551,6 +573,7 @@ mod tests {
             tools: vec![],
             tool_choice: None,
             system_prompt: None,
+            thinking: None,
         };
         let chat_req = req.to_chat_request();
         assert_eq!(chat_req.messages.len(), 1);

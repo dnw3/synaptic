@@ -94,6 +94,7 @@ fn gen_middleware_factory(
     let mw_crate = paths::middleware_path();
     if fields.is_empty() {
         quote! {
+            #[allow(deprecated)]
             #vis fn #fn_name() -> ::std::sync::Arc<dyn #mw_crate::AgentMiddleware> {
                 ::std::sync::Arc::new(#struct_name)
             }
@@ -109,6 +110,7 @@ fn gen_middleware_factory(
             .collect();
         let inits: Vec<&syn::Ident> = fields.iter().map(|f| &f.ident).collect();
         quote! {
+            #[allow(deprecated)]
             #vis fn #fn_name(#(#params),*) -> ::std::sync::Arc<dyn #mw_crate::AgentMiddleware> {
                 ::std::sync::Arc::new(#struct_name { #(#inits),* })
             }
@@ -174,6 +176,7 @@ pub fn expand_before_agent(attr: TokenStream, item: TokenStream) -> syn::Result<
 
         #struct_def
 
+        #[allow(deprecated)]
         #[::async_trait::async_trait]
         impl #mw_crate::AgentMiddleware for #struct_name {
             async fn before_agent(
@@ -231,6 +234,7 @@ pub fn expand_before_model(attr: TokenStream, item: TokenStream) -> syn::Result<
 
         #struct_def
 
+        #[allow(deprecated)]
         #[::async_trait::async_trait]
         impl #mw_crate::AgentMiddleware for #struct_name {
             async fn before_model(
@@ -288,6 +292,7 @@ pub fn expand_after_model(attr: TokenStream, item: TokenStream) -> syn::Result<T
 
         #struct_def
 
+        #[allow(deprecated)]
         #[::async_trait::async_trait]
         impl #mw_crate::AgentMiddleware for #struct_name {
             async fn after_model(
@@ -346,6 +351,7 @@ pub fn expand_after_agent(attr: TokenStream, item: TokenStream) -> syn::Result<T
 
         #struct_def
 
+        #[allow(deprecated)]
         #[::async_trait::async_trait]
         impl #mw_crate::AgentMiddleware for #struct_name {
             async fn after_agent(
@@ -403,6 +409,7 @@ pub fn expand_wrap_model_call(attr: TokenStream, item: TokenStream) -> syn::Resu
 
         #struct_def
 
+        #[allow(deprecated)]
         #[::async_trait::async_trait]
         impl #mw_crate::AgentMiddleware for #struct_name {
             async fn wrap_model_call(
@@ -461,6 +468,7 @@ pub fn expand_wrap_tool_call(attr: TokenStream, item: TokenStream) -> syn::Resul
 
         #struct_def
 
+        #[allow(deprecated)]
         #[::async_trait::async_trait]
         impl #mw_crate::AgentMiddleware for #struct_name {
             async fn wrap_tool_call(
@@ -524,6 +532,7 @@ pub fn expand_dynamic_prompt(attr: TokenStream, item: TokenStream) -> syn::Resul
 
         #struct_def
 
+        #[allow(deprecated)]
         #[::async_trait::async_trait]
         impl #mw_crate::AgentMiddleware for #struct_name {
             async fn before_model(

@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -11,6 +13,7 @@ use crate::{AgentMiddleware, ModelRequest};
 /// the total exceeds `max_tokens`, older messages (excluding the
 /// system prompt) are summarized into a single summary message using
 /// the provided `ChatModel`.
+#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct SummarizationMiddleware {
     model: Arc<dyn ChatModel>,
     max_tokens: usize,
@@ -36,6 +39,7 @@ impl SummarizationMiddleware {
     }
 }
 
+#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for SummarizationMiddleware {
     async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError> {

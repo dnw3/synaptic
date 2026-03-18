@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -7,16 +9,19 @@ use synaptic_middleware::{AgentMiddleware, ModelRequest};
 use crate::Condenser;
 
 /// Middleware that applies a condenser to messages before each model call.
+#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct CondenserMiddleware {
     condenser: Arc<dyn Condenser>,
 }
 
+#[allow(deprecated)]
 impl CondenserMiddleware {
     pub fn new(condenser: Arc<dyn Condenser>) -> Self {
         Self { condenser }
     }
 }
 
+#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for CondenserMiddleware {
     async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError> {

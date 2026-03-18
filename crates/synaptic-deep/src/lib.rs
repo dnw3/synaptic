@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 //! Deep agent harness for Synaptic.
 //!
 //! Provides an opinionated agent harness that bundles filesystem tools,
@@ -65,6 +67,7 @@ pub trait ModelResolver: Send + Sync {
 }
 
 /// Configuration for [`create_deep_agent`].
+#[allow(deprecated)]
 pub struct DeepAgentOptions {
     /// Backend for filesystem operations.
     pub backend: Arc<dyn Backend>,
@@ -135,8 +138,17 @@ pub struct DeepAgentOptions {
     /// calls, agent end, etc.). When set, an [`EventBusMiddleware`] is
     /// automatically added to the middleware stack.
     pub event_bus: Option<Arc<EventBus>>,
+    /// Optional model name for event payloads (overrides model.profile()).
+    pub model_name: Option<String>,
+    /// Optional provider name for event payloads.
+    pub provider_name: Option<String>,
+    /// Optional channel name for context injection into events (e.g. "lark", "web").
+    pub channel: Option<String>,
+    /// Optional agent ID for context injection into events.
+    pub agent_id: Option<String>,
 }
 
+#[allow(deprecated)]
 impl DeepAgentOptions {
     /// Create options with the given backend and sensible defaults.
     pub fn new(backend: Arc<dyn Backend>) -> Self {
@@ -174,6 +186,10 @@ impl DeepAgentOptions {
             reflection_model: None,
             reflection_config: None,
             event_bus: None,
+            model_name: None,
+            provider_name: None,
+            channel: None,
+            agent_id: None,
         }
     }
 }
@@ -188,6 +204,7 @@ impl DeepAgentOptions {
 /// 5. **DeepSummarizationMiddleware** — auto-summarize context on overflow
 /// 6. **PatchToolCallsMiddleware** — fix malformed tool calls
 /// 7. User-provided middleware
+#[allow(deprecated)]
 #[traceable(skip = "model,options")]
 pub fn create_deep_agent(
     model: Arc<dyn ChatModel>,
@@ -312,8 +329,20 @@ pub fn create_deep_agent(
     // 8. EventBus bridge middleware — emits lifecycle events for subscribers
     if let Some(ref bus) = options.event_bus {
         let mut event_mw = middleware::event_bus::EventBusMiddleware::new(bus.clone());
-        if let Some(profile) = model.profile() {
+        // Model info: prefer options.model_name (set by business layer), fallback to profile()
+        if let Some(ref model_name) = options.model_name {
+            event_mw = event_mw.with_model_info(
+                model_name.clone(),
+                options.provider_name.as_deref().unwrap_or("unknown"),
+            );
+        } else if let Some(profile) = model.profile() {
             event_mw = event_mw.with_model_info(profile.name, profile.provider);
+        }
+        // Channel/agent context
+        if let (Some(ref ch), Some(ref aid)) = (&options.channel, &options.agent_id) {
+            event_mw = event_mw.with_context(ch.clone(), aid.clone());
+        } else if let Some(ref ch) = options.channel {
+            event_mw = event_mw.with_context(ch.clone(), "default");
         }
         all_middleware.push(Arc::new(event_mw));
     }
