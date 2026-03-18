@@ -317,3 +317,7 @@ pub use synaptic_sandbox as sandbox;
 /// Prometheus metrics exporter: render and serve /metrics endpoint.
 #[cfg(feature = "metrics")]
 pub use synaptic_metrics as metrics;
+
+/// Structured logging: ring buffer, request-scoped spans, log query API.
+#[cfg(feature = "logging")]
+pub use synaptic_logging as logging;

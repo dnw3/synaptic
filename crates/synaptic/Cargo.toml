@@ -74,6 +74,7 @@ synaptic-sandbox = { version = "0.4", path = "../synaptic-sandbox", optional = t
 synaptic-metrics = { version = "0.4", path = "../synaptic-metrics", optional = true }
 synaptic-events = { version = "0.4", path = "../synaptic-events", optional = true }
 synaptic-plugin = { version = "0.4", path = "../synaptic-plugin", optional = true }
+synaptic-logging = { version = "0.4", path = "../synaptic-logging", optional = true }
 schemars = { workspace = true, optional = true }
 
 [features]
@@ -86,6 +87,7 @@ prompts = ["runnables", "dep:synaptic-prompts"]
 parsers = ["runnables", "dep:synaptic-parsers"]
 tools = ["dep:synaptic-tools"]
 memory = ["runnables", "dep:synaptic-memory"]
+viking = ["memory", "synaptic-memory/viking"]
 callbacks = ["dep:synaptic-callbacks"]
 otel = ["callbacks", "synaptic-callbacks/otel"]
 langfuse = ["dep:synaptic-langfuse"]
@@ -151,10 +153,11 @@ browser = ["dep:synaptic-browser"]
 scheduler = ["dep:synaptic-scheduler"]
 sandbox = ["dep:synaptic-sandbox"]
 metrics = ["callbacks", "dep:synaptic-metrics"]
+logging = ["dep:synaptic-logging"]
 
 # Convenience combinations
 models = ["openai", "anthropic", "gemini", "ollama", "bedrock", "cohere"]
-agent = ["default", "graph", "memory", "middleware", "events", "plugin", "store", "condenser", "secrets", "config", "session"]
+agent = ["default", "graph", "memory", "middleware", "events", "plugin", "store", "condenser", "secrets", "config", "session", "logging"]
 rag = ["default", "embeddings", "retrieval", "loaders", "splitters", "vectorstores"]
 agent-openai = ["agent", "openai"]
 agent-anthropic = ["agent", "anthropic"]
@@ -171,7 +174,7 @@ full = ["default", "agent", "rag", "cache", "eval", "mcp", "macros", "deep", "sc
         "milvus", "opensearch", "lancedb", "flashrank", "lark",
         "store-filesystem", "deep-config",
         "voice", "browser", "scheduler",
-        "sandbox", "metrics"]
+        "sandbox", "metrics", "viking"]
 
 [dev-dependencies]
 tokio.workspace = true

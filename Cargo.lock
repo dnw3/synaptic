@@ -4510,6 +4510,7 @@ dependencies = [
  "synaptic-langfuse",
  "synaptic-lark",
  "synaptic-loaders",
+ "synaptic-logging",
  "synaptic-macros",
  "synaptic-mcp",
  "synaptic-memory",
