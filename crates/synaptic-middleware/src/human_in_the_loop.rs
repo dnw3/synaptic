@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -24,7 +22,6 @@ pub trait ApprovalCallback: Send + Sync {
 /// tools if the set is empty), the middleware invokes the
 /// `ApprovalCallback`. If the callback returns `false`, the tool call
 /// is replaced with an error message fed back to the model.
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct HumanInTheLoopMiddleware {
     callback: Arc<dyn ApprovalCallback>,
     /// Tool names that require approval. Empty means all tools.
@@ -49,7 +46,6 @@ impl HumanInTheLoopMiddleware {
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for HumanInTheLoopMiddleware {
     async fn wrap_tool_call(

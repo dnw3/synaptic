@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
@@ -49,7 +47,6 @@ pub type PostModelHook = Arc<
 // ChatModelNode — prebuilt node that calls a ChatModel through middleware
 // ---------------------------------------------------------------------------
 
-#[allow(deprecated)]
 struct ChatModelNode {
     model: Arc<dyn ChatModel>,
     tool_defs: Vec<ToolDefinition>,
@@ -63,7 +60,6 @@ struct ChatModelNode {
     response_format: Option<Value>,
 }
 
-#[allow(deprecated)]
 #[async_trait]
 impl Node<MessageState> for ChatModelNode {
     async fn process(
@@ -87,7 +83,6 @@ impl Node<MessageState> for ChatModelNode {
             tools: self.tool_defs.clone(),
             tool_choice: None,
             system_prompt: self.system_prompt.clone(),
-            thinking: None,
         };
 
         let base_caller = BaseChatModelCaller::new(self.model.clone());
@@ -176,7 +171,6 @@ pub fn create_react_agent_with_options(
 // ---------------------------------------------------------------------------
 
 /// Options for creating an agent with `create_agent`.
-#[allow(deprecated)]
 #[derive(Default)]
 pub struct AgentOptions {
     pub checkpointer: Option<Arc<dyn Checkpointer>>,
@@ -192,13 +186,9 @@ pub struct AgentOptions {
     pub response_format: Option<Value>,
     /// Enable parallel tool execution in ToolNode (default false).
     pub parallel_tools: bool,
-    /// Maximum graph iterations before aborting (default 100).
-    /// Maps to `CompiledGraph.max_iterations`.
-    pub max_iterations: Option<usize>,
 }
 
 /// Create a prebuilt agent graph with full middleware and store support.
-#[allow(deprecated)]
 #[traceable(skip = "model,tools,options")]
 pub fn create_agent(
     model: Arc<dyn ChatModel>,
@@ -261,10 +251,6 @@ pub fn create_agent(
     }
 
     let mut graph = builder.compile()?;
-
-    if let Some(max_iter) = options.max_iterations {
-        graph = graph.with_max_iterations(max_iter);
-    }
 
     // Auto-wire: explicit checkpointer > store-backed checkpointer > none
     let checkpointer: Option<Arc<dyn Checkpointer>> = match (&options.store, options.checkpointer) {
@@ -344,7 +330,6 @@ impl Node<MessageState> for SubAgentNode {
 }
 
 /// Create a supervisor multi-agent graph.
-#[allow(deprecated)]
 #[traceable(skip = "model,agents,options")]
 pub fn create_supervisor(
     model: Arc<dyn ChatModel>,
@@ -369,7 +354,7 @@ pub fn create_supervisor(
         .map(|t| ToolDefinition {
             name: t.name().to_string(),
             description: t.description().to_string(),
-            input_schema: serde_json::json!({}),
+            parameters: serde_json::json!({}),
             extras: None,
         })
         .collect();
@@ -559,7 +544,7 @@ pub fn create_swarm(
             .map(|t| ToolDefinition {
                 name: t.name().to_string(),
                 description: t.description().to_string(),
-                input_schema: serde_json::json!({}),
+                parameters: serde_json::json!({}),
                 extras: None,
             })
             .collect();
@@ -574,7 +559,7 @@ pub fn create_swarm(
                     tool_defs.push(ToolDefinition {
                         name: ht.name().to_string(),
                         description: ht.description().to_string(),
-                        input_schema: serde_json::json!({}),
+                        parameters: serde_json::json!({}),
                         extras: None,
                     });
                 }

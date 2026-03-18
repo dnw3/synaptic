@@ -1,4 +1,3 @@
-mod chunked_summarizing;
 mod llm_summarizing;
 mod middleware;
 mod noop;
@@ -6,9 +5,7 @@ mod pipeline;
 mod rolling;
 mod token_budget;
 
-pub use chunked_summarizing::ChunkedSummarizingCondenser;
-pub use llm_summarizing::{LlmSummarizingCondenser, PreCondenseCallback};
-#[allow(deprecated)]
+pub use llm_summarizing::LlmSummarizingCondenser;
 pub use middleware::CondenserMiddleware;
 pub use noop::NoOpCondenser;
 pub use pipeline::PipelineCondenser;

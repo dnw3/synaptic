@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 //! Bridge between [`EventBus`] and [`AgentMiddleware`].
 //!
 //! Emits `EventKind::BeforeModelCall`, `LlmOutput`, `BeforeToolCall`,
@@ -29,10 +27,6 @@ pub struct EventBusMiddleware {
     model_name: Option<String>,
     /// Optional provider name injected into `LlmOutput` events.
     provider_name: Option<String>,
-    /// Optional channel name (e.g. "lark", "web") injected into event payloads.
-    channel: Option<String>,
-    /// Optional agent ID injected into event payloads.
-    agent_id: Option<String>,
 }
 
 impl EventBusMiddleware {
@@ -42,8 +36,6 @@ impl EventBusMiddleware {
             bus,
             model_name: None,
             provider_name: None,
-            channel: None,
-            agent_id: None,
         }
     }
 
@@ -58,16 +50,8 @@ impl EventBusMiddleware {
         self.provider_name = Some(provider.into());
         self
     }
-
-    /// Set optional channel and agent context for event payloads.
-    pub fn with_context(mut self, channel: impl Into<String>, agent_id: impl Into<String>) -> Self {
-        self.channel = Some(channel.into());
-        self.agent_id = Some(agent_id.into());
-        self
-    }
 }
 
-#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for EventBusMiddleware {
     // -- model call: before + after ----------------------------------------
@@ -128,12 +112,6 @@ impl AgentMiddleware for EventBusMiddleware {
         }
         if let Some(ref provider) = self.provider_name {
             output_payload["provider"] = json!(provider);
-        }
-        if let Some(ref channel) = self.channel {
-            output_payload["channel"] = json!(channel);
-        }
-        if let Some(ref agent_id) = self.agent_id {
-            output_payload["agent_id"] = json!(agent_id);
         }
         let mut output_event =
             Event::new(EventKind::LlmOutput, output_payload).with_source("deep_agent");

@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -12,19 +10,16 @@ use crate::SecretRegistry;
 ///
 /// - `before_model`: injects secrets into the system prompt template
 /// - `after_model`: masks any leaked secrets in the AI response
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct SecretMaskingMiddleware {
     registry: Arc<SecretRegistry>,
 }
 
-#[allow(deprecated)]
 impl SecretMaskingMiddleware {
     pub fn new(registry: Arc<SecretRegistry>) -> Self {
         Self { registry }
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for SecretMaskingMiddleware {
     async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError> {

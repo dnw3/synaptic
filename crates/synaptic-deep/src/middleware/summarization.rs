@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use async_trait::async_trait;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
@@ -13,7 +11,6 @@ use crate::backend::Backend;
 /// Before each model call, estimates the token count. If it exceeds
 /// `max_input_tokens * threshold_fraction`, older messages are summarized by the model
 /// and the full history is offloaded to a file in the backend.
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct DeepSummarizationMiddleware {
     backend: Arc<dyn Backend>,
     model: Arc<dyn ChatModel>,
@@ -44,7 +41,6 @@ impl DeepSummarizationMiddleware {
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for DeepSummarizationMiddleware {
     async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError> {

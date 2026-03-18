@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -66,7 +64,6 @@ impl Default for CircuitBreakerConfig {
 /// exceed the configured threshold. After the recovery timeout, a single
 /// probe request is allowed through (half-open). If it succeeds, the
 /// circuit closes; if it fails, the circuit reopens.
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct CircuitBreakerMiddleware {
     config: CircuitBreakerConfig,
     circuits: Arc<RwLock<HashMap<String, CircuitTracker>>>,
@@ -121,7 +118,6 @@ impl CircuitBreakerMiddleware {
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for CircuitBreakerMiddleware {
     async fn wrap_tool_call(

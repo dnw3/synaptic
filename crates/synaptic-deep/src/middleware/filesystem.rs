@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use async_trait::async_trait;
 use serde_json::Value;
 use std::sync::Arc;
@@ -13,7 +11,6 @@ use crate::backend::Backend;
 /// After a tool call, if the result exceeds `eviction_threshold` tokens (~4 chars/token),
 /// the full result is written to `.evicted/{tool_call_id}.txt` and replaced with a
 /// preview showing the first and last 5 lines.
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct FilesystemMiddleware {
     backend: Arc<dyn Backend>,
     eviction_threshold_chars: usize,
@@ -28,7 +25,6 @@ impl FilesystemMiddleware {
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for FilesystemMiddleware {
     async fn wrap_tool_call(

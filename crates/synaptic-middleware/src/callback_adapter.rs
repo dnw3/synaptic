@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -19,7 +17,6 @@ use crate::{AgentMiddleware, ModelRequest, ModelResponse};
 /// - `after_agent` → `RunEvent::RunFinished`
 /// - `before_model` → `RunEvent::BeforeMessage`
 /// - `after_model` → `RunEvent::LlmCalled`
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct CallbackMiddleware {
     handler: Arc<dyn CallbackHandler>,
     run_id: String,
@@ -40,7 +37,6 @@ impl CallbackMiddleware {
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
 impl AgentMiddleware for CallbackMiddleware {
     async fn before_agent(&self, _messages: &mut Vec<Message>) -> Result<(), SynapticError> {
@@ -140,7 +136,6 @@ mod tests {
             tools: vec![],
             tool_choice: None,
             system_prompt: None,
-            thinking: None,
         };
         mw.before_model(&mut req).await.unwrap();
 

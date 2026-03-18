@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -35,7 +33,6 @@ impl ToolCaller for BaseToolCaller {
 ///
 /// By default, tool calls are executed serially. Call [`ToolNode::with_parallel`]
 /// to enable concurrent execution of multiple tool calls within a single step.
-#[allow(deprecated)]
 pub struct ToolNode {
     executor: SerialToolExecutor,
     middleware: Option<Arc<MiddlewareChain>>,
@@ -47,7 +44,6 @@ pub struct ToolNode {
     parallel: bool,
 }
 
-#[allow(deprecated)]
 impl ToolNode {
     pub fn new(executor: SerialToolExecutor) -> Self {
         Self {
@@ -97,7 +93,6 @@ impl ToolNode {
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
 impl Node<MessageState> for ToolNode {
     async fn process(
@@ -149,11 +144,9 @@ impl Node<MessageState> for ToolNode {
                 .collect();
             let results = futures::future::join_all(futs).await;
             for (call, result) in tool_calls.iter().zip(results) {
-                let content = match result {
-                    Ok(val) => value_to_display_string(val),
-                    Err(e) => format!("Error: {}", e),
-                };
-                state.messages.push(Message::tool(content, &call.id));
+                state
+                    .messages
+                    .push(Message::tool(result?.to_string(), &call.id));
             }
         } else {
             // Serial execution (default)
@@ -168,37 +161,25 @@ impl Node<MessageState> for ToolNode {
                     };
                     rt_tool
                         .call_with_runtime(call.arguments.clone(), runtime)
-                        .await
+                        .await?
                 } else if let Some(ref chain) = self.middleware {
                     let request = ToolCallRequest { call: call.clone() };
                     let base = BaseToolCaller {
                         executor: self.executor.clone(),
                     };
-                    chain.call_tool(request, &base).await
+                    chain.call_tool(request, &base).await?
                 } else {
                     self.executor
                         .execute(&call.name, call.arguments.clone())
-                        .await
+                        .await?
                 };
-                let content = match result {
-                    Ok(val) => value_to_display_string(val),
-                    Err(e) => format!("Error: {}", e),
-                };
-                state.messages.push(Message::tool(content, &call.id));
+                state
+                    .messages
+                    .push(Message::tool(result.to_string(), &call.id));
             }
         }
 
         Ok(state.into())
-    }
-}
-
-/// Convert a tool result Value to a display-friendly string.
-/// For `Value::String`, returns the inner string (without JSON escaping).
-/// For other types, uses `to_string()` (JSON serialization).
-fn value_to_display_string(val: serde_json::Value) -> String {
-    match val {
-        serde_json::Value::String(s) => s,
-        other => other.to_string(),
     }
 }
 
