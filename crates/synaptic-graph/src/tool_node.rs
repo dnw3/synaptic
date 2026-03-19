@@ -1,19 +1,18 @@
-#![allow(deprecated)]
-
 use std::collections::HashMap;
 use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde_json::Value;
 use synaptic_core::{Message, RuntimeAwareTool, Store, SynapticError, ToolRuntime};
-use synaptic_middleware::{MiddlewareChain, ToolCallRequest, ToolCaller};
+use synaptic_events::{EmitResult, Event, EventBus, EventKind};
+use synaptic_middleware::{InterceptorChain, ToolCallRequest, ToolCaller};
 use synaptic_tools::SerialToolExecutor;
 
 use crate::command::NodeOutput;
 use crate::node::Node;
 use crate::state::MessageState;
 
-/// Wraps a `SerialToolExecutor` into a `ToolCaller` for the middleware chain.
+/// Wraps a `SerialToolExecutor` into a `ToolCaller` for the interceptor chain.
 struct BaseToolCaller {
     executor: SerialToolExecutor,
 }
@@ -35,10 +34,10 @@ impl ToolCaller for BaseToolCaller {
 ///
 /// By default, tool calls are executed serially. Call [`ToolNode::with_parallel`]
 /// to enable concurrent execution of multiple tool calls within a single step.
-#[allow(deprecated)]
 pub struct ToolNode {
     executor: SerialToolExecutor,
-    middleware: Option<Arc<MiddlewareChain>>,
+    interceptors: Option<Arc<InterceptorChain>>,
+    event_bus: Option<Arc<EventBus>>,
     /// Optional store reference injected into RuntimeAwareTool calls.
     store: Option<Arc<dyn Store>>,
     /// Runtime-aware tools keyed by tool name.
@@ -47,27 +46,37 @@ pub struct ToolNode {
     parallel: bool,
 }
 
-#[allow(deprecated)]
 impl ToolNode {
     pub fn new(executor: SerialToolExecutor) -> Self {
         Self {
             executor,
-            middleware: None,
+            interceptors: None,
+            event_bus: None,
             store: None,
             runtime_tools: HashMap::new(),
             parallel: false,
         }
     }
 
-    /// Create a ToolNode with middleware support.
-    pub fn with_middleware(executor: SerialToolExecutor, middleware: Arc<MiddlewareChain>) -> Self {
+    /// Create a ToolNode with interceptor chain support.
+    pub fn with_interceptors(
+        executor: SerialToolExecutor,
+        interceptors: Arc<InterceptorChain>,
+    ) -> Self {
         Self {
             executor,
-            middleware: Some(middleware),
+            interceptors: Some(interceptors),
+            event_bus: None,
             store: None,
             runtime_tools: HashMap::new(),
             parallel: false,
         }
+    }
+
+    /// Set the event bus for emitting tool lifecycle events.
+    pub fn with_event_bus(mut self, bus: Arc<EventBus>) -> Self {
+        self.event_bus = Some(bus);
+        self
     }
 
     /// Enable parallel execution of tool calls.
@@ -95,9 +104,31 @@ impl ToolNode {
         self.runtime_tools.insert(tool.name().to_string(), tool);
         self
     }
+
+    /// Emit an intercept-capable event. Returns the EmitResult.
+    async fn emit_intercept_event(
+        &self,
+        kind: EventKind,
+        payload: Value,
+    ) -> Result<Option<EmitResult>, SynapticError> {
+        if let Some(ref bus) = self.event_bus {
+            let mut event = Event::new(kind, payload).with_source("graph_tools");
+            let result = bus.emit(&mut event).await?;
+            Ok(Some(result))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Emit a fire-and-forget event.
+    async fn emit_event(&self, kind: EventKind, payload: Value) {
+        if let Some(ref bus) = self.event_bus {
+            let mut event = Event::new(kind, payload).with_source("graph_tools");
+            let _ = bus.emit(&mut event).await;
+        }
+    }
 }
 
-#[allow(deprecated)]
 #[async_trait]
 impl Node<MessageState> for ToolNode {
     async fn process(
@@ -122,13 +153,35 @@ impl Node<MessageState> for ToolNode {
                 .iter()
                 .map(|call| {
                     let executor = self.executor.clone();
-                    let middleware = self.middleware.clone();
+                    let interceptors = self.interceptors.clone();
                     let rt_tool = self.runtime_tools.get(&call.name).cloned();
                     let store = self.store.clone();
                     let sv = state_value.clone();
                     let call = call.clone();
+                    let event_bus = self.event_bus.clone();
                     async move {
-                        if let Some(rt) = rt_tool {
+                        // Emit BeforeToolCall
+                        if let Some(ref bus) = event_bus {
+                            let payload = serde_json::json!({
+                                "tool_name": call.name,
+                                "tool_call_id": call.id,
+                                "arguments": call.arguments,
+                            });
+                            let mut event = Event::new(EventKind::BeforeToolCall, payload)
+                                .with_source("graph_tools");
+                            match bus.emit(&mut event).await {
+                                Ok(EmitResult::Intercepted(val)) => return Ok(val),
+                                Ok(EmitResult::Cancelled) => {
+                                    return Ok(serde_json::json!({
+                                        "error": "Tool call cancelled by event subscriber"
+                                    }));
+                                }
+                                Err(e) => return Err(e),
+                                _ => {}
+                            }
+                        }
+
+                        let result = if let Some(rt) = rt_tool {
                             let runtime = ToolRuntime {
                                 store,
                                 stream_writer: None,
@@ -137,13 +190,28 @@ impl Node<MessageState> for ToolNode {
                                 config: None,
                             };
                             rt.call_with_runtime(call.arguments.clone(), runtime).await
-                        } else if let Some(ref chain) = middleware {
+                        } else if let Some(ref chain) = interceptors {
                             let request = ToolCallRequest { call: call.clone() };
                             let base = BaseToolCaller { executor };
                             chain.call_tool(request, &base).await
                         } else {
                             executor.execute(&call.name, call.arguments.clone()).await
+                        };
+
+                        // Emit AfterToolCall
+                        if let Some(ref bus) = event_bus {
+                            let after_payload = serde_json::json!({
+                                "tool_name": call.name,
+                                "tool_call_id": call.id,
+                                "success": result.is_ok(),
+                            });
+                            let mut after_event =
+                                Event::new(EventKind::AfterToolCall, after_payload)
+                                    .with_source("graph_tools");
+                            let _ = bus.emit(&mut after_event).await;
                         }
+
+                        result
                     }
                 })
                 .collect();
@@ -158,6 +226,36 @@ impl Node<MessageState> for ToolNode {
         } else {
             // Serial execution (default)
             for call in &tool_calls {
+                // Emit BeforeToolCall (Intercept mode)
+                if let Some(result) = self
+                    .emit_intercept_event(
+                        EventKind::BeforeToolCall,
+                        serde_json::json!({
+                            "tool_name": call.name,
+                            "tool_call_id": call.id,
+                            "arguments": call.arguments,
+                        }),
+                    )
+                    .await?
+                {
+                    match result {
+                        EmitResult::Intercepted(val) => {
+                            state
+                                .messages
+                                .push(Message::tool(value_to_display_string(val), &call.id));
+                            continue;
+                        }
+                        EmitResult::Cancelled => {
+                            state.messages.push(Message::tool(
+                                "Tool call cancelled by event subscriber".to_string(),
+                                &call.id,
+                            ));
+                            continue;
+                        }
+                        _ => {}
+                    }
+                }
+
                 let result = if let Some(rt_tool) = self.runtime_tools.get(&call.name) {
                     let runtime = ToolRuntime {
                         store: self.store.clone(),
@@ -169,7 +267,7 @@ impl Node<MessageState> for ToolNode {
                     rt_tool
                         .call_with_runtime(call.arguments.clone(), runtime)
                         .await
-                } else if let Some(ref chain) = self.middleware {
+                } else if let Some(ref chain) = self.interceptors {
                     let request = ToolCallRequest { call: call.clone() };
                     let base = BaseToolCaller {
                         executor: self.executor.clone(),
@@ -180,6 +278,18 @@ impl Node<MessageState> for ToolNode {
                         .execute(&call.name, call.arguments.clone())
                         .await
                 };
+
+                // Emit AfterToolCall (fire-and-forget)
+                self.emit_event(
+                    EventKind::AfterToolCall,
+                    serde_json::json!({
+                        "tool_name": call.name,
+                        "tool_call_id": call.id,
+                        "success": result.is_ok(),
+                    }),
+                )
+                .await;
+
                 let content = match result {
                     Ok(val) => value_to_display_string(val),
                     Err(e) => format!("Error: {}", e),

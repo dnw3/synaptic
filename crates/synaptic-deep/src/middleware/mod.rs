@@ -1,7 +1,7 @@
 pub mod environment;
-pub mod event_bus;
 pub mod filesystem;
 pub mod memory;
+pub mod observability;
 pub mod patch_tool_calls;
 pub mod reflection;
 pub mod skills;

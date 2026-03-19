@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
@@ -9,8 +7,9 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::Value;
 use synaptic_core::{ChatModel, ChatRequest, Message, SynapticError, Tool, ToolDefinition};
+use synaptic_events::{EmitResult, Event, EventBus, EventKind};
 use synaptic_macros::traceable;
-use synaptic_middleware::{AgentMiddleware, BaseChatModelCaller, MiddlewareChain, ModelRequest};
+use synaptic_middleware::{BaseChatModelCaller, Interceptor, InterceptorChain, ModelRequest};
 use synaptic_store::Store;
 use synaptic_tools::SerialToolExecutor;
 
@@ -46,15 +45,15 @@ pub type PostModelHook = Arc<
 >;
 
 // ---------------------------------------------------------------------------
-// ChatModelNode — prebuilt node that calls a ChatModel through middleware
+// ChatModelNode — prebuilt node that calls a ChatModel through interceptors
 // ---------------------------------------------------------------------------
 
-#[allow(deprecated)]
 struct ChatModelNode {
     model: Arc<dyn ChatModel>,
     tool_defs: Vec<ToolDefinition>,
     system_prompt: Option<String>,
-    middleware: Arc<MiddlewareChain>,
+    interceptors: Arc<InterceptorChain>,
+    event_bus: Option<Arc<EventBus>>,
     is_first_call: AtomicBool,
     pre_model_hook: Option<PreModelHook>,
     post_model_hook: Option<PostModelHook>,
@@ -63,18 +62,46 @@ struct ChatModelNode {
     response_format: Option<Value>,
 }
 
-#[allow(deprecated)]
+impl ChatModelNode {
+    /// Emit an event on the event bus if present. Errors are logged but not propagated.
+    async fn emit_event(&self, kind: EventKind, payload: Value) {
+        if let Some(ref bus) = self.event_bus {
+            let mut event = Event::new(kind, payload).with_source("graph_agent");
+            let _ = bus.emit(&mut event).await;
+        }
+    }
+
+    /// Emit an intercept-capable event. Returns the EmitResult.
+    async fn emit_intercept_event(
+        &self,
+        kind: EventKind,
+        payload: Value,
+    ) -> Result<Option<EmitResult>, SynapticError> {
+        if let Some(ref bus) = self.event_bus {
+            let mut event = Event::new(kind, payload).with_source("graph_agent");
+            let result = bus.emit(&mut event).await?;
+            Ok(Some(result))
+        } else {
+            Ok(None)
+        }
+    }
+}
+
 #[async_trait]
 impl Node<MessageState> for ChatModelNode {
     async fn process(
         &self,
         mut state: MessageState,
     ) -> Result<NodeOutput<MessageState>, SynapticError> {
-        // On first call, run before_agent middleware hooks
+        // On first call, emit AgentStart
         if self.is_first_call.swap(false, Ordering::SeqCst) {
-            self.middleware
-                .run_before_agent(&mut state.messages)
-                .await?;
+            self.emit_event(
+                EventKind::AgentStart,
+                serde_json::json!({
+                    "message_count": state.messages.len(),
+                }),
+            )
+            .await;
         }
 
         // Run pre_model_hook
@@ -90,8 +117,68 @@ impl Node<MessageState> for ChatModelNode {
             thinking: None,
         };
 
+        // Emit BeforeModelCall (Intercept mode)
+        if let Some(result) = self
+            .emit_intercept_event(
+                EventKind::BeforeModelCall,
+                serde_json::json!({
+                    "message_count": request.messages.len(),
+                    "tool_count": request.tools.len(),
+                }),
+            )
+            .await?
+        {
+            match result {
+                EmitResult::Intercepted(val) => {
+                    // Subscriber provided a synthetic response
+                    let text = val
+                        .as_str()
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| val.to_string());
+                    let message = Message::ai(&text);
+                    state.messages.push(message);
+                    return Ok(state.into());
+                }
+                EmitResult::Cancelled => {
+                    return Err(SynapticError::Tool(
+                        "BeforeModelCall cancelled by event subscriber".to_string(),
+                    ));
+                }
+                _ => {}
+            }
+        }
+
+        // Call model through interceptor chain
         let base_caller = BaseChatModelCaller::new(self.model.clone());
-        let response = self.middleware.call_model(request, &base_caller).await?;
+        let response = match self.interceptors.call_model(request, &base_caller).await {
+            Ok(resp) => {
+                // Emit LlmOutput (fire-and-forget)
+                let content_preview: String = resp.message.content().chars().take(500).collect();
+                let tool_call_count = resp.message.tool_calls().len();
+                let mut output_payload = serde_json::json!({
+                    "content_preview": content_preview,
+                    "tool_call_count": tool_call_count,
+                });
+                if let Some(ref u) = resp.usage {
+                    output_payload["input_tokens"] = serde_json::json!(u.input_tokens);
+                    output_payload["output_tokens"] = serde_json::json!(u.output_tokens);
+                    output_payload["total_tokens"] = serde_json::json!(u.total_tokens);
+                }
+                self.emit_event(EventKind::LlmOutput, output_payload).await;
+                resp
+            }
+            Err(e) => {
+                // Emit OnModelError (fire-and-forget)
+                self.emit_event(
+                    EventKind::OnModelError,
+                    serde_json::json!({
+                        "error": e.to_string(),
+                    }),
+                )
+                .await;
+                return Err(e);
+            }
+        };
 
         state.messages.push(response.message.clone());
 
@@ -120,7 +207,15 @@ impl Node<MessageState> for ChatModelNode {
                 state.messages.push(structured_response.message);
             }
 
-            self.middleware.run_after_agent(&mut state.messages).await?;
+            // Emit AgentEnd with messages for ReflectionMiddleware
+            self.emit_event(
+                EventKind::AgentEnd,
+                serde_json::json!({
+                    "messages": state.messages,
+                    "message_count": state.messages.len(),
+                }),
+            )
+            .await;
         }
 
         Ok(state.into())
@@ -172,18 +267,18 @@ pub fn create_react_agent_with_options(
 }
 
 // ---------------------------------------------------------------------------
-// AgentOptions — new unified options for create_agent
+// AgentOptions — unified options for create_agent
 // ---------------------------------------------------------------------------
 
 /// Options for creating an agent with `create_agent`.
-#[allow(deprecated)]
 #[derive(Default)]
 pub struct AgentOptions {
     pub checkpointer: Option<Arc<dyn Checkpointer>>,
     pub interrupt_before: Vec<String>,
     pub interrupt_after: Vec<String>,
     pub system_prompt: Option<String>,
-    pub middleware: Vec<Arc<dyn AgentMiddleware>>,
+    /// Interceptors forming the model/tool call chain.
+    pub interceptors: Vec<Arc<dyn Interceptor>>,
     pub store: Option<Arc<dyn Store>>,
     pub name: Option<String>,
     pub pre_model_hook: Option<PreModelHook>,
@@ -195,10 +290,11 @@ pub struct AgentOptions {
     /// Maximum graph iterations before aborting (default 100).
     /// Maps to `CompiledGraph.max_iterations`.
     pub max_iterations: Option<usize>,
+    /// Optional event bus for emitting lifecycle events from graph nodes.
+    pub event_bus: Option<Arc<EventBus>>,
 }
 
-/// Create a prebuilt agent graph with full middleware and store support.
-#[allow(deprecated)]
+/// Create a prebuilt agent graph with interceptor chain and event bus support.
 #[traceable(skip = "model,tools,options")]
 pub fn create_agent(
     model: Arc<dyn ChatModel>,
@@ -213,21 +309,25 @@ pub fn create_agent(
     }
     let executor = SerialToolExecutor::new(registry);
 
-    let middleware_chain = Arc::new(MiddlewareChain::new(options.middleware));
+    let interceptor_chain = Arc::new(InterceptorChain::new(options.interceptors));
 
     let agent_node = ChatModelNode {
         model,
         tool_defs,
         system_prompt: options.system_prompt,
-        middleware: middleware_chain.clone(),
+        interceptors: interceptor_chain.clone(),
+        event_bus: options.event_bus.clone(),
         is_first_call: AtomicBool::new(true),
         pre_model_hook: options.pre_model_hook,
         post_model_hook: options.post_model_hook,
         response_format: options.response_format,
     };
 
-    let mut tool_node =
-        ToolNode::with_middleware(executor, middleware_chain).with_parallel(options.parallel_tools);
+    let mut tool_node = ToolNode::with_interceptors(executor, interceptor_chain)
+        .with_parallel(options.parallel_tools);
+    if let Some(ref bus) = options.event_bus {
+        tool_node = tool_node.with_event_bus(bus.clone());
+    }
     if let Some(ref store) = options.store {
         tool_node = tool_node.with_store(store.clone());
     }
@@ -344,7 +444,6 @@ impl Node<MessageState> for SubAgentNode {
 }
 
 /// Create a supervisor multi-agent graph.
-#[allow(deprecated)]
 #[traceable(skip = "model,agents,options")]
 pub fn create_supervisor(
     model: Arc<dyn ChatModel>,
@@ -386,7 +485,8 @@ pub fn create_supervisor(
         model,
         tool_defs: handoff_tool_defs.clone(),
         system_prompt: Some(system_prompt),
-        middleware: Arc::new(MiddlewareChain::new(vec![])),
+        interceptors: Arc::new(InterceptorChain::new(vec![])),
+        event_bus: None,
         is_first_call: AtomicBool::new(false),
         pre_model_hook: None,
         post_model_hook: None,

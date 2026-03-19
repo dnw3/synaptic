@@ -368,6 +368,7 @@ async fn main() {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
     mw.before_model(&mut req).await.unwrap();
     println!(
@@ -385,6 +386,7 @@ async fn main() {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
     let mut resp = ModelResponse {
         message: Message::ai("I am a helpful AI."),
@@ -420,6 +422,7 @@ async fn main() {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
     mw.before_model(&mut req).await.unwrap();
     println!("  dynamic system_prompt: {:?}\n", req.system_prompt);

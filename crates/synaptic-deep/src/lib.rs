@@ -1,10 +1,8 @@
-#![allow(deprecated)]
-
 //! Deep agent harness for Synaptic.
 //!
 //! Provides an opinionated agent harness that bundles filesystem tools,
 //! subagent spawning, skills, memory, and auto-summarization — all
-//! implemented as [`AgentMiddleware`](synaptic_middleware::AgentMiddleware).
+//! implemented as [`Interceptor`](synaptic_middleware::Interceptor).
 //!
 //! # Quick Start
 //!
@@ -34,11 +32,10 @@ use synaptic_core::{ChatModel, Store, SynapticError, Tool};
 use synaptic_events::EventBus;
 use synaptic_graph::{create_agent, AgentOptions, Checkpointer, CompiledGraph, MessageState};
 use synaptic_macros::traceable;
-use synaptic_middleware::{AgentMiddleware, Interceptor, InterceptorAdapter};
+use synaptic_middleware::Interceptor;
 
 use backend::Backend;
 pub use middleware::environment::{ChannelInfo, EnvironmentInfo, EnvironmentMiddleware};
-pub use middleware::event_bus::EventBusMiddleware;
 pub use middleware::observability::AgentTracingMiddleware;
 pub use middleware::reflection::{ReflectionConfig, ReflectionMiddleware};
 pub use middleware::skills::{
@@ -68,7 +65,6 @@ pub trait ModelResolver: Send + Sync {
 }
 
 /// Configuration for [`create_deep_agent`].
-#[allow(deprecated)]
 pub struct DeepAgentOptions {
     /// Backend for filesystem operations.
     pub backend: Arc<dyn Backend>,
@@ -76,10 +72,7 @@ pub struct DeepAgentOptions {
     pub system_prompt: Option<String>,
     /// Additional tools beyond the built-in filesystem tools.
     pub tools: Vec<Arc<dyn Tool>>,
-    /// Additional middleware beyond the built-in stack.
-    pub middleware: Vec<Arc<dyn AgentMiddleware>>,
-    /// Lightweight interceptors (model + tool call wrappers). These are
-    /// wrapped via [`InterceptorAdapter`] and appended before `middleware`.
+    /// Interceptors (model + tool call wrappers).
     pub interceptors: Vec<Arc<dyn Interceptor>>,
     /// Optional checkpointer for graph state persistence.
     pub checkpointer: Option<Arc<dyn Checkpointer>>,
@@ -139,8 +132,7 @@ pub struct DeepAgentOptions {
     /// Reflection configuration. Only used when `reflection_model` is Some.
     pub reflection_config: Option<ReflectionConfig>,
     /// Optional event bus for emitting lifecycle events (model calls, tool
-    /// calls, agent end, etc.). When set, an [`EventBusMiddleware`] is
-    /// automatically added to the middleware stack.
+    /// calls, agent end, etc.). Events are emitted natively from graph nodes.
     pub event_bus: Option<Arc<EventBus>>,
     /// Optional model name for event payloads (overrides model.profile()).
     pub model_name: Option<String>,
@@ -152,7 +144,6 @@ pub struct DeepAgentOptions {
     pub agent_id: Option<String>,
 }
 
-#[allow(deprecated)]
 impl DeepAgentOptions {
     /// Create options with the given backend and sensible defaults.
     pub fn new(backend: Arc<dyn Backend>) -> Self {
@@ -160,7 +151,6 @@ impl DeepAgentOptions {
             backend,
             system_prompt: None,
             tools: Vec::new(),
-            middleware: Vec::new(),
             interceptors: Vec::new(),
             checkpointer: None,
             store: None,
@@ -201,21 +191,21 @@ impl DeepAgentOptions {
 
 /// Create a deep agent with the given model and options.
 ///
-/// Assembles a middleware stack and tool set:
-/// 1. **DeepMemoryMiddleware** — loads memory file into system prompt
+/// Assembles an interceptor stack and tool set:
+/// 1. **EnvironmentMiddleware** — self-awareness injection
 /// 2. **SkillsMiddleware** — progressive disclosure of skills + SkillTool
-/// 3. **FilesystemMiddleware** — 6–7 filesystem tools + large result eviction
-/// 4. **SubAgentMiddleware** — `task` tool for child agent spawning
-/// 5. **DeepSummarizationMiddleware** — auto-summarize context on overflow
-/// 6. **PatchToolCallsMiddleware** — fix malformed tool calls
-/// 7. User-provided middleware
-#[allow(deprecated)]
+/// 3. **DeepMemoryMiddleware** — loads memory file into system prompt
+/// 4. **FilesystemMiddleware** — filesystem tools + large result eviction
+/// 5. **SubAgentMiddleware** — `task` tool for child agent spawning
+/// 6. **DeepSummarizationMiddleware** — auto-summarize context on overflow
+/// 7. **PatchToolCallsMiddleware** — fix malformed tool calls
+/// 8. User-provided interceptors
 #[traceable(skip = "model,options")]
 pub fn create_deep_agent(
     model: Arc<dyn ChatModel>,
     mut options: DeepAgentOptions,
 ) -> Result<CompiledGraph<MessageState>, SynapticError> {
-    let mut all_middleware: Vec<Arc<dyn AgentMiddleware>> = Vec::new();
+    let mut all_interceptors: Vec<Arc<dyn Interceptor>> = Vec::new();
     let mut all_tools: Vec<Arc<dyn Tool>> = Vec::new();
 
     // 0. Environment middleware (highest priority — appears first in system prompt)
@@ -224,7 +214,7 @@ pub fn create_deep_agent(
         if let Some(self_sec) = options.self_section.clone() {
             env_mw = env_mw.with_self_section(self_sec);
         }
-        all_middleware.push(Arc::new(InterceptorAdapter(Arc::new(env_mw))));
+        all_interceptors.push(Arc::new(env_mw));
     }
 
     // Subagent spawner (created early so SkillTool can reference it)
@@ -259,7 +249,7 @@ pub fn create_deep_agent(
         all_tools.push(
             skills_mw.create_skill_tool_with_session(subagent_spawner.clone(), session_id_lock),
         );
-        all_middleware.push(Arc::new(InterceptorAdapter(Arc::new(skills_mw))));
+        all_interceptors.push(Arc::new(skills_mw));
     }
 
     // 2. Memory middleware
@@ -268,21 +258,20 @@ pub fn create_deep_agent(
             .memory_file
             .clone()
             .unwrap_or_else(|| "AGENTS.md".to_string());
-        all_middleware.push(Arc::new(InterceptorAdapter(Arc::new(
-            middleware::memory::DeepMemoryMiddleware::new(options.backend.clone(), memory_file),
-        ))));
+        all_interceptors.push(Arc::new(middleware::memory::DeepMemoryMiddleware::new(
+            options.backend.clone(),
+            memory_file,
+        )));
     }
 
     // 3. Filesystem middleware + tools
     if options.enable_filesystem {
         let fs_tools = tools::create_filesystem_tools(options.backend.clone());
         all_tools.extend(fs_tools);
-        all_middleware.push(Arc::new(InterceptorAdapter(Arc::new(
-            middleware::filesystem::FilesystemMiddleware::new(
-                options.backend.clone(),
-                options.eviction_threshold,
-            ),
-        ))));
+        all_interceptors.push(Arc::new(middleware::filesystem::FilesystemMiddleware::new(
+            options.backend.clone(),
+            options.eviction_threshold,
+        )));
     }
 
     // 4. Subagent middleware + task tool + TaskOutput tool
@@ -315,50 +304,24 @@ pub fn create_deep_agent(
     )));
 
     // 5. Summarization middleware
-    all_middleware.push(Arc::new(InterceptorAdapter(Arc::new(
+    all_interceptors.push(Arc::new(
         middleware::summarization::DeepSummarizationMiddleware::new(
             options.backend.clone(),
             model.clone(),
             options.max_input_tokens,
             options.summarization_threshold,
         ),
-    ))));
+    ));
 
     // 6. Patch tool calls middleware
-    all_middleware.push(Arc::new(InterceptorAdapter(Arc::new(
+    all_interceptors.push(Arc::new(
         middleware::patch_tool_calls::PatchToolCallsMiddleware,
-    ))));
+    ));
 
-    // 7. User-provided interceptors (wrapped as AgentMiddleware)
-    for interceptor in options.interceptors {
-        all_middleware.push(Arc::new(InterceptorAdapter(interceptor)));
-    }
+    // 7. User-provided interceptors
+    all_interceptors.extend(options.interceptors);
 
-    // 7b. User-provided middleware
-    all_middleware.extend(options.middleware);
-
-    // 8. EventBus bridge middleware — emits lifecycle events for subscribers
-    if let Some(ref bus) = options.event_bus {
-        let mut event_mw = middleware::event_bus::EventBusMiddleware::new(bus.clone());
-        // Model info: prefer options.model_name (set by business layer), fallback to profile()
-        if let Some(ref model_name) = options.model_name {
-            event_mw = event_mw.with_model_info(
-                model_name.clone(),
-                options.provider_name.as_deref().unwrap_or("unknown"),
-            );
-        } else if let Some(profile) = model.profile() {
-            event_mw = event_mw.with_model_info(profile.name, profile.provider);
-        }
-        // Channel/agent context
-        if let (Some(ref ch), Some(ref aid)) = (&options.channel, &options.agent_id) {
-            event_mw = event_mw.with_context(ch.clone(), aid.clone());
-        } else if let Some(ref ch) = options.channel {
-            event_mw = event_mw.with_context(ch.clone(), "default");
-        }
-        all_middleware.push(Arc::new(event_mw));
-    }
-
-    // 9. Reflection subscriber (runs on AgentEnd events via EventBus)
+    // 8. Reflection subscriber (runs on AgentEnd events via EventBus)
     if let Some(ref reflection_model) = options.reflection_model {
         if let Some(ref bus) = options.event_bus {
             let config = options.reflection_config.clone().unwrap_or_default();
@@ -378,13 +341,13 @@ pub fn create_deep_agent(
     // Add user-provided tools
     all_tools.extend(options.tools);
 
-    // Build agent options
+    // Build agent options with interceptors (no more AgentMiddleware)
     let agent_options = AgentOptions {
         checkpointer: options.checkpointer,
         interrupt_before: Vec::new(),
         interrupt_after: Vec::new(),
         system_prompt: options.system_prompt,
-        middleware: all_middleware,
+        interceptors: all_interceptors,
         store: options.store,
         name: Some("deep_agent".to_string()),
         pre_model_hook: None,
@@ -392,6 +355,7 @@ pub fn create_deep_agent(
         response_format: None,
         parallel_tools: options.parallel_tools,
         max_iterations: options.max_iterations,
+        event_bus: options.event_bus,
     };
 
     create_agent(model, all_tools, agent_options)

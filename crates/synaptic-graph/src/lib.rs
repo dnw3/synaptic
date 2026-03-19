@@ -4,12 +4,16 @@ mod command;
 mod compiled;
 mod edge;
 mod node;
+pub mod plugins;
 mod prebuilt;
 mod send;
 mod state;
 mod store_checkpointer;
+pub mod streaming;
 mod tool_node;
 mod visualization;
+pub mod workflow;
+pub mod workflow_runner;
 
 pub use builder::StateGraph;
 pub use checkpoint::{Checkpoint, CheckpointConfig, Checkpointer};
@@ -20,6 +24,7 @@ pub use compiled::{
 };
 pub use edge::{ConditionalEdge, Edge, RouterFn};
 pub use node::{FnNode, Node};
+pub use plugins::AgentPlugins;
 pub use prebuilt::{
     create_agent, create_handoff_tool, create_react_agent, create_react_agent_with_options,
     create_supervisor, create_swarm, AgentOptions, PostModelHook, PreModelHook, ReactAgentOptions,

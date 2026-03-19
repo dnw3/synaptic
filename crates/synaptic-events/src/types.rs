@@ -31,7 +31,7 @@ pub enum DispatchMode {
 // EventKind
 // ---------------------------------------------------------------------------
 
-/// All 28 event kinds in the Synaptic event system.
+/// All 29 event kinds in the Synaptic event system.
 ///
 /// Variants are fieldless — payloads are carried by `Event::payload` (a `Value`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -47,6 +47,7 @@ pub enum EventKind {
     LlmInput,
     LlmOutput,
     AfterToolCall,
+    AgentStart,
     AgentEnd,
     SubagentEnded,
     AfterCompaction,
@@ -92,6 +93,7 @@ impl EventKind {
             | EventKind::LlmInput
             | EventKind::LlmOutput
             | EventKind::AfterToolCall
+            | EventKind::AgentStart
             | EventKind::AgentEnd
             | EventKind::SubagentEnded
             | EventKind::AfterCompaction
@@ -122,7 +124,7 @@ impl EventKind {
         }
     }
 
-    /// Returns all 28 event kind variants.
+    /// Returns all 29 event kind variants.
     pub fn all() -> Vec<EventKind> {
         vec![
             EventKind::GatewayStart,
@@ -134,6 +136,7 @@ impl EventKind {
             EventKind::LlmInput,
             EventKind::LlmOutput,
             EventKind::AfterToolCall,
+            EventKind::AgentStart,
             EventKind::AgentEnd,
             EventKind::SubagentEnded,
             EventKind::AfterCompaction,
@@ -351,8 +354,8 @@ mod tests {
     }
 
     #[test]
-    fn all_28_events_exist() {
-        assert_eq!(EventKind::all().len(), 28);
+    fn all_29_events_exist() {
+        assert_eq!(EventKind::all().len(), 29);
     }
 
     #[test]

@@ -80,12 +80,12 @@ fn options_default_values() {
     assert!(options.enable_memory);
     assert!(options.system_prompt.is_none());
     assert!(options.tools.is_empty());
-    assert!(options.middleware.is_empty());
+    assert!(options.interceptors.is_empty());
     assert_eq!(options.max_input_tokens, 128_000);
     assert!((options.summarization_threshold - 0.85).abs() < 0.01);
     assert_eq!(options.eviction_threshold, 20_000);
     assert_eq!(options.max_subagent_depth, 3);
-    assert_eq!(options.skills_dir, Some(".skills".to_string()));
+    assert_eq!(options.skills_dirs, vec![".claude/skills".to_string()]);
     assert_eq!(options.memory_file, Some("AGENTS.md".to_string()));
     assert!(options.subagents.is_empty());
     assert!(options.checkpointer.is_none());
@@ -131,7 +131,7 @@ async fn custom_options_fields_mutated() {
     options.summarization_threshold = 0.7;
     options.eviction_threshold = 5_000;
     options.max_subagent_depth = 1;
-    options.skills_dir = None;
+    options.skills_dirs = vec![];
     options.memory_file = None;
     options.enable_subagents = false;
     options.enable_skills = false;
@@ -141,7 +141,7 @@ async fn custom_options_fields_mutated() {
     assert!((options.summarization_threshold - 0.7).abs() < 0.01);
     assert_eq!(options.eviction_threshold, 5_000);
     assert_eq!(options.max_subagent_depth, 1);
-    assert!(options.skills_dir.is_none());
+    assert!(options.skills_dirs.is_empty());
     assert!(options.memory_file.is_none());
 
     // Should still compile into a working agent
