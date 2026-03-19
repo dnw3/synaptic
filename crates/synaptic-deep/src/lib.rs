@@ -358,16 +358,21 @@ pub fn create_deep_agent(
         all_middleware.push(Arc::new(event_mw));
     }
 
-    // 9. Reflection middleware (runs after agent completes; last added = first in after_agent)
+    // 9. Reflection subscriber (runs on AgentEnd events via EventBus)
     if let Some(ref reflection_model) = options.reflection_model {
-        let config = options.reflection_config.clone().unwrap_or_default();
-        all_middleware.push(Arc::new(
-            middleware::reflection::ReflectionMiddleware::new(
+        if let Some(ref bus) = options.event_bus {
+            let config = options.reflection_config.clone().unwrap_or_default();
+            let reflection = middleware::reflection::ReflectionMiddleware::new(
                 reflection_model.clone(),
                 options.backend.clone(),
             )
-            .with_config(config),
-        ));
+            .with_config(config);
+            bus.subscribe(Arc::new(reflection), 100, "reflection");
+        } else {
+            tracing::warn!(
+                "Reflection model configured but no EventBus provided; reflection disabled"
+            );
+        }
     }
 
     // Add user-provided tools

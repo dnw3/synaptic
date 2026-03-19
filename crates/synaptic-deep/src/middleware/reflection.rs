@@ -1,14 +1,12 @@
-#![allow(deprecated)]
-
 use std::sync::Arc;
 
 use async_trait::async_trait;
 use synaptic_core::{ChatModel, ChatRequest, Message, SynapticError};
-use synaptic_middleware::AgentMiddleware;
+use synaptic_events::{Event, EventAction, EventFilter, EventKind, EventSubscriber};
 
 use crate::backend::Backend;
 
-/// Configuration for the reflection middleware.
+/// Configuration for the reflection subscriber.
 #[derive(Debug, Clone)]
 pub struct ReflectionConfig {
     /// Minimum number of messages in conversation to trigger reflection (default: 6).
@@ -29,14 +27,17 @@ impl Default for ReflectionConfig {
     }
 }
 
-/// Middleware that performs post-session reflection to extract reusable patterns.
+/// Event subscriber that performs post-session reflection to extract reusable patterns.
 ///
-/// After each agent execution, if the conversation is long enough, it uses a
-/// lightweight model to analyze the conversation and extract new insights,
-/// appending them to a memory file in the backend.
+/// Subscribes to [`EventKind::AgentEnd`] events. When the conversation is long
+/// enough, it uses a lightweight model to analyze the conversation and extract
+/// new insights, appending them to a memory file in the backend.
 ///
-/// Reflection errors are non-fatal — they are logged but never fail the agent.
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
+/// **Payload requirement**: The `AgentEnd` event payload must include a
+/// `"messages"` field containing JSON-serialized `Vec<Message>`. If the field
+/// is missing, reflection is silently skipped.
+///
+/// Reflection errors are non-fatal — they are logged but never propagate.
 pub struct ReflectionMiddleware {
     /// Lightweight model for reflection (e.g. haiku).
     reflection_model: Arc<dyn ChatModel>,
@@ -57,12 +58,9 @@ impl ReflectionMiddleware {
         self.config = config;
         self
     }
-}
 
-#[allow(deprecated)]
-#[async_trait]
-impl AgentMiddleware for ReflectionMiddleware {
-    async fn after_agent(&self, messages: &mut Vec<Message>) -> Result<(), SynapticError> {
+    /// Core reflection logic extracted for reuse.
+    async fn run_reflection(&self, messages: &[Message]) -> Result<(), SynapticError> {
         // Skip if conversation is too short
         if messages.len() < self.config.min_messages {
             return Ok(());
@@ -165,6 +163,47 @@ impl AgentMiddleware for ReflectionMiddleware {
         }
 
         Ok(())
+    }
+}
+
+#[async_trait]
+impl EventSubscriber for ReflectionMiddleware {
+    fn subscriptions(&self) -> Vec<EventFilter> {
+        vec![EventFilter::Exact(EventKind::AgentEnd)]
+    }
+
+    async fn handle(&self, event: &mut Event) -> Result<EventAction, SynapticError> {
+        // Extract messages from the event payload.
+        // The AgentEnd event emitter must include a "messages" field.
+        let messages: Vec<Message> = match event.payload.get("messages") {
+            Some(val) => match serde_json::from_value(val.clone()) {
+                Ok(msgs) => msgs,
+                Err(e) => {
+                    tracing::debug!(
+                        "Reflection skipped: failed to deserialize messages from AgentEnd payload: {}",
+                        e
+                    );
+                    return Ok(EventAction::Continue);
+                }
+            },
+            None => {
+                tracing::debug!(
+                    "Reflection skipped: AgentEnd event payload does not contain 'messages' field"
+                );
+                return Ok(EventAction::Continue);
+            }
+        };
+
+        // Run reflection (errors are non-fatal)
+        if let Err(e) = self.run_reflection(&messages).await {
+            tracing::debug!("Reflection error (non-fatal): {}", e);
+        }
+
+        Ok(EventAction::Continue)
+    }
+
+    fn name(&self) -> &str {
+        "ReflectionMiddleware"
     }
 }
 
