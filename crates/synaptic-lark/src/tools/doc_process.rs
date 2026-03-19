@@ -63,7 +63,10 @@ impl Tool for LarkDocProcessTool {
         })?;
         let token = self.token_cache.get_token().await?;
         let body = json!({ "file_key": file_key, "task_type": task_type });
-        let url = format!("{}/document_ai/v1/entity/recognize", self.base_url);
+        let url = format!(
+            "{}/open-apis/document_ai/v1/entity/recognize",
+            self.base_url
+        );
         let resp = self
             .client
             .post(&url)

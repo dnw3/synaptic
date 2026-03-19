@@ -96,7 +96,7 @@ impl Loader for LarkSpreadsheetLoader {
 
         let range = format!("{}!A1:ZZ10000", self.sheet_id);
         let url = format!(
-            "{}/sheets/v2/spreadsheets/{}/values/{}?renderType=PlainText",
+            "{}/open-apis/sheets/v2/spreadsheets/{}/values/{}?renderType=PlainText",
             self.base_url,
             stoken,
             urlencoding::encode(&range)

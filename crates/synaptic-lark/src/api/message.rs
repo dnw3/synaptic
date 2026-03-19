@@ -36,7 +36,7 @@ impl MessageApi {
     ) -> Result<String, SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/im/v1/messages?receive_id_type={receive_id_type}",
+            "{}/open-apis/im/v1/messages?receive_id_type={receive_id_type}",
             self.base_url
         );
         let body = json!({
@@ -70,7 +70,7 @@ impl MessageApi {
         content_json: &str,
     ) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/im/v1/messages/{message_id}", self.base_url);
+        let url = format!("{}/open-apis/im/v1/messages/{message_id}", self.base_url);
         let body = json!({ "msg_type": msg_type, "content": content_json });
         let resp: Value = self
             .client
@@ -89,7 +89,7 @@ impl MessageApi {
     /// Delete (recall) a message.
     pub async fn delete(&self, message_id: &str) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/im/v1/messages/{message_id}", self.base_url);
+        let url = format!("{}/open-apis/im/v1/messages/{message_id}", self.base_url);
         let resp: Value = self
             .client
             .delete(&url)
@@ -112,7 +112,10 @@ impl MessageApi {
         content_json: &str,
     ) -> Result<String, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/im/v1/messages/{message_id}/reply", self.base_url);
+        let url = format!(
+            "{}/open-apis/im/v1/messages/{message_id}/reply",
+            self.base_url
+        );
         let body = json!({ "msg_type": msg_type, "content": content_json });
         let resp: Value = self
             .client

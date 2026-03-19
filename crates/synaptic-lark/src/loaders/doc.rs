@@ -72,7 +72,7 @@ impl LarkDocLoader {
     async fn fetch_doc_content(&self, doc_token: &str) -> Result<Document, SynapticError> {
         let auth = self.auth_header().await?;
         let url = format!(
-            "{}/docx/v1/documents/{}/raw_content",
+            "{}/open-apis/docx/v1/documents/{}/raw_content",
             self.base_url, doc_token
         );
         let resp = self
@@ -121,7 +121,7 @@ impl LarkDocLoader {
 
         loop {
             let mut url = format!(
-                "{}/wiki/v2/spaces/{}/nodes?page_size=50",
+                "{}/open-apis/wiki/v2/spaces/{}/nodes?page_size=50",
                 self.base_url, space_id
             );
             if let Some(ref pt) = page_token {

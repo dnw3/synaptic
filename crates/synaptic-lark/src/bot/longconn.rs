@@ -7,7 +7,10 @@ use synaptic_core::SynapticError;
 
 use crate::LarkConfig;
 
+use synaptic_core::ChannelStatusHandle;
+
 use super::client::LarkBotClient;
+use super::events::{parse_event, LarkEventHandler};
 use super::session::LarkMessageEvent;
 
 /// Handler trait for incoming bot messages.
@@ -28,6 +31,10 @@ pub struct LarkLongConnListener {
     dedup_capacity: usize,
     dedup: Arc<Mutex<LruCache<String, ()>>>,
     message_handler: Option<Arc<dyn MessageHandler>>,
+    /// Full event handler (receives all event types including card actions).
+    event_handler: Option<Arc<dyn LarkEventHandler>>,
+    /// Optional status handle for reporting connection health.
+    status_handle: Option<Arc<dyn ChannelStatusHandle>>,
 }
 
 impl LarkLongConnListener {
@@ -38,6 +45,8 @@ impl LarkLongConnListener {
             dedup_capacity: cap,
             dedup: Arc::new(Mutex::new(LruCache::new(NonZeroUsize::new(cap).unwrap()))),
             message_handler: None,
+            event_handler: None,
+            status_handle: None,
         }
     }
 
@@ -57,6 +66,20 @@ impl LarkLongConnListener {
         self
     }
 
+    /// Set a full-event handler (receives all event types).
+    /// Use this instead of [`with_message_handler`] for rich event handling
+    /// including card actions, bot lifecycle events, etc.
+    pub fn with_event_handler<H: LarkEventHandler + 'static>(mut self, h: H) -> Self {
+        self.event_handler = Some(Arc::new(h));
+        self
+    }
+
+    /// Set an optional channel status handle for reporting connection health.
+    pub fn with_status_handle(mut self, handle: Arc<dyn ChannelStatusHandle>) -> Self {
+        self.status_handle = Some(handle);
+        self
+    }
+
     /// Dispatch a pre-parsed event payload.
     pub async fn dispatch_payload(&self, payload: &Value) -> Result<(), SynapticError> {
         let event_id = payload["header"]["event_id"].as_str().unwrap_or("");
@@ -72,6 +95,28 @@ impl LarkLongConnListener {
             cache.put(event_id.to_string(), ());
         }
 
+        // Route to event_handler if set (handles all event types)
+        if let Some(event_handler) = &self.event_handler {
+            let config_clone = self.config.clone();
+            let handler = event_handler.clone();
+            let p = payload.clone();
+            tokio::spawn(async move {
+                let event = match parse_event(&p) {
+                    Ok(e) => e,
+                    Err(err) => {
+                        tracing::warn!("LarkLongConnListener: failed to parse event: {err}");
+                        return;
+                    }
+                };
+                let client = LarkBotClient::new(config_clone);
+                if let Err(e) = handler.handle(event, &client).await {
+                    tracing::error!("LarkLongConnListener: event_handler error: {e}");
+                }
+            });
+            return Ok(());
+        }
+
+        // Fallback to legacy message_handler
         match event_type {
             "im.message.receive_v1" => {
                 if let Some(handler) = &self.message_handler {
@@ -93,16 +138,27 @@ impl LarkLongConnListener {
     }
 
     async fn get_ws_endpoint(&self, token: &str) -> Result<String, SynapticError> {
-        let url = format!("{}/callback/v1/ws/endpoint", self.config.base_url);
-        let resp: Value = reqwest::Client::new()
+        // WS endpoint lives at /callback/ws/endpoint on the domain root,
+        // NOT under /open-apis.
+        let url = format!("{}/callback/ws/endpoint", self.config.base_url);
+        let raw = reqwest::Client::new()
             .post(&url)
             .bearer_auth(token)
             .send()
             .await
-            .map_err(|e| SynapticError::Tool(format!("ws endpoint: {e}")))?
-            .json()
+            .map_err(|e| SynapticError::Tool(format!("ws endpoint: {e}")))?;
+        let status = raw.status();
+        let body = raw
+            .text()
             .await
-            .map_err(|e| SynapticError::Tool(format!("ws endpoint parse: {e}")))?;
+            .map_err(|e| SynapticError::Tool(format!("ws endpoint read: {e}")))?;
+        tracing::debug!(status = %status, body_len = body.len(), "lark ws endpoint raw response: {body}");
+        let resp: Value = serde_json::from_str(&body).map_err(|e| {
+            SynapticError::Tool(format!(
+                "ws endpoint parse: {e} — raw({status}): {}",
+                &body[..body.len().min(500)]
+            ))
+        })?;
         if resp["code"].as_i64().unwrap_or(-1) != 0 {
             return Err(SynapticError::Tool(format!(
                 "ws endpoint error: {}",

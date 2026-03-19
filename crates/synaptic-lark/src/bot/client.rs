@@ -4,7 +4,10 @@ use serde_json::json;
 use synaptic_core::SynapticError;
 
 use super::streaming::{StreamingCardOptions, StreamingCardWriter};
-use crate::{api::cardkit::CardKitApi, api::message::MessageApi, auth::TokenCache, LarkConfig};
+use crate::{
+    api::cardkit::CardKitApi, api::message::MessageApi, api::reaction::ReactionApi,
+    auth::TokenCache, LarkConfig,
+};
 
 /// Feishu bot client: get bot info, send and reply to messages.
 ///
@@ -17,6 +20,7 @@ pub struct LarkBotClient {
     client: Client,
     msg_api: MessageApi,
     cardkit_api: CardKitApi,
+    reaction_api: ReactionApi,
 }
 
 #[derive(Debug, Deserialize)]
@@ -34,6 +38,7 @@ impl LarkBotClient {
         // MessageApi and CardKitApi get their own token caches (same credentials).
         let msg_api = MessageApi::new(config.clone());
         let cardkit_api = CardKitApi::new(config.clone());
+        let reaction_api = ReactionApi::new(config.clone());
         Self {
             app_id,
             config: config.clone(),
@@ -42,6 +47,7 @@ impl LarkBotClient {
             client: Client::new(),
             msg_api,
             cardkit_api,
+            reaction_api,
         }
     }
 
@@ -52,7 +58,7 @@ impl LarkBotClient {
     /// GET /bot/v3/info
     pub async fn get_bot_info(&self) -> Result<BotInfo, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/bot/v3/info", self.base_url);
+        let url = format!("{}/open-apis/bot/v3/info", self.base_url);
         let resp: serde_json::Value = self
             .client
             .get(&url)
@@ -206,5 +212,86 @@ impl LarkBotClient {
         options: StreamingCardOptions,
     ) -> Result<StreamingCardWriter, SynapticError> {
         StreamingCardWriter::reply(self.config.clone(), reply_to_message_id, options).await
+    }
+
+    // ── Thread / reaction / media ──────────────────────────────────────────
+
+    /// Reply to a message in its thread context (root_id).
+    /// Returns `message_id`. Falls back to plain reply if threading is not available.
+    pub async fn reply_text_in_thread(
+        &self,
+        message_id: &str,
+        text: &str,
+    ) -> Result<String, SynapticError> {
+        // Lark's reply API automatically threads if the message_id is a root.
+        // We use the same endpoint as reply_text but this method communicates
+        // the intent that threading is desired.
+        let content_json = serde_json::json!({ "text": text }).to_string();
+        self.msg_api.reply(message_id, "text", &content_json).await
+    }
+
+    /// Download an image by its `image_key`. Returns the raw bytes.
+    pub async fn download_image(&self, image_key: &str) -> Result<Vec<u8>, SynapticError> {
+        let token = self.token_cache.get_token().await?;
+        let url = format!("{}/open-apis/im/v1/image/{}", self.base_url, image_key);
+        let bytes = self
+            .client
+            .get(&url)
+            .bearer_auth(&token)
+            .send()
+            .await
+            .map_err(|e| SynapticError::Tool(format!("download image: {e}")))?
+            .bytes()
+            .await
+            .map_err(|e| SynapticError::Tool(format!("download image read: {e}")))?;
+        Ok(bytes.to_vec())
+    }
+
+    /// Download a file resource attached to a message.
+    ///
+    /// `resource_type` is typically `"file"`, `"image"`, `"audio"`, `"video"`, or `"sticker"`.
+    /// Returns the raw bytes.
+    pub async fn download_resource(
+        &self,
+        message_id: &str,
+        file_key: &str,
+        resource_type: &str,
+    ) -> Result<Vec<u8>, SynapticError> {
+        let token = self.token_cache.get_token().await?;
+        let url = format!(
+            "{}/open-apis/im/v1/messages/{message_id}/resources/{file_key}?type={resource_type}",
+            self.base_url
+        );
+        let bytes = self
+            .client
+            .get(&url)
+            .bearer_auth(&token)
+            .send()
+            .await
+            .map_err(|e| SynapticError::Tool(format!("download resource: {e}")))?
+            .bytes()
+            .await
+            .map_err(|e| SynapticError::Tool(format!("download resource read: {e}")))?;
+        Ok(bytes.to_vec())
+    }
+
+    /// Add an emoji reaction to a message. Returns the `reaction_id`.
+    pub async fn add_reaction(
+        &self,
+        message_id: &str,
+        emoji_type: &str,
+    ) -> Result<String, SynapticError> {
+        self.reaction_api.add_reaction(message_id, emoji_type).await
+    }
+
+    /// Remove an emoji reaction from a message.
+    pub async fn remove_reaction(
+        &self,
+        message_id: &str,
+        reaction_id: &str,
+    ) -> Result<(), SynapticError> {
+        self.reaction_api
+            .delete_reaction(message_id, reaction_id)
+            .await
     }
 }

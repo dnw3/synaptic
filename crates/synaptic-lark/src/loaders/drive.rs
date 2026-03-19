@@ -76,7 +76,7 @@ impl Loader for LarkDriveLoader {
         })?;
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/drive/v1/files?folder_token={}&page_size=200",
+            "{}/open-apis/drive/v1/files?folder_token={}&page_size=200",
             self.base_url, folder
         );
         let resp = self

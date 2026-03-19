@@ -36,7 +36,7 @@ impl ContactApi {
     pub async fn get_user(&self, user_id: &str, id_type: &str) -> Result<Value, SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/contact/v3/users/{user_id}?user_id_type={id_type}",
+            "{}/open-apis/contact/v3/users/{user_id}?user_id_type={id_type}",
             self.base_url
         );
         let resp = self
@@ -61,7 +61,7 @@ impl ContactApi {
         mobiles: &[String],
     ) -> Result<Value, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/contact/v3/users/batch_get_id", self.base_url);
+        let url = format!("{}/open-apis/contact/v3/users/batch_get_id", self.base_url);
         let mut body = json!({});
         if !emails.is_empty() {
             body["emails"] = json!(emails);
@@ -91,7 +91,10 @@ impl ContactApi {
         parent_dept_id: Option<&str>,
     ) -> Result<Vec<Value>, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let mut url = format!("{}/contact/v3/departments?fetch_child=true", self.base_url);
+        let mut url = format!(
+            "{}/open-apis/contact/v3/departments?fetch_child=true",
+            self.base_url
+        );
         if let Some(id) = parent_dept_id {
             url.push_str(&format!("&parent_department_id={id}"));
         }
@@ -121,7 +124,7 @@ impl ContactApi {
     ) -> Result<Value, SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/contact/v3/departments/{dept_id}?department_id_type={id_type}",
+            "{}/open-apis/contact/v3/departments/{dept_id}?department_id_type={id_type}",
             self.base_url
         );
         let resp = self

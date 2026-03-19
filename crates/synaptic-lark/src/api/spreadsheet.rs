@@ -40,7 +40,10 @@ impl SpreadsheetApi {
         values: Vec<Vec<Value>>,
     ) -> Result<(), SynapticError> {
         let auth_token = self.token_cache.get_token().await?;
-        let url = format!("{}/sheets/v2/spreadsheets/{token}/values", self.base_url);
+        let url = format!(
+            "{}/open-apis/sheets/v2/spreadsheets/{token}/values",
+            self.base_url
+        );
         let body = json!({ "valueRange": { "range": range, "values": values } });
         let resp = self
             .client
@@ -66,7 +69,7 @@ impl SpreadsheetApi {
     ) -> Result<(), SynapticError> {
         let auth_token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/sheets/v2/spreadsheets/{token}/values_append",
+            "{}/open-apis/sheets/v2/spreadsheets/{token}/values_append",
             self.base_url
         );
         let body = json!({
@@ -92,7 +95,7 @@ impl SpreadsheetApi {
     pub async fn clear_values(&self, token: &str, range: &str) -> Result<(), SynapticError> {
         let auth_token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/sheets/v2/spreadsheets/{token}/values_batch_clear",
+            "{}/open-apis/sheets/v2/spreadsheets/{token}/values_batch_clear",
             self.base_url
         );
         let body = json!({ "ranges": [range] });
@@ -120,7 +123,7 @@ impl SpreadsheetApi {
         let auth_token = self.token_cache.get_token().await?;
         let encoded_range = urlencoding::encode(range);
         let url = format!(
-            "{}/sheets/v2/spreadsheets/{token}/values/{encoded_range}",
+            "{}/open-apis/sheets/v2/spreadsheets/{token}/values/{encoded_range}",
             self.base_url
         );
         let resp = self

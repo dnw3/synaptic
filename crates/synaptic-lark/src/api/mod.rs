@@ -5,5 +5,7 @@ pub(crate) mod cardkit;
 pub(crate) mod chat;
 pub(crate) mod contact;
 pub(crate) mod message;
+#[cfg(feature = "bot")]
+pub(crate) mod reaction;
 pub(crate) mod spreadsheet;
 pub(crate) mod task;

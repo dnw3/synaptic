@@ -32,6 +32,7 @@ mod auth;
 pub mod bot;
 pub mod card_elements;
 pub mod events;
+pub mod ir_renderer;
 pub mod loaders;
 pub mod store;
 pub mod tools;
@@ -61,9 +62,15 @@ pub use vector_store::LarkVectorStore;
 
 #[cfg(feature = "bot")]
 pub use bot::{
-    LarkBotClient, LarkLongConnListener, LarkMessageEvent, StreamingCardOptions,
-    StreamingCardWriter,
+    assemble_card, CardActionEvent, CardConfig, LarkBotClient, LarkEvent, LarkEventHandler,
+    LarkLongConnListener, LarkMessageEvent, MentionInfo, StreamingCardOptions, StreamingCardWriter,
 };
+
+#[cfg(feature = "bot")]
+pub use bot::card_builder;
+
+pub use card_elements::render_lark_card_elements;
+pub use ir_renderer::LarkCardIRRenderer;
 
 // Re-export core traits for convenience
 pub use synaptic_core::{Loader, Tool};
@@ -79,7 +86,7 @@ pub struct LarkConfig {
     pub app_id: String,
     /// Application secret.
     pub app_secret: String,
-    /// Base URL — defaults to `"https://open.feishu.cn/open-apis"` (Feishu public cloud).
+    /// Domain root — defaults to `"https://open.feishu.cn"` (Feishu public cloud).
     /// Override with [`LarkConfig::with_base_url`] for private deployments.
     pub base_url: String,
 }
@@ -90,7 +97,7 @@ impl LarkConfig {
         Self {
             app_id: app_id.into(),
             app_secret: app_secret.into(),
-            base_url: "https://open.feishu.cn/open-apis".to_string(),
+            base_url: "https://open.feishu.cn".to_string(),
         }
     }
 

@@ -70,7 +70,7 @@ impl Tool for LarkTranslateTool {
             body["source_language"] = json!(src);
         }
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/translation/v1/text/translate", self.base_url);
+        let url = format!("{}/open-apis/translation/v1/text/translate", self.base_url);
         let resp = self
             .client
             .post(&url)

@@ -38,7 +38,7 @@ impl TaskApi {
         page_token: Option<&str>,
     ) -> Result<(Vec<Value>, Option<String>), SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let mut url = format!("{}/task/v2/tasks?page_size=50", self.base_url);
+        let mut url = format!("{}/open-apis/task/v2/tasks?page_size=50", self.base_url);
         if let Some(pt) = page_token {
             url.push_str(&format!("&page_token={pt}"));
         }
@@ -66,7 +66,7 @@ impl TaskApi {
     /// Get a single task by GUID.
     pub async fn get_task(&self, task_guid: &str) -> Result<Value, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/task/v2/tasks/{task_guid}", self.base_url);
+        let url = format!("{}/open-apis/task/v2/tasks/{task_guid}", self.base_url);
         let resp = self
             .client
             .get(&url)
@@ -90,7 +90,7 @@ impl TaskApi {
         description: Option<&str>,
     ) -> Result<String, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/task/v2/tasks", self.base_url);
+        let url = format!("{}/open-apis/task/v2/tasks", self.base_url);
         let mut body = json!({ "summary": summary });
         if let Some(ts) = due_timestamp {
             body["due"] = json!({ "timestamp": ts });
@@ -128,7 +128,7 @@ impl TaskApi {
         update_fields: Vec<String>,
     ) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/task/v2/tasks/{task_guid}", self.base_url);
+        let url = format!("{}/open-apis/task/v2/tasks/{task_guid}", self.base_url);
         let body = json!({ "task": fields, "update_fields": update_fields });
         let resp = self
             .client
@@ -148,7 +148,10 @@ impl TaskApi {
     /// Mark a task as complete.
     pub async fn complete_task(&self, task_guid: &str) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/task/v2/tasks/{task_guid}/complete", self.base_url);
+        let url = format!(
+            "{}/open-apis/task/v2/tasks/{task_guid}/complete",
+            self.base_url
+        );
         let resp = self
             .client
             .post(&url)
@@ -166,7 +169,7 @@ impl TaskApi {
     /// Delete a task.
     pub async fn delete_task(&self, task_guid: &str) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/task/v2/tasks/{task_guid}", self.base_url);
+        let url = format!("{}/open-apis/task/v2/tasks/{task_guid}", self.base_url);
         let resp = self
             .client
             .delete(&url)

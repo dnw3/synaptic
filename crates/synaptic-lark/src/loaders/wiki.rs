@@ -82,7 +82,7 @@ impl LarkWikiLoader {
         }
         let space_id = self.space_id.as_deref().unwrap();
         let mut url = format!(
-            "{}/wiki/v2/spaces/{}/nodes?page_size=50",
+            "{}/open-apis/wiki/v2/spaces/{}/nodes?page_size=50",
             self.base_url, space_id
         );
         if let Some(pt) = parent_node_token {

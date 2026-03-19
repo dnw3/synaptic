@@ -5,14 +5,14 @@ fn config_defaults() {
     let config = LarkConfig::new("cli_test", "secret_test");
     assert_eq!(config.app_id, "cli_test");
     assert_eq!(config.app_secret, "secret_test");
-    assert_eq!(config.base_url, "https://open.feishu.cn/open-apis");
+    assert_eq!(config.base_url, "https://open.feishu.cn");
 }
 
 #[test]
 fn config_custom_base_url() {
-    let config = LarkConfig::new("cli_test", "secret_test")
-        .with_base_url("https://fsopen.bytedance.net/open-apis");
-    assert_eq!(config.base_url, "https://fsopen.bytedance.net/open-apis");
+    let config =
+        LarkConfig::new("cli_test", "secret_test").with_base_url("https://fsopen.bytedance.net");
+    assert_eq!(config.base_url, "https://fsopen.bytedance.net");
 }
 
 #[test]

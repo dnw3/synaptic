@@ -67,7 +67,7 @@ impl Tool for LarkOcrTool {
             json!({ "file_key": file_key.unwrap() })
         };
         let url = format!(
-            "{}/optical_char_recognition/v1/image/basic_recognize",
+            "{}/open-apis/optical_char_recognition/v1/image/basic_recognize",
             self.base_url
         );
         let resp = self

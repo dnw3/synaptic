@@ -38,7 +38,7 @@ impl ChatApi {
         page_token: Option<&str>,
     ) -> Result<(Vec<Value>, Option<String>), SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let mut url = format!("{}/im/v1/chats?page_size=50", self.base_url);
+        let mut url = format!("{}/open-apis/im/v1/chats?page_size=50", self.base_url);
         if let Some(pt) = page_token {
             url.push_str(&format!("&page_token={pt}"));
         }
@@ -66,7 +66,7 @@ impl ChatApi {
     /// Get a single chat by ID.
     pub async fn get_chat(&self, chat_id: &str) -> Result<Value, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/im/v1/chats/{chat_id}", self.base_url);
+        let url = format!("{}/open-apis/im/v1/chats/{chat_id}", self.base_url);
         let resp = self
             .client
             .get(&url)
@@ -90,7 +90,7 @@ impl ChatApi {
         open_ids: &[String],
     ) -> Result<String, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/im/v1/chats", self.base_url);
+        let url = format!("{}/open-apis/im/v1/chats", self.base_url);
         let members: Vec<Value> = open_ids
             .iter()
             .map(|id| json!({ "member_id_type": "open_id", "member_id": id }))
@@ -123,7 +123,7 @@ impl ChatApi {
         description: Option<&str>,
     ) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/im/v1/chats/{chat_id}", self.base_url);
+        let url = format!("{}/open-apis/im/v1/chats/{chat_id}", self.base_url);
         let mut body = json!({});
         if let Some(n) = name {
             body["name"] = json!(n);
@@ -149,7 +149,7 @@ impl ChatApi {
     /// List members of a chat.
     pub async fn list_members(&self, chat_id: &str) -> Result<Vec<Value>, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/im/v1/chats/{chat_id}/members", self.base_url);
+        let url = format!("{}/open-apis/im/v1/chats/{chat_id}/members", self.base_url);
         let resp = self
             .client
             .get(&url)
@@ -175,7 +175,7 @@ impl ChatApi {
         open_ids: &[String],
     ) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/im/v1/chats/{chat_id}/members", self.base_url);
+        let url = format!("{}/open-apis/im/v1/chats/{chat_id}/members", self.base_url);
         let members: Vec<Value> = open_ids
             .iter()
             .map(|id| json!({ "member_id_type": "open_id", "member_id": id }))
@@ -203,7 +203,7 @@ impl ChatApi {
         open_ids: &[String],
     ) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/im/v1/chats/{chat_id}/members", self.base_url);
+        let url = format!("{}/open-apis/im/v1/chats/{chat_id}/members", self.base_url);
         let members: Vec<Value> = open_ids
             .iter()
             .map(|id| json!({ "member_id_type": "open_id", "member_id": id }))
