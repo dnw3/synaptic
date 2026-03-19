@@ -341,7 +341,7 @@ pub fn create_deep_agent(
     // Add user-provided tools
     all_tools.extend(options.tools);
 
-    // Build agent options with interceptors (no more AgentMiddleware)
+    // Build agent options with interceptors
     let agent_options = AgentOptions {
         checkpointer: options.checkpointer,
         interrupt_before: Vec::new(),

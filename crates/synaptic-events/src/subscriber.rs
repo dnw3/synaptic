@@ -34,7 +34,7 @@ impl EventFilter {
 // EventSubscriber
 // ---------------------------------------------------------------------------
 
-/// The sole extension point — replaces both `AgentMiddleware` and `HookHandler`.
+/// The sole extension point for event-driven lifecycle hooks.
 ///
 /// Implementors register themselves with an [`EventBus`] and receive events
 /// matching their declared [`EventFilter`]s.

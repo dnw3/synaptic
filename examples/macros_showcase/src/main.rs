@@ -6,7 +6,7 @@
 //! cargo run -p macros_showcase
 //! ```
 //!
-//! This example demonstrates 12 attribute macros and several usage variants:
+//! This example demonstrates attribute macros and several usage variants:
 //!
 //!  1. `#[tool]`            -- basic tool from a function
 //!  2. `#[tool]` + `#[default]` -- tool with default parameter values
@@ -16,23 +16,20 @@
 //!  6. `#[chain]`           -- convert a function to a BoxRunnable
 //!  7. `#[entrypoint]`      -- create a workflow entrypoint
 //!  8. `#[task]`            -- define a trackable task
-//!  9. `#[before_agent]`    -- before-agent middleware
-//! 10. `#[before_model]`    -- before-model middleware
-//! 11. `#[after_model]`     -- after-model middleware
-//! 12. `#[after_agent]`     -- after-agent middleware
-//! 13. `#[dynamic_prompt]`  -- dynamic system prompt middleware
-//! 14. `#[traceable]`       -- tracing instrumentation
-//! 15. `#[traceable(skip)]` -- tracing with skipped params
+//!  9. `#[before_model]`    -- before-model interceptor
+//! 10. `#[after_model]`     -- after-model interceptor
+//! 11. `#[dynamic_prompt]`  -- dynamic system prompt interceptor
+//! 12. `#[traceable]`       -- tracing instrumentation
+//! 13. `#[traceable(skip)]` -- tracing with skipped params
 
 use std::sync::Arc;
 
 use serde_json::{json, Value};
 use synaptic::core::{Message, RunnableConfig, RuntimeAwareTool, SynapticError, ToolRuntime};
 use synaptic::macros::{
-    after_agent, after_model, before_agent, before_model, chain, dynamic_prompt, entrypoint, task,
-    tool, traceable,
+    after_model, before_model, chain, dynamic_prompt, entrypoint, task, tool, traceable,
 };
-use synaptic::middleware::{AgentMiddleware, ModelRequest, ModelResponse};
+use synaptic::middleware::{Interceptor, ModelRequest, ModelResponse};
 use synaptic::runnables::Runnable;
 
 // ============================================================================
@@ -155,17 +152,7 @@ async fn fetch_weather(city: String) -> Result<String, SynapticError> {
 }
 
 // ============================================================================
-// 9. #[before_agent] -- Before-agent middleware
-// ============================================================================
-
-#[before_agent]
-async fn inject_system_message(messages: &mut Vec<Message>) -> Result<(), SynapticError> {
-    messages.insert(0, Message::system("You are a helpful assistant."));
-    Ok(())
-}
-
-// ============================================================================
-// 10. #[before_model] -- Before-model middleware
+// 9. #[before_model] -- Before-model interceptor
 // ============================================================================
 
 #[before_model]
@@ -175,7 +162,7 @@ async fn set_system_prompt(request: &mut ModelRequest) -> Result<(), SynapticErr
 }
 
 // ============================================================================
-// 11. #[after_model] -- After-model middleware
+// 10. #[after_model] -- After-model interceptor
 // ============================================================================
 
 #[after_model]
@@ -191,17 +178,7 @@ async fn log_model_response(
 }
 
 // ============================================================================
-// 12. #[after_agent] -- After-agent middleware
-// ============================================================================
-
-#[after_agent]
-async fn append_done_marker(messages: &mut Vec<Message>) -> Result<(), SynapticError> {
-    messages.push(Message::system("[agent loop finished]"));
-    Ok(())
-}
-
-// ============================================================================
-// 13. #[dynamic_prompt] -- Dynamic system prompt middleware
+// 11. #[dynamic_prompt] -- Dynamic system prompt interceptor
 // ============================================================================
 
 #[dynamic_prompt]
@@ -213,7 +190,7 @@ fn context_aware_prompt(messages: &[Message]) -> String {
 }
 
 // ============================================================================
-// 14. #[traceable] -- Tracing instrumentation
+// 12. #[traceable] -- Tracing instrumentation
 // ============================================================================
 
 #[traceable]
@@ -222,7 +199,7 @@ async fn process_data(input: String, count: usize) -> String {
 }
 
 // ============================================================================
-// 15. #[traceable(skip = "...")] -- Tracing with skipped params
+// 13. #[traceable(skip = "...")] -- Tracing with skipped params
 // ============================================================================
 
 #[traceable(name = "auth_check", skip = "api_key")]
@@ -346,23 +323,10 @@ async fn main() {
     println!("  fetch_weather(\"Tokyo\"): {}\n", weather);
 
     // ------------------------------------------------------------------
-    // 9. #[before_agent]
+    // 9. #[before_model]
     // ------------------------------------------------------------------
-    println!("--- 9. #[before_agent] ---");
-    let mw: Arc<dyn AgentMiddleware> = inject_system_message();
-    let mut messages = vec![Message::human("What is Rust?")];
-    mw.before_agent(&mut messages).await.unwrap();
-    println!("  messages after before_agent:");
-    for msg in &messages {
-        println!("    [{}] {}", msg.role(), msg.content());
-    }
-    println!();
-
-    // ------------------------------------------------------------------
-    // 10. #[before_model]
-    // ------------------------------------------------------------------
-    println!("--- 10. #[before_model] ---");
-    let mw: Arc<dyn AgentMiddleware> = set_system_prompt();
+    println!("--- 9. #[before_model] ---");
+    let i: Arc<dyn Interceptor> = set_system_prompt();
     let mut req = ModelRequest {
         messages: vec![Message::human("Hi")],
         tools: vec![],
@@ -370,17 +334,17 @@ async fn main() {
         system_prompt: None,
         thinking: None,
     };
-    mw.before_model(&mut req).await.unwrap();
+    i.before_model(&mut req).await.unwrap();
     println!(
         "  system_prompt after before_model: {:?}\n",
         req.system_prompt
     );
 
     // ------------------------------------------------------------------
-    // 11. #[after_model]
+    // 10. #[after_model]
     // ------------------------------------------------------------------
-    println!("--- 11. #[after_model] ---");
-    let mw: Arc<dyn AgentMiddleware> = log_model_response();
+    println!("--- 10. #[after_model] ---");
+    let i: Arc<dyn Interceptor> = log_model_response();
     let req = ModelRequest {
         messages: vec![],
         tools: vec![],
@@ -392,27 +356,14 @@ async fn main() {
         message: Message::ai("I am a helpful AI."),
         usage: None,
     };
-    mw.after_model(&req, &mut resp).await.unwrap();
+    i.after_model(&req, &mut resp).await.unwrap();
     println!();
 
     // ------------------------------------------------------------------
-    // 12. #[after_agent]
+    // 11. #[dynamic_prompt]
     // ------------------------------------------------------------------
-    println!("--- 12. #[after_agent] ---");
-    let mw: Arc<dyn AgentMiddleware> = append_done_marker();
-    let mut messages = vec![Message::ai("Final answer.")];
-    mw.after_agent(&mut messages).await.unwrap();
-    println!("  messages after after_agent:");
-    for msg in &messages {
-        println!("    [{}] {}", msg.role(), msg.content());
-    }
-    println!();
-
-    // ------------------------------------------------------------------
-    // 13. #[dynamic_prompt]
-    // ------------------------------------------------------------------
-    println!("--- 13. #[dynamic_prompt] ---");
-    let mw: Arc<dyn AgentMiddleware> = context_aware_prompt();
+    println!("--- 11. #[dynamic_prompt] ---");
+    let i: Arc<dyn Interceptor> = context_aware_prompt();
     let mut req = ModelRequest {
         messages: vec![
             Message::human("first"),
@@ -424,24 +375,24 @@ async fn main() {
         system_prompt: None,
         thinking: None,
     };
-    mw.before_model(&mut req).await.unwrap();
+    i.before_model(&mut req).await.unwrap();
     println!("  dynamic system_prompt: {:?}\n", req.system_prompt);
 
     // ------------------------------------------------------------------
-    // 14. #[traceable] -- basic
+    // 12. #[traceable] -- basic
     // ------------------------------------------------------------------
-    println!("--- 14. #[traceable] ---");
+    println!("--- 12. #[traceable] ---");
     let result = process_data("traced-data".into(), 3).await;
     println!("  process_data result: {}", result);
     println!("  (check tracing output above for the info_span)\n");
 
     // ------------------------------------------------------------------
-    // 15. #[traceable(skip = "...")] -- with skipped params
+    // 13. #[traceable(skip = "...")] -- with skipped params
     // ------------------------------------------------------------------
-    println!("--- 15. #[traceable(skip = \"api_key\")] ---");
+    println!("--- 13. #[traceable(skip = \"api_key\")] ---");
     let ok = authenticate("alice".into(), "super_secret_key".into()).await;
     println!("  authenticate result: {}", ok);
     println!("  (api_key is NOT recorded in the tracing span)\n");
 
-    println!("=== all 15 demonstrations complete ===");
+    println!("=== all 13 demonstrations complete ===");
 }

@@ -7,12 +7,12 @@
 //!
 //! | Feature | Description |
 //! |---------|-------------|
-//! | `default` | `runnables`, `prompts`, `parsers`, `tools`, `callbacks` |
+//! | `default` | `runnables`, `prompts`, `parsers`, `tools` |
 //! | `model-utils` | `ProviderBackend`, `ScriptedChatModel`, wrappers (Retry, RateLimit, etc.) |
 //! | `openai` | OpenAI ChatModel + Embeddings |
-//! | `anthropic` | Anthropic ChatModel |
-//! | `gemini` | Gemini ChatModel |
-//! | `ollama` | Ollama ChatModel + Embeddings |
+//! | `anthropic` | Anthropic ChatModel (via synaptic-models) |
+//! | `gemini` | Gemini ChatModel (via synaptic-models) |
+//! | `ollama` | Ollama ChatModel + Embeddings (via synaptic-models) |
 //! | `models` | All providers: openai + anthropic + gemini + ollama + bedrock + cohere |
 //! | `agent` | Agent capabilities (graph, memory, middleware, store, etc.) — no provider included |
 //! | `rag` | RAG pipeline (embeddings, retrieval, loaders, etc.) — no provider included |
@@ -28,7 +28,7 @@
 //! ```rust,ignore
 //! use synaptic::core::{ChatModel, Message, ChatRequest, ToolChoice};
 //! use synaptic::openai::OpenAiChatModel;
-//! use synaptic::runnables::{Runnable, RunnableLambda, RunnableAssign, RunnablePick};
+//! use synaptic::core::runnable::{Runnable, RunnableLambda, RunnableAssign, RunnablePick};
 //! ```
 
 // Re-export internal crates under their original names so proc-macro generated code
@@ -39,9 +39,6 @@ pub extern crate synaptic_core;
 #[cfg(feature = "middleware")]
 #[doc(hidden)]
 pub extern crate synaptic_middleware;
-#[cfg(feature = "runnables")]
-#[doc(hidden)]
-pub extern crate synaptic_runnables;
 
 /// Core traits and types: ChatModel, Message, ToolChoice, SynapticError, RunnableConfig, etc.
 /// Always available.
@@ -64,6 +61,12 @@ pub use synaptic_core::{
     DisconnectInfo,
 };
 
+/// LCEL composition: Runnable trait (with stream), BoxRunnable (with bind), pipe operator,
+/// Lambda, Parallel, Branch, Assign, Pick, Fallbacks, etc.
+/// Now consolidated into synaptic-core.
+#[cfg(feature = "runnables")]
+pub use synaptic_core::runnable as runnables;
+
 /// ProviderBackend abstraction, ScriptedChatModel, and ChatModel wrappers
 /// (Retry, RateLimit, TokenBucket, StructuredOutput, BoundTools).
 #[cfg(feature = "model-utils")]
@@ -71,32 +74,17 @@ pub use synaptic_models as models;
 
 /// OpenAI ChatModel and Embeddings.
 #[cfg(feature = "openai")]
-pub use synaptic_openai as openai;
-
-/// Anthropic ChatModel.
-#[cfg(feature = "anthropic")]
-pub use synaptic_anthropic as anthropic;
-
-/// Google Gemini ChatModel.
-#[cfg(feature = "gemini")]
-pub use synaptic_gemini as gemini;
-
-/// Ollama ChatModel and Embeddings.
-#[cfg(feature = "ollama")]
-pub use synaptic_ollama as ollama;
-
-/// LCEL composition: Runnable trait (with stream), BoxRunnable (with bind), pipe operator,
-/// Lambda, Parallel, Branch, Assign, Pick, Fallbacks, etc.
-#[cfg(feature = "runnables")]
-pub use synaptic_runnables as runnables;
+pub mod openai {
+    pub use synaptic_models::openai::*;
+}
 
 /// Prompt templates: ChatPromptTemplate, FewShotChatMessagePromptTemplate.
 #[cfg(feature = "prompts")]
-pub use synaptic_prompts as prompts;
+pub use synaptic_rag::prompts;
 
 /// Output parsers: Str, Json, Structured, List, Enum.
 #[cfg(feature = "parsers")]
-pub use synaptic_parsers as parsers;
+pub use synaptic_rag::parsers;
 
 /// Tool registry and execution.
 #[cfg(feature = "tools")]
@@ -106,35 +94,31 @@ pub use synaptic_tools as tools;
 #[cfg(feature = "memory")]
 pub use synaptic_memory as memory;
 
-/// Callback handlers: Recording, Tracing, Composite.
-#[cfg(feature = "callbacks")]
-pub use synaptic_callbacks as callbacks;
-
 /// Retrieval: Retriever trait, BM25, MultiQuery, Ensemble, Compression, SelfQuery, ParentDocument, Document.
 #[cfg(feature = "retrieval")]
-pub use synaptic_retrieval as retrieval;
+pub use synaptic_rag::retrieval;
 
 /// Document loaders: Text, JSON, CSV, Directory.
 #[cfg(feature = "loaders")]
-pub use synaptic_loaders as loaders;
+pub use synaptic_rag::loaders;
 
 /// Text splitters: Character, Recursive, Markdown, Token.
 #[cfg(feature = "splitters")]
-pub use synaptic_splitters as splitters;
+pub use synaptic_rag::splitters;
 
-/// Embeddings: trait, Fake, CacheBacked.
+/// Embeddings: trait, Fake, CacheBacked, and provider implementations.
 #[cfg(feature = "embeddings")]
-pub use synaptic_embeddings as embeddings;
+pub use synaptic_rag::embeddings;
 
-/// Vector stores: InMemory, VectorStoreRetriever.
+/// Vector stores: InMemory, VectorStoreRetriever, and provider implementations.
 #[cfg(feature = "vectorstores")]
-pub use synaptic_vectorstores as vectorstores;
+pub use synaptic_rag::vectorstores;
 
 /// Graph agent orchestration: StateGraph, CompiledGraph (with stream), GraphEvent, StreamMode, checkpointing.
 #[cfg(feature = "graph")]
 pub use synaptic_graph as graph;
 
-/// Middleware system: AgentMiddleware trait, lifecycle hooks, built-in middlewares.
+/// Middleware system: Interceptor trait, lifecycle hooks, built-in interceptors.
 #[cfg(feature = "middleware")]
 pub use synaptic_middleware as middleware;
 
@@ -142,21 +126,26 @@ pub use synaptic_middleware as middleware;
 #[cfg(feature = "events")]
 pub use synaptic_events as events;
 
+/// Callback handlers: Recording, Tracing, Composite, CostTracking, Metrics.
+/// (Consolidated from the former synaptic-callbacks crate into synaptic-events::observers.)
+#[cfg(feature = "events")]
+pub use synaptic_events::callbacks;
+
 /// Plugin system: Plugin trait, PluginManifest, PluginRegistry.
 #[cfg(feature = "plugin")]
-pub use synaptic_plugin as plugin;
+pub use synaptic_config::plugin;
 
-/// Key-value storage: Store trait, InMemoryStore.
+/// Key-value storage: Store trait, InMemoryStore, and backend implementations.
 #[cfg(feature = "store")]
 pub use synaptic_store as store;
 
 /// LLM caching: InMemory, Semantic, CachedChatModel.
 #[cfg(feature = "cache")]
-pub use synaptic_cache as cache;
+pub use synaptic_config::cache;
 
 /// Evaluation: Evaluator trait, evaluators, Dataset.
 #[cfg(feature = "eval")]
-pub use synaptic_eval as eval;
+pub use synaptic_rag::eval;
 
 /// MCP (Model Context Protocol) adapters for external tool servers.
 #[cfg(feature = "mcp")]
@@ -176,11 +165,11 @@ pub use synaptic_deep as deep;
 
 /// Context condensation strategies: Rolling, LLM summarizing, token budget, pipeline.
 #[cfg(feature = "condenser")]
-pub use synaptic_condenser as condenser;
+pub use synaptic_middleware::condenser;
 
 /// Secret management: SecretRegistry, SecretMaskingMiddleware.
 #[cfg(feature = "secrets")]
-pub use synaptic_secrets as secrets;
+pub use synaptic_config::secrets;
 
 /// TOML configuration: SynapticAgentConfig, ModelConfig, McpServerConfig.
 #[cfg(feature = "config")]
@@ -188,111 +177,35 @@ pub use synaptic_config as config;
 
 /// Session lifecycle: SessionManager, SessionInfo.
 #[cfg(feature = "session")]
-pub use synaptic_session as session;
-
-/// Qdrant vector store integration.
-#[cfg(feature = "qdrant")]
-pub use synaptic_qdrant as qdrant;
-
-/// PostgreSQL integration.
-#[cfg(feature = "postgres")]
-pub use synaptic_postgres as postgres;
-
-/// Redis store and cache integration.
-#[cfg(feature = "redis")]
-pub use synaptic_redis as redis;
+pub use synaptic_config::session;
 
 /// PDF document loader.
 #[cfg(feature = "pdf")]
-pub use synaptic_pdf as pdf;
-
-/// AWS Bedrock ChatModel.
-#[cfg(feature = "bedrock")]
-pub use synaptic_bedrock as bedrock;
-
-/// Cohere Reranker.
-#[cfg(feature = "cohere")]
-pub use synaptic_cohere as cohere;
-
-/// Pinecone vector store.
-#[cfg(feature = "pinecone")]
-pub use synaptic_pinecone as pinecone;
-
-/// Chroma vector store.
-#[cfg(feature = "chroma")]
-pub use synaptic_chroma as chroma;
-
-/// MongoDB Atlas vector search.
-#[cfg(feature = "mongodb")]
-pub use synaptic_mongodb as mongodb;
-
-/// Elasticsearch vector store.
-#[cfg(feature = "elasticsearch")]
-pub use synaptic_elasticsearch as elasticsearch;
-
-/// SQLite integration.
-#[cfg(feature = "sqlite")]
-pub use synaptic_sqlite as sqlite;
+pub use synaptic_tools::pdf;
 
 /// Tavily search tool.
 #[cfg(feature = "tavily")]
-pub use synaptic_tavily as tavily;
-
-/// HuggingFace Inference API Embeddings.
-#[cfg(feature = "huggingface")]
-pub use synaptic_huggingface as huggingface;
-
-/// Voyage AI embeddings (voyage-3-large, voyage-code-3, etc.).
-#[cfg(feature = "voyage")]
-pub use synaptic_voyage as voyage;
-
-/// Nomic AI embeddings (nomic-embed-text-v1.5, open weights).
-#[cfg(feature = "nomic")]
-pub use synaptic_nomic as nomic;
-
-/// Jina AI embeddings and reranker.
-#[cfg(feature = "jina")]
-pub use synaptic_jina as jina;
-
-/// Weaviate vector database integration.
-#[cfg(feature = "weaviate")]
-pub use synaptic_weaviate as weaviate;
+pub use synaptic_integrations::tavily;
 
 /// SQL database toolkit: ListTables, DescribeTable, ExecuteQuery (read-only).
 #[cfg(feature = "sqltoolkit")]
-pub use synaptic_sqltoolkit as sqltoolkit;
+pub use synaptic_tools::sql as sqltoolkit;
 
 /// E2B cloud code execution sandbox.
 #[cfg(feature = "e2b")]
-pub use synaptic_e2b as e2b;
-
-/// Milvus vector store.
-#[cfg(feature = "milvus")]
-pub use synaptic_milvus as milvus;
-
-/// OpenSearch vector store.
-#[cfg(feature = "opensearch")]
-pub use synaptic_opensearch as opensearch;
-
-/// LanceDB embedded vector store.
-#[cfg(feature = "lancedb")]
-pub use synaptic_lancedb as lancedb;
+pub use synaptic_tools::e2b;
 
 /// Confluence wiki page loader.
 #[cfg(feature = "confluence")]
-pub use synaptic_confluence as confluence;
+pub use synaptic_integrations::confluence;
 
 /// Slack channel message loader.
 #[cfg(feature = "slack")]
-pub use synaptic_slack as slack;
-
-/// Fast local cross-encoder reranker (BM25-based, zero external dependencies).
-#[cfg(feature = "flashrank")]
-pub use synaptic_flashrank as flashrank;
+pub use synaptic_integrations::slack;
 
 /// Langfuse observability integration: LangfuseCallback, LangfuseConfig.
 #[cfg(feature = "langfuse")]
-pub use synaptic_langfuse as langfuse;
+pub use synaptic_integrations::langfuse;
 
 /// Feishu/Lark integration: LarkConfig, LarkDocLoader, LarkMessageTool, LarkBitableTool.
 #[cfg(feature = "lark")]
@@ -300,24 +213,156 @@ pub use synaptic_lark as lark;
 
 /// Voice TTS/STT providers: TtsProvider, SttProvider, OpenAiVoice.
 #[cfg(feature = "voice")]
-pub use synaptic_voice as voice;
+pub use synaptic_integrations::voice;
 
 /// Browser automation tools: NavigateTool, ScreenshotTool, EvalJsTool.
 #[cfg(feature = "browser")]
-pub use synaptic_browser as browser;
+pub use synaptic_tools::browser;
 
 /// Job scheduling: cron + interval tasks, TokioScheduler.
 #[cfg(feature = "scheduler")]
-pub use synaptic_scheduler as scheduler;
+pub use synaptic_integrations::scheduler;
 
 /// Container sandbox: Docker and Apple Container backends for secure code execution.
 #[cfg(feature = "sandbox")]
-pub use synaptic_sandbox as sandbox;
-
-/// Prometheus metrics exporter: render and serve /metrics endpoint.
-#[cfg(feature = "metrics")]
-pub use synaptic_metrics as metrics;
+pub use synaptic_tools::sandbox;
 
 /// Structured logging: ring buffer, request-scoped spans, log query API.
 #[cfg(feature = "logging")]
 pub use synaptic_logging as logging;
+
+// ---------------------------------------------------------------------------
+// Provider sub-modules (consolidated into collection crates)
+// ---------------------------------------------------------------------------
+
+/// Anthropic ChatModel (consolidated into synaptic-models).
+#[cfg(feature = "anthropic")]
+pub mod anthropic {
+    pub use synaptic_models::anthropic::*;
+}
+
+/// Google Gemini ChatModel (consolidated into synaptic-models).
+#[cfg(feature = "gemini")]
+pub mod gemini {
+    pub use synaptic_models::gemini::*;
+}
+
+/// Ollama ChatModel and Embeddings (consolidated into synaptic-models).
+#[cfg(feature = "ollama")]
+pub mod ollama {
+    pub use synaptic_models::ollama::*;
+}
+
+/// AWS Bedrock ChatModel (consolidated into synaptic-models).
+#[cfg(feature = "bedrock")]
+pub mod bedrock {
+    pub use synaptic_models::bedrock::*;
+}
+
+/// Cohere Reranker (consolidated into synaptic-models).
+#[cfg(feature = "cohere")]
+pub mod cohere {
+    pub use synaptic_models::cohere::*;
+}
+
+/// HuggingFace Inference API Embeddings (consolidated into synaptic-rag).
+#[cfg(feature = "huggingface")]
+pub mod huggingface {
+    pub use synaptic_rag::embeddings::huggingface::*;
+}
+
+/// Voyage AI embeddings (consolidated into synaptic-rag).
+#[cfg(feature = "voyage")]
+pub mod voyage {
+    pub use synaptic_rag::embeddings::voyage::*;
+}
+
+/// Nomic AI embeddings (consolidated into synaptic-rag).
+#[cfg(feature = "nomic")]
+pub mod nomic {
+    pub use synaptic_rag::embeddings::nomic::*;
+}
+
+/// Jina AI embeddings and reranker (consolidated into synaptic-rag).
+#[cfg(feature = "jina")]
+pub mod jina {
+    pub use synaptic_rag::embeddings::jina::*;
+}
+
+/// Fast local cross-encoder reranker (consolidated into synaptic-rag).
+#[cfg(feature = "flashrank")]
+pub mod flashrank {
+    pub use synaptic_rag::embeddings::flashrank::*;
+}
+
+/// Qdrant vector store (consolidated into synaptic-rag).
+#[cfg(feature = "qdrant")]
+pub mod qdrant {
+    pub use synaptic_rag::vectorstores::qdrant::*;
+}
+
+/// Pinecone vector store (consolidated into synaptic-rag).
+#[cfg(feature = "pinecone")]
+pub mod pinecone {
+    pub use synaptic_rag::vectorstores::pinecone::*;
+}
+
+/// Chroma vector store (consolidated into synaptic-rag).
+#[cfg(feature = "chroma")]
+pub mod chroma {
+    pub use synaptic_rag::vectorstores::chroma::*;
+}
+
+/// Weaviate vector store (consolidated into synaptic-rag).
+#[cfg(feature = "weaviate")]
+pub mod weaviate {
+    pub use synaptic_rag::vectorstores::weaviate::*;
+}
+
+/// Elasticsearch vector store (consolidated into synaptic-rag).
+#[cfg(feature = "elasticsearch")]
+pub mod elasticsearch {
+    pub use synaptic_rag::vectorstores::elasticsearch::*;
+}
+
+/// OpenSearch vector store (consolidated into synaptic-rag).
+#[cfg(feature = "opensearch")]
+pub mod opensearch {
+    pub use synaptic_rag::vectorstores::opensearch::*;
+}
+
+/// Milvus vector store (consolidated into synaptic-rag).
+#[cfg(feature = "milvus")]
+pub mod milvus {
+    pub use synaptic_rag::vectorstores::milvus::*;
+}
+
+/// LanceDB embedded vector store (consolidated into synaptic-rag).
+#[cfg(feature = "lancedb")]
+pub mod lancedb {
+    pub use synaptic_rag::vectorstores::lancedb::*;
+}
+
+/// PostgreSQL integration (consolidated into synaptic-store).
+#[cfg(feature = "postgres")]
+pub mod postgres {
+    pub use synaptic_store::postgres::*;
+}
+
+/// Redis store and cache (consolidated into synaptic-store).
+#[cfg(feature = "redis")]
+pub mod redis {
+    pub use synaptic_store::redis::*;
+}
+
+/// SQLite integration (consolidated into synaptic-store).
+#[cfg(feature = "sqlite")]
+pub mod sqlite {
+    pub use synaptic_store::sqlite::*;
+}
+
+/// MongoDB Atlas vector search (consolidated into synaptic-store).
+#[cfg(feature = "mongodb")]
+pub mod mongodb {
+    pub use synaptic_store::mongodb::*;
+}

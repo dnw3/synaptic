@@ -84,8 +84,8 @@ fn gen_middleware_struct(
     }
 }
 
-/// Generate factory function.
-fn gen_middleware_factory(
+/// Generate factory function returning `Arc<dyn Interceptor>`.
+fn gen_interceptor_factory(
     vis: &syn::Visibility,
     fn_name: &syn::Ident,
     struct_name: &syn::Ident,
@@ -94,8 +94,7 @@ fn gen_middleware_factory(
     let mw_crate = paths::middleware_path();
     if fields.is_empty() {
         quote! {
-            #[allow(deprecated)]
-            #vis fn #fn_name() -> ::std::sync::Arc<dyn #mw_crate::AgentMiddleware> {
+            #vis fn #fn_name() -> ::std::sync::Arc<dyn #mw_crate::Interceptor> {
                 ::std::sync::Arc::new(#struct_name)
             }
         }
@@ -110,8 +109,7 @@ fn gen_middleware_factory(
             .collect();
         let inits: Vec<&syn::Ident> = fields.iter().map(|f| &f.ident).collect();
         quote! {
-            #[allow(deprecated)]
-            #vis fn #fn_name(#(#params),*) -> ::std::sync::Arc<dyn #mw_crate::AgentMiddleware> {
+            #vis fn #fn_name(#(#params),*) -> ::std::sync::Arc<dyn #mw_crate::Interceptor> {
                 ::std::sync::Arc::new(#struct_name { #(#inits),* })
             }
         }
@@ -135,64 +133,6 @@ fn field_idents(fields: &[FieldParam]) -> Vec<&syn::Ident> {
 }
 
 // ---------------------------------------------------------------------------
-// #[before_agent]
-// ---------------------------------------------------------------------------
-
-/// Expand `#[before_agent]` on an async function.
-///
-/// Supports `#[field]` parameters for stateful middleware.
-pub fn expand_before_agent(attr: TokenStream, item: TokenStream) -> syn::Result<TokenStream> {
-    if !attr.is_empty() {
-        return Err(syn::Error::new_spanned(
-            attr,
-            "#[before_agent] does not accept arguments",
-        ));
-    }
-
-    let func: ItemFn = parse2(item)?;
-    let (fields, clean_func) = extract_field_params(&func)?;
-
-    let fn_name = &func.sig.ident;
-    let vis = &func.vis;
-    let struct_name = format_ident!("{}Middleware", to_pascal_case(&fn_name.to_string()));
-    let impl_fn_name = format_ident!("{}_impl", fn_name);
-
-    let mut impl_func = clean_func;
-    impl_func.sig.ident = impl_fn_name.clone();
-    impl_func
-        .attrs
-        .retain(|a| !a.path().is_ident("before_agent"));
-
-    let struct_def = gen_middleware_struct(vis, &struct_name, &fields);
-    let factory = gen_middleware_factory(vis, fn_name, &struct_name, &fields);
-    let field_clones = gen_field_clones(&fields);
-    let fidents = field_idents(&fields);
-
-    let core_crate = paths::core_path();
-    let mw_crate = paths::middleware_path();
-
-    Ok(quote! {
-        #impl_func
-
-        #struct_def
-
-        #[allow(deprecated)]
-        #[::async_trait::async_trait]
-        impl #mw_crate::AgentMiddleware for #struct_name {
-            async fn before_agent(
-                &self,
-                messages: &mut Vec<#core_crate::Message>,
-            ) -> Result<(), #core_crate::SynapticError> {
-                #(#field_clones)*
-                #impl_fn_name(#(#fidents,)* messages).await
-            }
-        }
-
-        #factory
-    })
-}
-
-// ---------------------------------------------------------------------------
 // #[before_model]
 // ---------------------------------------------------------------------------
 
@@ -212,7 +152,7 @@ pub fn expand_before_model(attr: TokenStream, item: TokenStream) -> syn::Result<
 
     let fn_name = &func.sig.ident;
     let vis = &func.vis;
-    let struct_name = format_ident!("{}Middleware", to_pascal_case(&fn_name.to_string()));
+    let struct_name = format_ident!("{}Interceptor", to_pascal_case(&fn_name.to_string()));
     let impl_fn_name = format_ident!("{}_impl", fn_name);
 
     let mut impl_func = clean_func;
@@ -222,7 +162,7 @@ pub fn expand_before_model(attr: TokenStream, item: TokenStream) -> syn::Result<
         .retain(|a| !a.path().is_ident("before_model"));
 
     let struct_def = gen_middleware_struct(vis, &struct_name, &fields);
-    let factory = gen_middleware_factory(vis, fn_name, &struct_name, &fields);
+    let factory = gen_interceptor_factory(vis, fn_name, &struct_name, &fields);
     let field_clones = gen_field_clones(&fields);
     let fidents = field_idents(&fields);
 
@@ -234,9 +174,8 @@ pub fn expand_before_model(attr: TokenStream, item: TokenStream) -> syn::Result<
 
         #struct_def
 
-        #[allow(deprecated)]
         #[::async_trait::async_trait]
-        impl #mw_crate::AgentMiddleware for #struct_name {
+        impl #mw_crate::Interceptor for #struct_name {
             async fn before_model(
                 &self,
                 request: &mut #mw_crate::ModelRequest,
@@ -270,7 +209,7 @@ pub fn expand_after_model(attr: TokenStream, item: TokenStream) -> syn::Result<T
 
     let fn_name = &func.sig.ident;
     let vis = &func.vis;
-    let struct_name = format_ident!("{}Middleware", to_pascal_case(&fn_name.to_string()));
+    let struct_name = format_ident!("{}Interceptor", to_pascal_case(&fn_name.to_string()));
     let impl_fn_name = format_ident!("{}_impl", fn_name);
 
     let mut impl_func = clean_func;
@@ -280,7 +219,7 @@ pub fn expand_after_model(attr: TokenStream, item: TokenStream) -> syn::Result<T
         .retain(|a| !a.path().is_ident("after_model"));
 
     let struct_def = gen_middleware_struct(vis, &struct_name, &fields);
-    let factory = gen_middleware_factory(vis, fn_name, &struct_name, &fields);
+    let factory = gen_interceptor_factory(vis, fn_name, &struct_name, &fields);
     let field_clones = gen_field_clones(&fields);
     let fidents = field_idents(&fields);
 
@@ -292,9 +231,8 @@ pub fn expand_after_model(attr: TokenStream, item: TokenStream) -> syn::Result<T
 
         #struct_def
 
-        #[allow(deprecated)]
         #[::async_trait::async_trait]
-        impl #mw_crate::AgentMiddleware for #struct_name {
+        impl #mw_crate::Interceptor for #struct_name {
             async fn after_model(
                 &self,
                 request: &#mw_crate::ModelRequest,
@@ -302,64 +240,6 @@ pub fn expand_after_model(attr: TokenStream, item: TokenStream) -> syn::Result<T
             ) -> Result<(), #core_crate::SynapticError> {
                 #(#field_clones)*
                 #impl_fn_name(#(#fidents,)* request, response).await
-            }
-        }
-
-        #factory
-    })
-}
-
-// ---------------------------------------------------------------------------
-// #[after_agent]
-// ---------------------------------------------------------------------------
-
-/// Expand `#[after_agent]` on an async function.
-///
-/// Supports `#[field]` parameters for stateful middleware.
-pub fn expand_after_agent(attr: TokenStream, item: TokenStream) -> syn::Result<TokenStream> {
-    if !attr.is_empty() {
-        return Err(syn::Error::new_spanned(
-            attr,
-            "#[after_agent] does not accept arguments",
-        ));
-    }
-
-    let func: ItemFn = parse2(item)?;
-    let (fields, clean_func) = extract_field_params(&func)?;
-
-    let fn_name = &func.sig.ident;
-    let vis = &func.vis;
-    let struct_name = format_ident!("{}Middleware", to_pascal_case(&fn_name.to_string()));
-    let impl_fn_name = format_ident!("{}_impl", fn_name);
-
-    let mut impl_func = clean_func;
-    impl_func.sig.ident = impl_fn_name.clone();
-    impl_func
-        .attrs
-        .retain(|a| !a.path().is_ident("after_agent"));
-
-    let struct_def = gen_middleware_struct(vis, &struct_name, &fields);
-    let factory = gen_middleware_factory(vis, fn_name, &struct_name, &fields);
-    let field_clones = gen_field_clones(&fields);
-    let fidents = field_idents(&fields);
-
-    let core_crate = paths::core_path();
-    let mw_crate = paths::middleware_path();
-
-    Ok(quote! {
-        #impl_func
-
-        #struct_def
-
-        #[allow(deprecated)]
-        #[::async_trait::async_trait]
-        impl #mw_crate::AgentMiddleware for #struct_name {
-            async fn after_agent(
-                &self,
-                messages: &mut Vec<#core_crate::Message>,
-            ) -> Result<(), #core_crate::SynapticError> {
-                #(#field_clones)*
-                #impl_fn_name(#(#fidents,)* messages).await
             }
         }
 
@@ -387,7 +267,7 @@ pub fn expand_wrap_model_call(attr: TokenStream, item: TokenStream) -> syn::Resu
 
     let fn_name = &func.sig.ident;
     let vis = &func.vis;
-    let struct_name = format_ident!("{}Middleware", to_pascal_case(&fn_name.to_string()));
+    let struct_name = format_ident!("{}Interceptor", to_pascal_case(&fn_name.to_string()));
     let impl_fn_name = format_ident!("{}_impl", fn_name);
 
     let mut impl_func = clean_func;
@@ -397,7 +277,7 @@ pub fn expand_wrap_model_call(attr: TokenStream, item: TokenStream) -> syn::Resu
         .retain(|a| !a.path().is_ident("wrap_model_call"));
 
     let struct_def = gen_middleware_struct(vis, &struct_name, &fields);
-    let factory = gen_middleware_factory(vis, fn_name, &struct_name, &fields);
+    let factory = gen_interceptor_factory(vis, fn_name, &struct_name, &fields);
     let field_clones = gen_field_clones(&fields);
     let fidents = field_idents(&fields);
 
@@ -409,9 +289,8 @@ pub fn expand_wrap_model_call(attr: TokenStream, item: TokenStream) -> syn::Resu
 
         #struct_def
 
-        #[allow(deprecated)]
         #[::async_trait::async_trait]
-        impl #mw_crate::AgentMiddleware for #struct_name {
+        impl #mw_crate::Interceptor for #struct_name {
             async fn wrap_model_call(
                 &self,
                 request: #mw_crate::ModelRequest,
@@ -446,7 +325,7 @@ pub fn expand_wrap_tool_call(attr: TokenStream, item: TokenStream) -> syn::Resul
 
     let fn_name = &func.sig.ident;
     let vis = &func.vis;
-    let struct_name = format_ident!("{}Middleware", to_pascal_case(&fn_name.to_string()));
+    let struct_name = format_ident!("{}Interceptor", to_pascal_case(&fn_name.to_string()));
     let impl_fn_name = format_ident!("{}_impl", fn_name);
 
     let mut impl_func = clean_func;
@@ -456,7 +335,7 @@ pub fn expand_wrap_tool_call(attr: TokenStream, item: TokenStream) -> syn::Resul
         .retain(|a| !a.path().is_ident("wrap_tool_call"));
 
     let struct_def = gen_middleware_struct(vis, &struct_name, &fields);
-    let factory = gen_middleware_factory(vis, fn_name, &struct_name, &fields);
+    let factory = gen_interceptor_factory(vis, fn_name, &struct_name, &fields);
     let field_clones = gen_field_clones(&fields);
     let fidents = field_idents(&fields);
 
@@ -468,9 +347,8 @@ pub fn expand_wrap_tool_call(attr: TokenStream, item: TokenStream) -> syn::Resul
 
         #struct_def
 
-        #[allow(deprecated)]
         #[::async_trait::async_trait]
-        impl #mw_crate::AgentMiddleware for #struct_name {
+        impl #mw_crate::Interceptor for #struct_name {
             async fn wrap_tool_call(
                 &self,
                 request: #mw_crate::ToolCallRequest,
@@ -491,7 +369,7 @@ pub fn expand_wrap_tool_call(attr: TokenStream, item: TokenStream) -> syn::Resul
 
 /// Expand `#[dynamic_prompt]` on a (non-async) function.
 ///
-/// Produces a middleware whose `before_model` sets `request.system_prompt`.
+/// Produces an interceptor whose `before_model` sets `request.system_prompt`.
 ///
 /// Supports `#[field]` parameters for stateful middleware.
 pub fn expand_dynamic_prompt(attr: TokenStream, item: TokenStream) -> syn::Result<TokenStream> {
@@ -507,7 +385,7 @@ pub fn expand_dynamic_prompt(attr: TokenStream, item: TokenStream) -> syn::Resul
 
     let fn_name = &func.sig.ident;
     let vis = &func.vis;
-    let struct_name = format_ident!("{}Middleware", to_pascal_case(&fn_name.to_string()));
+    let struct_name = format_ident!("{}Interceptor", to_pascal_case(&fn_name.to_string()));
     let impl_fn_name = format_ident!("{}_impl", fn_name);
 
     let mut impl_func = clean_func;
@@ -517,7 +395,7 @@ pub fn expand_dynamic_prompt(attr: TokenStream, item: TokenStream) -> syn::Resul
         .retain(|a| !a.path().is_ident("dynamic_prompt"));
 
     let struct_def = gen_middleware_struct(vis, &struct_name, &fields);
-    let factory = gen_middleware_factory(vis, fn_name, &struct_name, &fields);
+    let factory = gen_interceptor_factory(vis, fn_name, &struct_name, &fields);
     let field_clones = gen_field_clones(&fields);
     let fidents = field_idents(&fields);
 
@@ -532,9 +410,8 @@ pub fn expand_dynamic_prompt(attr: TokenStream, item: TokenStream) -> syn::Resul
 
         #struct_def
 
-        #[allow(deprecated)]
         #[::async_trait::async_trait]
-        impl #mw_crate::AgentMiddleware for #struct_name {
+        impl #mw_crate::Interceptor for #struct_name {
             async fn before_model(
                 &self,
                 request: &mut #mw_crate::ModelRequest,

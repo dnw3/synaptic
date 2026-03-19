@@ -1,5 +1,5 @@
 //! Integration tests proving the middleware macros can build real
-//! stateful middleware (equivalent to ToolRetryMiddleware and
+//! stateful interceptors (equivalent to ToolRetryMiddleware and
 //! ModelFallbackMiddleware).
 
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -11,8 +11,8 @@ use serde_json::{json, Value};
 use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
 use synaptic_macros::{wrap_model_call, wrap_tool_call};
 use synaptic_middleware::{
-    AgentMiddleware, BaseChatModelCaller, MiddlewareChain, ModelCaller, ModelRequest,
-    ModelResponse, ToolCallRequest, ToolCaller,
+    BaseChatModelCaller, Interceptor, InterceptorChain, ModelCaller, ModelRequest, ModelResponse,
+    ToolCallRequest, ToolCaller,
 };
 
 // ===========================================================================
@@ -157,10 +157,10 @@ fn make_tool_request(name: &str) -> ToolCallRequest {
 
 #[tokio::test]
 async fn test_tool_retry_succeeds_after_failures() {
-    let mw: Arc<dyn AgentMiddleware> = tool_retry(3, Duration::from_millis(1));
+    let interceptor: Arc<dyn Interceptor> = tool_retry(3, Duration::from_millis(1));
     let caller = FlakeyToolCaller::new(2); // fails twice, then succeeds
 
-    let chain = MiddlewareChain::new(vec![mw]);
+    let chain = InterceptorChain::new(vec![interceptor]);
     let result = chain
         .call_tool(make_tool_request("test"), &caller)
         .await
@@ -172,10 +172,10 @@ async fn test_tool_retry_succeeds_after_failures() {
 
 #[tokio::test]
 async fn test_tool_retry_exhausts_retries() {
-    let mw: Arc<dyn AgentMiddleware> = tool_retry(2, Duration::from_millis(1));
+    let interceptor: Arc<dyn Interceptor> = tool_retry(2, Duration::from_millis(1));
     let caller = AlwaysFailToolCaller;
 
-    let chain = MiddlewareChain::new(vec![mw]);
+    let chain = InterceptorChain::new(vec![interceptor]);
     let result = chain.call_tool(make_tool_request("test"), &caller).await;
 
     assert!(result.is_err());
@@ -184,10 +184,10 @@ async fn test_tool_retry_exhausts_retries() {
 
 #[tokio::test]
 async fn test_tool_retry_no_retry_on_success() {
-    let mw: Arc<dyn AgentMiddleware> = tool_retry(3, Duration::from_millis(1));
+    let interceptor: Arc<dyn Interceptor> = tool_retry(3, Duration::from_millis(1));
     let caller = FlakeyToolCaller::new(0); // succeeds immediately
 
-    let chain = MiddlewareChain::new(vec![mw]);
+    let chain = InterceptorChain::new(vec![interceptor]);
     let result = chain
         .call_tool(make_tool_request("test"), &caller)
         .await
@@ -206,15 +206,16 @@ async fn test_model_fallback_uses_fallback_on_failure() {
     let primary = Arc::new(FailingModel) as Arc<dyn ChatModel>;
     let fallback = Arc::new(EchoModel::new("from fallback")) as Arc<dyn ChatModel>;
 
-    let mw: Arc<dyn AgentMiddleware> = model_fallback(vec![fallback]);
+    let interceptor: Arc<dyn Interceptor> = model_fallback(vec![fallback]);
     let base = BaseChatModelCaller::new(primary);
 
-    let chain = MiddlewareChain::new(vec![mw]);
+    let chain = InterceptorChain::new(vec![interceptor]);
     let req = ModelRequest {
         messages: vec![Message::human("hello")],
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
 
     let resp = chain.call_model(req, &base).await.unwrap();
@@ -226,15 +227,16 @@ async fn test_model_fallback_all_fail() {
     let primary = Arc::new(FailingModel) as Arc<dyn ChatModel>;
     let fallback = Arc::new(FailingModel) as Arc<dyn ChatModel>;
 
-    let mw: Arc<dyn AgentMiddleware> = model_fallback(vec![fallback]);
+    let interceptor: Arc<dyn Interceptor> = model_fallback(vec![fallback]);
     let base = BaseChatModelCaller::new(primary);
 
-    let chain = MiddlewareChain::new(vec![mw]);
+    let chain = InterceptorChain::new(vec![interceptor]);
     let req = ModelRequest {
         messages: vec![Message::human("hello")],
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
 
     let result = chain.call_model(req, &base).await;
@@ -247,15 +249,16 @@ async fn test_model_fallback_primary_succeeds() {
     let primary = Arc::new(EchoModel::new("from primary")) as Arc<dyn ChatModel>;
     let fallback = Arc::new(EchoModel::new("from fallback")) as Arc<dyn ChatModel>;
 
-    let mw: Arc<dyn AgentMiddleware> = model_fallback(vec![fallback]);
+    let interceptor: Arc<dyn Interceptor> = model_fallback(vec![fallback]);
     let base = BaseChatModelCaller::new(primary);
 
-    let chain = MiddlewareChain::new(vec![mw]);
+    let chain = InterceptorChain::new(vec![interceptor]);
     let req = ModelRequest {
         messages: vec![Message::human("hello")],
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     };
 
     let resp = chain.call_model(req, &base).await.unwrap();

@@ -12,13 +12,11 @@
 //! | [`#[chain]`](macro@chain) | Convert an async fn into a `BoxRunnable` |
 //! | [`#[entrypoint]`](macro@entrypoint) | Define a LangGraph-style workflow entry point |
 //! | [`#[task]`](macro@task) | Define a trackable task inside an entrypoint |
-//! | [`#[before_agent]`](macro@before_agent) | Middleware: before agent loop |
-//! | [`#[before_model]`](macro@before_model) | Middleware: before model call |
-//! | [`#[after_model]`](macro@after_model) | Middleware: after model call |
-//! | [`#[after_agent]`](macro@after_agent) | Middleware: after agent loop |
-//! | [`#[wrap_model_call]`](macro@wrap_model_call) | Middleware: wrap model call |
-//! | [`#[wrap_tool_call]`](macro@wrap_tool_call) | Middleware: wrap tool call |
-//! | [`#[dynamic_prompt]`](macro@dynamic_prompt) | Middleware: dynamic system prompt |
+//! | [`#[before_model]`](macro@before_model) | Interceptor: before model call |
+//! | [`#[after_model]`](macro@after_model) | Interceptor: after model call |
+//! | [`#[wrap_model_call]`](macro@wrap_model_call) | Interceptor: wrap model call |
+//! | [`#[wrap_tool_call]`](macro@wrap_tool_call) | Interceptor: wrap tool call |
+//! | [`#[dynamic_prompt]`](macro@dynamic_prompt) | Interceptor: dynamic system prompt |
 //! | [`#[traceable]`](macro@traceable) | Add tracing instrumentation |
 
 extern crate proc_macro;
@@ -187,34 +185,6 @@ pub fn task(attr: TokenStream, item: TokenStream) -> TokenStream {
         .into()
 }
 
-/// Middleware: run a hook before the agent loop starts.
-///
-/// The decorated async function must accept `&mut Vec<Message>` and return
-/// `Result<(), SynapticError>`. The macro generates a struct that implements
-/// `AgentMiddleware` with only `before_agent` overridden, plus a factory
-/// function returning `Arc<dyn AgentMiddleware>`.
-///
-/// # Example
-///
-/// ```ignore
-/// use synaptic_macros::before_agent;
-/// use synaptic_core::{Message, SynapticError};
-///
-/// #[before_agent]
-/// async fn setup(messages: &mut Vec<Message>) -> Result<(), SynapticError> {
-///     println!("Agent starting with {} messages", messages.len());
-///     Ok(())
-/// }
-///
-/// let mw = setup(); // Arc<dyn AgentMiddleware>
-/// ```
-#[proc_macro_attribute]
-pub fn before_agent(attr: TokenStream, item: TokenStream) -> TokenStream {
-    middleware::expand_before_agent(attr.into(), item.into())
-        .unwrap_or_else(|e| e.to_compile_error())
-        .into()
-}
-
 /// Middleware: run a hook before each model call.
 ///
 /// The decorated async function must accept `&mut ModelRequest` and return
@@ -233,7 +203,7 @@ pub fn before_agent(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///     Ok(())
 /// }
 ///
-/// let mw = add_context(); // Arc<dyn AgentMiddleware>
+/// let mw = add_context(); // Arc<dyn Interceptor>
 /// ```
 #[proc_macro_attribute]
 pub fn before_model(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -260,37 +230,11 @@ pub fn before_model(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///     Ok(())
 /// }
 ///
-/// let mw = log_response(); // Arc<dyn AgentMiddleware>
+/// let mw = log_response(); // Arc<dyn Interceptor>
 /// ```
 #[proc_macro_attribute]
 pub fn after_model(attr: TokenStream, item: TokenStream) -> TokenStream {
     middleware::expand_after_model(attr.into(), item.into())
-        .unwrap_or_else(|e| e.to_compile_error())
-        .into()
-}
-
-/// Middleware: run a hook after the agent loop finishes.
-///
-/// The decorated async function must accept `&mut Vec<Message>` and return
-/// `Result<(), SynapticError>`.
-///
-/// # Example
-///
-/// ```ignore
-/// use synaptic_macros::after_agent;
-/// use synaptic_core::{Message, SynapticError};
-///
-/// #[after_agent]
-/// async fn cleanup(messages: &mut Vec<Message>) -> Result<(), SynapticError> {
-///     println!("Agent done");
-///     Ok(())
-/// }
-///
-/// let mw = cleanup(); // Arc<dyn AgentMiddleware>
-/// ```
-#[proc_macro_attribute]
-pub fn after_agent(attr: TokenStream, item: TokenStream) -> TokenStream {
-    middleware::expand_after_agent(attr.into(), item.into())
         .unwrap_or_else(|e| e.to_compile_error())
         .into()
 }
@@ -316,7 +260,7 @@ pub fn after_agent(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///     }
 /// }
 ///
-/// let mw = retry_model(); // Arc<dyn AgentMiddleware>
+/// let mw = retry_model(); // Arc<dyn Interceptor>
 /// ```
 #[proc_macro_attribute]
 pub fn wrap_model_call(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -344,7 +288,7 @@ pub fn wrap_model_call(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///     next.call(request).await
 /// }
 ///
-/// let mw = log_tool(); // Arc<dyn AgentMiddleware>
+/// let mw = log_tool(); // Arc<dyn Interceptor>
 /// ```
 #[proc_macro_attribute]
 pub fn wrap_tool_call(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -370,7 +314,7 @@ pub fn wrap_tool_call(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///     format!("You have {} messages in context", messages.len())
 /// }
 ///
-/// let mw = custom_prompt(); // Arc<dyn AgentMiddleware>
+/// let mw = custom_prompt(); // Arc<dyn Interceptor>
 /// ```
 #[proc_macro_attribute]
 pub fn dynamic_prompt(attr: TokenStream, item: TokenStream) -> TokenStream {
