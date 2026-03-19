@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use std::collections::HashSet;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
@@ -7,7 +5,7 @@ use async_trait::async_trait;
 use serde_json::Value;
 use synaptic_core::SynapticError;
 
-use crate::{AgentMiddleware, ToolCallRequest, ToolCaller};
+use crate::{Interceptor, ToolCallRequest, ToolCaller};
 
 /// Configuration for SSRF protection.
 #[derive(Debug, Clone)]
@@ -43,7 +41,6 @@ impl Default for SsrfGuardConfig {
 ///
 /// Inspects tool call arguments for URLs pointing to private/loopback
 /// addresses and blocks them. Supports configurable allowlist/blocklist.
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct SsrfGuardMiddleware {
     config: SsrfGuardConfig,
 }
@@ -127,9 +124,8 @@ impl SsrfGuardMiddleware {
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
-impl AgentMiddleware for SsrfGuardMiddleware {
+impl Interceptor for SsrfGuardMiddleware {
     async fn wrap_tool_call(
         &self,
         request: ToolCallRequest,

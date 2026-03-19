@@ -1,6 +1,6 @@
 use serde_json::json;
 use synaptic_core::{Message, ToolCall};
-use synaptic_middleware::{AgentMiddleware, ContextEditingMiddleware, ModelRequest};
+use synaptic_middleware::{ContextEditingMiddleware, Interceptor, ModelRequest};
 
 fn make_request(messages: Vec<Message>) -> ModelRequest {
     ModelRequest {
@@ -8,6 +8,7 @@ fn make_request(messages: Vec<Message>) -> ModelRequest {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     }
 }
 
