@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use serde_json::{json, Value};
 use synaptic_core::{SynapticError, ToolCall};
 use synaptic_middleware::{
-    AgentMiddleware, ApprovalCallback, HumanInTheLoopMiddleware, ToolCallRequest, ToolCaller,
+    ApprovalCallback, HumanInTheLoopMiddleware, Interceptor, ToolCallRequest, ToolCaller,
 };
 
 // ---------------------------------------------------------------------------

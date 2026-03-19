@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -7,7 +5,7 @@ use async_trait::async_trait;
 use synaptic_core::{ChatModel, SynapticError};
 use tokio::sync::Mutex;
 
-use crate::{AgentMiddleware, BaseChatModelCaller, ModelCaller, ModelRequest, ModelResponse};
+use crate::{BaseChatModelCaller, Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
 /// Error classification for failover decisions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -19,6 +17,7 @@ enum ErrorKind {
 }
 
 /// Tracks the health state of a fallback model/key.
+#[derive(Default)]
 struct KeyState {
     /// When the last error occurred.
     last_error: Option<Instant>,
@@ -28,17 +27,6 @@ struct KeyState {
     cooldown_until: Option<Instant>,
     /// Consecutive successful calls (used for MRU ordering).
     success_count: u64,
-}
-
-impl Default for KeyState {
-    fn default() -> Self {
-        Self {
-            last_error: None,
-            error_kind: None,
-            cooldown_until: None,
-            success_count: 0,
-        }
-    }
 }
 
 impl KeyState {
@@ -81,17 +69,10 @@ fn classify_error(err: &SynapticError) -> ErrorKind {
                 || msg_lower.contains("invalid api key")
             {
                 ErrorKind::Persistent
-            } else if msg_lower.contains("429")
-                || msg_lower.contains("500")
-                || msg_lower.contains("502")
-                || msg_lower.contains("503")
-                || msg_lower.contains("504")
-                || msg_lower.contains("rate limit")
-                || msg_lower.contains("server error")
-            {
-                ErrorKind::Transient
             } else {
-                ErrorKind::Transient // default to transient for unknown errors
+                // 429, 5xx, rate limit, server errors, and unknown errors
+                // are all treated as transient (short cooldown).
+                ErrorKind::Transient
             }
         }
         _ => ErrorKind::Transient,
@@ -104,7 +85,6 @@ fn classify_error(err: &SynapticError) -> ErrorKind {
 /// - **Error classification**: Distinguishes transient (429/5xx) from persistent (401/403) errors
 /// - **Cooldown tracking**: Skips models in cooldown to avoid repeated failures
 /// - **MRU ordering**: Prefers recently-successful fallbacks
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct ModelFallbackMiddleware {
     fallbacks: Vec<Arc<dyn ChatModel>>,
     /// Per-fallback health state (index 0 = primary, 1.. = fallbacks).
@@ -122,9 +102,8 @@ impl ModelFallbackMiddleware {
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
-impl AgentMiddleware for ModelFallbackMiddleware {
+impl Interceptor for ModelFallbackMiddleware {
     async fn wrap_model_call(
         &self,
         request: ModelRequest,

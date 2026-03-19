@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use serde_json::{json, Value};
 use synaptic_core::{SynapticError, ToolCall};
-use synaptic_middleware::{AgentMiddleware, ToolCallLimitMiddleware, ToolCallRequest, ToolCaller};
+use synaptic_middleware::{Interceptor, ToolCallLimitMiddleware, ToolCallRequest, ToolCaller};
 
 // ---------------------------------------------------------------------------
 // Mock ToolCaller

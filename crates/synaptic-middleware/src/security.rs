@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
@@ -7,7 +5,7 @@ use async_trait::async_trait;
 use serde_json::Value;
 use synaptic_core::SynapticError;
 
-use crate::{AgentMiddleware, ToolCallRequest, ToolCaller};
+use crate::{Interceptor, ToolCallRequest, ToolCaller};
 
 /// Risk level for a tool call.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -150,7 +148,6 @@ impl ConfirmationPolicy for ThresholdConfirmationPolicy {
 }
 
 /// Middleware that assesses tool call risk and optionally requires confirmation.
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct SecurityMiddleware {
     analyzer: Arc<dyn SecurityAnalyzer>,
     policy: Arc<dyn ConfirmationPolicy>,
@@ -180,9 +177,8 @@ impl SecurityMiddleware {
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
-impl AgentMiddleware for SecurityMiddleware {
+impl Interceptor for SecurityMiddleware {
     async fn wrap_tool_call(
         &self,
         request: ToolCallRequest,

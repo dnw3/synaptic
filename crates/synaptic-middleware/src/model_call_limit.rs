@@ -1,17 +1,14 @@
-#![allow(deprecated)]
-
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use async_trait::async_trait;
 use synaptic_core::SynapticError;
 
-use crate::{AgentMiddleware, ModelCaller, ModelRequest, ModelResponse};
+use crate::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
 /// Limits the number of model invocations during a single agent run.
 ///
 /// When the limit is exceeded, `wrap_model_call` returns a
 /// `SynapticError::MaxStepsExceeded` error.
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct ModelCallLimitMiddleware {
     max_calls: usize,
     count: AtomicUsize,
@@ -34,9 +31,8 @@ impl ModelCallLimitMiddleware {
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
-impl AgentMiddleware for ModelCallLimitMiddleware {
+impl Interceptor for ModelCallLimitMiddleware {
     async fn wrap_model_call(
         &self,
         request: ModelRequest,

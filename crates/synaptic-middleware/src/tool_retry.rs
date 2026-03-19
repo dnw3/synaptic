@@ -1,15 +1,12 @@
-#![allow(deprecated)]
-
 use std::time::Duration;
 
 use async_trait::async_trait;
 use serde_json::Value;
 use synaptic_core::SynapticError;
 
-use crate::{AgentMiddleware, ToolCallRequest, ToolCaller};
+use crate::{Interceptor, ToolCallRequest, ToolCaller};
 
 /// Retries failed tool calls with configurable attempts and backoff.
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct ToolRetryMiddleware {
     max_retries: usize,
     base_delay: Duration,
@@ -29,9 +26,8 @@ impl ToolRetryMiddleware {
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
-impl AgentMiddleware for ToolRetryMiddleware {
+impl Interceptor for ToolRetryMiddleware {
     async fn wrap_tool_call(
         &self,
         request: ToolCallRequest,
