@@ -1,7 +1,8 @@
+use async_trait::async_trait;
 use serde_json::json;
-use synaptic_core::{Message, ToolCall};
+use synaptic_core::{Message, SynapticError, ToolCall};
 use synaptic_deep::middleware::patch_tool_calls::PatchToolCallsMiddleware;
-use synaptic_middleware::{AgentMiddleware, ModelRequest, ModelResponse};
+use synaptic_middleware::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
 fn empty_request() -> ModelRequest {
     ModelRequest {
@@ -9,6 +10,19 @@ fn empty_request() -> ModelRequest {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
+    }
+}
+
+/// A mock ModelCaller that returns the given response.
+struct MockCaller {
+    response: ModelResponse,
+}
+
+#[async_trait]
+impl ModelCaller for MockCaller {
+    async fn call(&self, _request: ModelRequest) -> Result<ModelResponse, SynapticError> {
+        Ok(self.response.clone())
     }
 }
 
@@ -16,19 +30,21 @@ fn empty_request() -> ModelRequest {
 async fn fixes_string_arguments_to_json_object() {
     let mw = PatchToolCallsMiddleware;
     let request = empty_request();
-    let mut response = ModelResponse {
-        message: Message::ai_with_tool_calls(
-            "",
-            vec![ToolCall {
-                id: "tc1".to_string(),
-                name: "write_file".to_string(),
-                arguments: json!("{\"path\": \"test.txt\", \"content\": \"hello\"}"),
-            }],
-        ),
-        usage: None,
+    let caller = MockCaller {
+        response: ModelResponse {
+            message: Message::ai_with_tool_calls(
+                "",
+                vec![ToolCall {
+                    id: "tc1".to_string(),
+                    name: "write_file".to_string(),
+                    arguments: json!("{\"path\": \"test.txt\", \"content\": \"hello\"}"),
+                }],
+            ),
+            usage: None,
+        },
     };
 
-    mw.after_model(&request, &mut response).await.unwrap();
+    let response = mw.wrap_model_call(request, &caller).await.unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 1);
@@ -42,19 +58,21 @@ async fn fixes_string_arguments_to_json_object() {
 async fn noop_on_valid_object_args() {
     let mw = PatchToolCallsMiddleware;
     let request = empty_request();
-    let mut response = ModelResponse {
-        message: Message::ai_with_tool_calls(
-            "",
-            vec![ToolCall {
-                id: "tc1".to_string(),
-                name: "read_file".to_string(),
-                arguments: json!({"path": "test.txt"}),
-            }],
-        ),
-        usage: None,
+    let caller = MockCaller {
+        response: ModelResponse {
+            message: Message::ai_with_tool_calls(
+                "",
+                vec![ToolCall {
+                    id: "tc1".to_string(),
+                    name: "read_file".to_string(),
+                    arguments: json!({"path": "test.txt"}),
+                }],
+            ),
+            usage: None,
+        },
     };
 
-    mw.after_model(&request, &mut response).await.unwrap();
+    let response = mw.wrap_model_call(request, &caller).await.unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 1);
@@ -65,12 +83,14 @@ async fn noop_on_valid_object_args() {
 async fn empty_tool_calls_noop() {
     let mw = PatchToolCallsMiddleware;
     let request = empty_request();
-    let mut response = ModelResponse {
-        message: Message::ai("no tools here"),
-        usage: None,
+    let caller = MockCaller {
+        response: ModelResponse {
+            message: Message::ai("no tools here"),
+            usage: None,
+        },
     };
 
-    mw.after_model(&request, &mut response).await.unwrap();
+    let response = mw.wrap_model_call(request, &caller).await.unwrap();
     assert!(response.message.tool_calls().is_empty());
     assert_eq!(response.message.content(), "no tools here");
 }
@@ -79,26 +99,28 @@ async fn empty_tool_calls_noop() {
 async fn removes_empty_name_tool_calls() {
     let mw = PatchToolCallsMiddleware;
     let request = empty_request();
-    let mut response = ModelResponse {
-        message: Message::ai_with_tool_calls(
-            "",
-            vec![
-                ToolCall {
-                    id: "tc1".to_string(),
-                    name: "".to_string(),
-                    arguments: json!({}),
-                },
-                ToolCall {
-                    id: "tc2".to_string(),
-                    name: "valid_tool".to_string(),
-                    arguments: json!({"key": "value"}),
-                },
-            ],
-        ),
-        usage: None,
+    let caller = MockCaller {
+        response: ModelResponse {
+            message: Message::ai_with_tool_calls(
+                "",
+                vec![
+                    ToolCall {
+                        id: "tc1".to_string(),
+                        name: "".to_string(),
+                        arguments: json!({}),
+                    },
+                    ToolCall {
+                        id: "tc2".to_string(),
+                        name: "valid_tool".to_string(),
+                        arguments: json!({"key": "value"}),
+                    },
+                ],
+            ),
+            usage: None,
+        },
     };
 
-    mw.after_model(&request, &mut response).await.unwrap();
+    let response = mw.wrap_model_call(request, &caller).await.unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 1);
@@ -109,19 +131,21 @@ async fn removes_empty_name_tool_calls() {
 async fn strips_markdown_code_fences_and_parses() {
     let mw = PatchToolCallsMiddleware;
     let request = empty_request();
-    let mut response = ModelResponse {
-        message: Message::ai_with_tool_calls(
-            "",
-            vec![ToolCall {
-                id: "tc1".to_string(),
-                name: "write_file".to_string(),
-                arguments: json!("```json\n{\"path\": \"test.txt\"}\n```"),
-            }],
-        ),
-        usage: None,
+    let caller = MockCaller {
+        response: ModelResponse {
+            message: Message::ai_with_tool_calls(
+                "",
+                vec![ToolCall {
+                    id: "tc1".to_string(),
+                    name: "write_file".to_string(),
+                    arguments: json!("```json\n{\"path\": \"test.txt\"}\n```"),
+                }],
+            ),
+            usage: None,
+        },
     };
 
-    mw.after_model(&request, &mut response).await.unwrap();
+    let response = mw.wrap_model_call(request, &caller).await.unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 1);
@@ -134,26 +158,28 @@ async fn strips_markdown_code_fences_and_parses() {
 async fn multiple_tool_calls_all_processed() {
     let mw = PatchToolCallsMiddleware;
     let request = empty_request();
-    let mut response = ModelResponse {
-        message: Message::ai_with_tool_calls(
-            "",
-            vec![
-                ToolCall {
-                    id: "tc1".to_string(),
-                    name: "tool_a".to_string(),
-                    arguments: json!({"a": 1}),
-                },
-                ToolCall {
-                    id: "tc2".to_string(),
-                    name: "tool_b".to_string(),
-                    arguments: json!("{\"b\": 2}"),
-                },
-            ],
-        ),
-        usage: None,
+    let caller = MockCaller {
+        response: ModelResponse {
+            message: Message::ai_with_tool_calls(
+                "",
+                vec![
+                    ToolCall {
+                        id: "tc1".to_string(),
+                        name: "tool_a".to_string(),
+                        arguments: json!({"a": 1}),
+                    },
+                    ToolCall {
+                        id: "tc2".to_string(),
+                        name: "tool_b".to_string(),
+                        arguments: json!("{\"b\": 2}"),
+                    },
+                ],
+            ),
+            usage: None,
+        },
     };
 
-    mw.after_model(&request, &mut response).await.unwrap();
+    let response = mw.wrap_model_call(request, &caller).await.unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 2);
@@ -168,26 +194,28 @@ async fn multiple_tool_calls_all_processed() {
 async fn deduplicates_identical_tool_call_ids() {
     let mw = PatchToolCallsMiddleware;
     let request = empty_request();
-    let mut response = ModelResponse {
-        message: Message::ai_with_tool_calls(
-            "",
-            vec![
-                ToolCall {
-                    id: "same_id".to_string(),
-                    name: "tool_a".to_string(),
-                    arguments: json!({}),
-                },
-                ToolCall {
-                    id: "same_id".to_string(),
-                    name: "tool_b".to_string(),
-                    arguments: json!({}),
-                },
-            ],
-        ),
-        usage: None,
+    let caller = MockCaller {
+        response: ModelResponse {
+            message: Message::ai_with_tool_calls(
+                "",
+                vec![
+                    ToolCall {
+                        id: "same_id".to_string(),
+                        name: "tool_a".to_string(),
+                        arguments: json!({}),
+                    },
+                    ToolCall {
+                        id: "same_id".to_string(),
+                        name: "tool_b".to_string(),
+                        arguments: json!({}),
+                    },
+                ],
+            ),
+            usage: None,
+        },
     };
 
-    mw.after_model(&request, &mut response).await.unwrap();
+    let response = mw.wrap_model_call(request, &caller).await.unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 2);
@@ -199,19 +227,21 @@ async fn deduplicates_identical_tool_call_ids() {
 async fn patches_empty_id() {
     let mw = PatchToolCallsMiddleware;
     let request = empty_request();
-    let mut response = ModelResponse {
-        message: Message::ai_with_tool_calls(
-            "",
-            vec![ToolCall {
-                id: "".to_string(),
-                name: "read_file".to_string(),
-                arguments: json!({"path": "f.txt"}),
-            }],
-        ),
-        usage: None,
+    let caller = MockCaller {
+        response: ModelResponse {
+            message: Message::ai_with_tool_calls(
+                "",
+                vec![ToolCall {
+                    id: "".to_string(),
+                    name: "read_file".to_string(),
+                    arguments: json!({"path": "f.txt"}),
+                }],
+            ),
+            usage: None,
+        },
     };
 
-    mw.after_model(&request, &mut response).await.unwrap();
+    let response = mw.wrap_model_call(request, &caller).await.unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 1);

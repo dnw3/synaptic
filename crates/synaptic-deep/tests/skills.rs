@@ -1,8 +1,24 @@
+use async_trait::async_trait;
 use std::sync::Arc;
-use synaptic_core::Message;
+use synaptic_core::{Message, SynapticError};
 use synaptic_deep::backend::{Backend, StateBackend};
 use synaptic_deep::middleware::skills::SkillsMiddleware;
-use synaptic_middleware::{AgentMiddleware, ModelRequest};
+use synaptic_middleware::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
+
+/// A mock ModelCaller that captures the request for inspection.
+struct CapturingCaller;
+
+#[async_trait]
+impl ModelCaller for CapturingCaller {
+    async fn call(&self, request: ModelRequest) -> Result<ModelResponse, SynapticError> {
+        // Return a response that includes the system prompt so tests can inspect it.
+        let content = request.system_prompt.unwrap_or_default();
+        Ok(ModelResponse {
+            message: Message::ai(content),
+            usage: None,
+        })
+    }
+}
 
 fn empty_request() -> ModelRequest {
     ModelRequest {
@@ -10,6 +26,7 @@ fn empty_request() -> ModelRequest {
         tools: vec![],
         tool_choice: None,
         system_prompt: None,
+        thinking: None,
     }
 }
 
@@ -17,9 +34,11 @@ fn empty_request() -> ModelRequest {
 async fn no_skills_no_injection() {
     let backend = Arc::new(StateBackend::new());
     let mw = SkillsMiddleware::new(backend, ".skills".to_string());
-    let mut request = empty_request();
-    mw.before_model(&mut request).await.unwrap();
-    assert!(request.system_prompt.is_none());
+    let caller = CapturingCaller;
+    let request = empty_request();
+    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    // No skills discovered, so system prompt should be empty
+    assert!(response.message.content().is_empty());
 }
 
 #[tokio::test]
@@ -42,10 +61,11 @@ async fn discovers_skills_from_frontmatter() {
         .unwrap();
 
     let mw = SkillsMiddleware::new(backend, ".skills".to_string());
-    let mut request = empty_request();
-    mw.before_model(&mut request).await.unwrap();
+    let caller = CapturingCaller;
+    let request = empty_request();
+    let response = mw.wrap_model_call(request, &caller).await.unwrap();
 
-    let prompt = request.system_prompt.unwrap();
+    let prompt = response.message.content().to_string();
     assert!(prompt.contains("<available_skills>"));
     assert!(prompt.contains("search"));
     assert!(prompt.contains("code-review"));
@@ -64,11 +84,12 @@ async fn appends_to_existing_system_prompt() {
         .unwrap();
 
     let mw = SkillsMiddleware::new(backend, ".skills".to_string());
+    let caller = CapturingCaller;
     let mut request = empty_request();
     request.system_prompt = Some("You are helpful.".to_string());
-    mw.before_model(&mut request).await.unwrap();
+    let response = mw.wrap_model_call(request, &caller).await.unwrap();
 
-    let prompt = request.system_prompt.unwrap();
+    let prompt = response.message.content().to_string();
     assert!(prompt.starts_with("You are helpful."));
     assert!(prompt.contains("my-tool"));
 }
@@ -86,7 +107,9 @@ async fn invalid_frontmatter_skipped() {
         .unwrap();
 
     let mw = SkillsMiddleware::new(backend, ".skills".to_string());
-    let mut request = empty_request();
-    mw.before_model(&mut request).await.unwrap();
-    assert!(request.system_prompt.is_none());
+    let caller = CapturingCaller;
+    let request = empty_request();
+    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    // No valid skills, so system prompt should be empty
+    assert!(response.message.content().is_empty());
 }

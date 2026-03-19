@@ -1,10 +1,8 @@
-#![allow(deprecated)]
-
 use async_trait::async_trait;
 use serde_json::Value;
 use std::collections::HashSet;
 use synaptic_core::{Message, SynapticError};
-use synaptic_middleware::{AgentMiddleware, ModelRequest, ModelResponse};
+use synaptic_middleware::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
 /// Middleware that fixes malformed tool calls in model responses.
 ///
@@ -17,68 +15,65 @@ use synaptic_middleware::{AgentMiddleware, ModelRequest, ModelResponse};
 /// Transcript repair (before_model):
 /// - Detect repeated tool-call failures (same tool, missing params) and prune
 ///   the duplicates to break infinite error loops common with weaker models.
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct PatchToolCallsMiddleware;
 
-#[allow(deprecated)]
 #[async_trait]
-impl AgentMiddleware for PatchToolCallsMiddleware {
-    async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError> {
-        prune_repeated_tool_errors(&mut request.messages);
-        Ok(())
-    }
-
-    async fn after_model(
+impl Interceptor for PatchToolCallsMiddleware {
+    async fn wrap_model_call(
         &self,
-        _request: &ModelRequest,
-        response: &mut ModelResponse,
-    ) -> Result<(), SynapticError> {
+        mut request: ModelRequest,
+        next: &dyn ModelCaller,
+    ) -> Result<ModelResponse, SynapticError> {
+        // Before model: prune repeated tool errors
+        prune_repeated_tool_errors(&mut request.messages);
+
+        let mut response = next.call(request).await?;
+
+        // After model: fix malformed tool calls
         let tool_calls = response.message.tool_calls().to_vec();
-        if tool_calls.is_empty() {
-            return Ok(());
+        if !tool_calls.is_empty() {
+            let mut seen_ids = HashSet::new();
+            let mut patched = Vec::new();
+            let mut id_counter = 0u32;
+            let mut changed = false;
+
+            for mut tc in tool_calls {
+                // Skip empty names
+                if tc.name.trim().is_empty() {
+                    changed = true;
+                    continue;
+                }
+
+                // Fix JSON arguments
+                let fixed_args = fix_json_arguments(&tc.arguments);
+                if fixed_args != tc.arguments {
+                    tc.arguments = fixed_args;
+                    changed = true;
+                }
+
+                // Deduplicate IDs
+                if seen_ids.contains(&tc.id) || tc.id.is_empty() {
+                    tc.id = format!("patched_{}", id_counter);
+                    id_counter += 1;
+                    changed = true;
+                }
+                seen_ids.insert(tc.id.clone());
+
+                patched.push(tc);
+            }
+
+            if changed {
+                let content = response.message.content().to_string();
+                let id = response.message.id().map(|s| s.to_string());
+                let mut new_msg = Message::ai_with_tool_calls(content, patched);
+                if let Some(id) = id {
+                    new_msg = new_msg.with_id(id);
+                }
+                response.message = new_msg;
+            }
         }
 
-        let mut seen_ids = HashSet::new();
-        let mut patched = Vec::new();
-        let mut id_counter = 0u32;
-        let mut changed = false;
-
-        for mut tc in tool_calls {
-            // Skip empty names
-            if tc.name.trim().is_empty() {
-                changed = true;
-                continue;
-            }
-
-            // Fix JSON arguments
-            let fixed_args = fix_json_arguments(&tc.arguments);
-            if fixed_args != tc.arguments {
-                tc.arguments = fixed_args;
-                changed = true;
-            }
-
-            // Deduplicate IDs
-            if seen_ids.contains(&tc.id) || tc.id.is_empty() {
-                tc.id = format!("patched_{}", id_counter);
-                id_counter += 1;
-                changed = true;
-            }
-            seen_ids.insert(tc.id.clone());
-
-            patched.push(tc);
-        }
-
-        if changed {
-            let content = response.message.content().to_string();
-            let id = response.message.id().map(|s| s.to_string());
-            let mut new_msg = Message::ai_with_tool_calls(content, patched);
-            if let Some(id) = id {
-                new_msg = new_msg.with_id(id);
-            }
-            response.message = new_msg;
-        }
-
-        Ok(())
+        Ok(response)
     }
 }
 
@@ -163,12 +158,7 @@ fn prune_repeated_tool_errors(messages: &mut Vec<Message>) {
                 let error_msg = &messages[*start_idx + 1];
                 let new_content = format!("{}{}", error_msg.content(), hint);
                 messages[*start_idx + 1] = Message::tool(
-                    error_msg
-                        .content()
-                        .to_string()
-                        .split('\n')
-                        .next()
-                        .unwrap_or(""),
+                    error_msg.content().split('\n').next().unwrap_or(""),
                     &new_content,
                 );
             }

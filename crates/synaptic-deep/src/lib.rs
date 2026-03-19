@@ -34,11 +34,12 @@ use synaptic_core::{ChatModel, Store, SynapticError, Tool};
 use synaptic_events::EventBus;
 use synaptic_graph::{create_agent, AgentOptions, Checkpointer, CompiledGraph, MessageState};
 use synaptic_macros::traceable;
-use synaptic_middleware::AgentMiddleware;
+use synaptic_middleware::{AgentMiddleware, Interceptor, InterceptorAdapter};
 
 use backend::Backend;
 pub use middleware::environment::{ChannelInfo, EnvironmentInfo, EnvironmentMiddleware};
 pub use middleware::event_bus::EventBusMiddleware;
+pub use middleware::observability::AgentTracingMiddleware;
 pub use middleware::reflection::{ReflectionConfig, ReflectionMiddleware};
 pub use middleware::skills::{
     substitute_context_vars, CommandExecutor, InstallSpec, SkillDef, SkillHookEvent,
@@ -77,6 +78,9 @@ pub struct DeepAgentOptions {
     pub tools: Vec<Arc<dyn Tool>>,
     /// Additional middleware beyond the built-in stack.
     pub middleware: Vec<Arc<dyn AgentMiddleware>>,
+    /// Lightweight interceptors (model + tool call wrappers). These are
+    /// wrapped via [`InterceptorAdapter`] and appended before `middleware`.
+    pub interceptors: Vec<Arc<dyn Interceptor>>,
     /// Optional checkpointer for graph state persistence.
     pub checkpointer: Option<Arc<dyn Checkpointer>>,
     /// Optional store for runtime tool injection.
@@ -157,6 +161,7 @@ impl DeepAgentOptions {
             system_prompt: None,
             tools: Vec::new(),
             middleware: Vec::new(),
+            interceptors: Vec::new(),
             checkpointer: None,
             store: None,
             max_input_tokens: 128_000,
@@ -219,7 +224,7 @@ pub fn create_deep_agent(
         if let Some(self_sec) = options.self_section.clone() {
             env_mw = env_mw.with_self_section(self_sec);
         }
-        all_middleware.push(Arc::new(env_mw));
+        all_middleware.push(Arc::new(InterceptorAdapter(Arc::new(env_mw))));
     }
 
     // Subagent spawner (created early so SkillTool can reference it)
@@ -254,7 +259,7 @@ pub fn create_deep_agent(
         all_tools.push(
             skills_mw.create_skill_tool_with_session(subagent_spawner.clone(), session_id_lock),
         );
-        all_middleware.push(Arc::new(skills_mw));
+        all_middleware.push(Arc::new(InterceptorAdapter(Arc::new(skills_mw))));
     }
 
     // 2. Memory middleware
@@ -263,20 +268,21 @@ pub fn create_deep_agent(
             .memory_file
             .clone()
             .unwrap_or_else(|| "AGENTS.md".to_string());
-        all_middleware.push(Arc::new(middleware::memory::DeepMemoryMiddleware::new(
-            options.backend.clone(),
-            memory_file,
-        )));
+        all_middleware.push(Arc::new(InterceptorAdapter(Arc::new(
+            middleware::memory::DeepMemoryMiddleware::new(options.backend.clone(), memory_file),
+        ))));
     }
 
     // 3. Filesystem middleware + tools
     if options.enable_filesystem {
         let fs_tools = tools::create_filesystem_tools(options.backend.clone());
         all_tools.extend(fs_tools);
-        all_middleware.push(Arc::new(middleware::filesystem::FilesystemMiddleware::new(
-            options.backend.clone(),
-            options.eviction_threshold,
-        )));
+        all_middleware.push(Arc::new(InterceptorAdapter(Arc::new(
+            middleware::filesystem::FilesystemMiddleware::new(
+                options.backend.clone(),
+                options.eviction_threshold,
+            ),
+        ))));
     }
 
     // 4. Subagent middleware + task tool + TaskOutput tool
@@ -309,21 +315,26 @@ pub fn create_deep_agent(
     )));
 
     // 5. Summarization middleware
-    all_middleware.push(Arc::new(
+    all_middleware.push(Arc::new(InterceptorAdapter(Arc::new(
         middleware::summarization::DeepSummarizationMiddleware::new(
             options.backend.clone(),
             model.clone(),
             options.max_input_tokens,
             options.summarization_threshold,
         ),
-    ));
+    ))));
 
     // 6. Patch tool calls middleware
-    all_middleware.push(Arc::new(
+    all_middleware.push(Arc::new(InterceptorAdapter(Arc::new(
         middleware::patch_tool_calls::PatchToolCallsMiddleware,
-    ));
+    ))));
 
-    // 7. User-provided middleware
+    // 7. User-provided interceptors (wrapped as AgentMiddleware)
+    for interceptor in options.interceptors {
+        all_middleware.push(Arc::new(InterceptorAdapter(interceptor)));
+    }
+
+    // 7b. User-provided middleware
     all_middleware.extend(options.middleware);
 
     // 8. EventBus bridge middleware — emits lifecycle events for subscribers

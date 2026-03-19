@@ -1,9 +1,7 @@
-#![allow(deprecated)]
-
 use async_trait::async_trait;
 use std::sync::Arc;
 use synaptic_core::SynapticError;
-use synaptic_middleware::{AgentMiddleware, ModelRequest};
+use synaptic_middleware::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
 use crate::backend::Backend;
 
@@ -11,7 +9,6 @@ use crate::backend::Backend;
 ///
 /// On each model call, reads the configured memory file (default `AGENTS.md`) and
 /// appends its contents wrapped in `<agent_memory>` tags to the system prompt.
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct DeepMemoryMiddleware {
     backend: Arc<dyn Backend>,
     memory_file: String,
@@ -26,10 +23,13 @@ impl DeepMemoryMiddleware {
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
-impl AgentMiddleware for DeepMemoryMiddleware {
-    async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError> {
+impl Interceptor for DeepMemoryMiddleware {
+    async fn wrap_model_call(
+        &self,
+        mut request: ModelRequest,
+        next: &dyn ModelCaller,
+    ) -> Result<ModelResponse, SynapticError> {
         match self.backend.read_file(&self.memory_file, 0, 10000).await {
             Ok(content) if !content.is_empty() => {
                 let section = format!("\n<agent_memory>\n{}\n</agent_memory>\n", content);
@@ -41,6 +41,6 @@ impl AgentMiddleware for DeepMemoryMiddleware {
             }
             _ => {} // File not found or empty — silently skip
         }
-        Ok(())
+        next.call(request).await
     }
 }

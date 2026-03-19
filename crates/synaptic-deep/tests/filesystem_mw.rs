@@ -4,7 +4,7 @@ use std::sync::Arc;
 use synaptic_core::{SynapticError, ToolCall};
 use synaptic_deep::backend::{Backend, StateBackend};
 use synaptic_deep::middleware::filesystem::FilesystemMiddleware;
-use synaptic_middleware::{AgentMiddleware, ToolCallRequest, ToolCaller};
+use synaptic_middleware::{Interceptor, ToolCallRequest, ToolCaller};
 
 /// A mock ToolCaller that returns a fixed result.
 struct MockToolCaller {

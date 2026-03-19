@@ -1,8 +1,6 @@
-#![allow(deprecated)]
-
 use async_trait::async_trait;
 use synaptic_core::SynapticError;
-use synaptic_middleware::{AgentMiddleware, ModelRequest};
+use synaptic_middleware::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
 /// Channel capability information.
 #[derive(Debug, Clone, Default)]
@@ -85,7 +83,6 @@ impl EnvironmentInfo {
 
 /// Middleware that injects runtime environment and channel information into the
 /// agent's system prompt so the agent has self-awareness.
-#[deprecated(note = "Use EventSubscriber instead. This will be removed in a future version.")]
 pub struct EnvironmentMiddleware {
     env: EnvironmentInfo,
     /// Optional "self" section with product-specific self-awareness text.
@@ -174,10 +171,13 @@ impl EnvironmentMiddleware {
     }
 }
 
-#[allow(deprecated)]
 #[async_trait]
-impl AgentMiddleware for EnvironmentMiddleware {
-    async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError> {
+impl Interceptor for EnvironmentMiddleware {
+    async fn wrap_model_call(
+        &self,
+        mut request: ModelRequest,
+        next: &dyn ModelCaller,
+    ) -> Result<ModelResponse, SynapticError> {
         let section = self.format_section();
         let section_len = section.len();
         if let Some(ref mut prompt) = request.system_prompt {
@@ -196,6 +196,6 @@ impl AgentMiddleware for EnvironmentMiddleware {
             has_self_section = self.self_section.is_some(),
             "EnvironmentMiddleware injected"
         );
-        Ok(())
+        next.call(request).await
     }
 }
