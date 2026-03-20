@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use synaptic::core::{
-    ContextBudget, ContextSlot, HeuristicTokenCounter, Message, Priority, TokenCounter,
+    ContextBudget, ContextSlot, HeuristicTokenCounter, Message, Priority, SlotTrimStrategy,
+    TokenCounter,
 };
 
 #[tokio::main]
@@ -16,6 +17,7 @@ async fn main() {
         priority: Priority::CRITICAL,
         messages: vec![Message::system("You are a helpful assistant.")],
         reserved_tokens: 20,
+        trim_strategy: SlotTrimStrategy::default(),
     };
 
     let recent_slot = ContextSlot {
@@ -26,6 +28,7 @@ async fn main() {
             Message::ai("Rust is a systems programming language."),
         ],
         reserved_tokens: 0,
+        trim_strategy: SlotTrimStrategy::default(),
     };
 
     let tool_results_slot = ContextSlot {
@@ -36,6 +39,7 @@ async fn main() {
             "call-1",
         )],
         reserved_tokens: 0,
+        trim_strategy: SlotTrimStrategy::default(),
     };
 
     let history_slot = ContextSlot {
@@ -48,6 +52,7 @@ async fn main() {
             Message::ai("JavaScript is the language of the web, running in browsers and Node.js."),
         ],
         reserved_tokens: 0,
+        trim_strategy: SlotTrimStrategy::default(),
     };
 
     // Show token counts per slot
@@ -176,5 +181,6 @@ fn make_slot(name: &str, priority: Priority, messages: &[Message], reserved: usi
         priority,
         messages: messages.to_vec(),
         reserved_tokens: reserved,
+        trim_strategy: SlotTrimStrategy::default(),
     }
 }

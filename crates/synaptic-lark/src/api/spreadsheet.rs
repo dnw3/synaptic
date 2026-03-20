@@ -12,7 +12,7 @@ pub(crate) struct SpreadsheetApi {
 
 impl SpreadsheetApi {
     pub fn new(config: LarkConfig) -> Self {
-        let base_url = config.base_url.clone();
+        let base_url = config.api_url();
         Self {
             token_cache: config.token_cache(),
             base_url,
@@ -40,10 +40,7 @@ impl SpreadsheetApi {
         values: Vec<Vec<Value>>,
     ) -> Result<(), SynapticError> {
         let auth_token = self.token_cache.get_token().await?;
-        let url = format!(
-            "{}/open-apis/sheets/v2/spreadsheets/{token}/values",
-            self.base_url
-        );
+        let url = format!("{}/sheets/v2/spreadsheets/{token}/values", self.base_url);
         let body = json!({ "valueRange": { "range": range, "values": values } });
         let resp = self
             .client
@@ -69,7 +66,7 @@ impl SpreadsheetApi {
     ) -> Result<(), SynapticError> {
         let auth_token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/sheets/v2/spreadsheets/{token}/values_append",
+            "{}/sheets/v2/spreadsheets/{token}/values_append",
             self.base_url
         );
         let body = json!({
@@ -95,7 +92,7 @@ impl SpreadsheetApi {
     pub async fn clear_values(&self, token: &str, range: &str) -> Result<(), SynapticError> {
         let auth_token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/sheets/v2/spreadsheets/{token}/values_batch_clear",
+            "{}/sheets/v2/spreadsheets/{token}/values_batch_clear",
             self.base_url
         );
         let body = json!({ "ranges": [range] });
@@ -123,7 +120,7 @@ impl SpreadsheetApi {
         let auth_token = self.token_cache.get_token().await?;
         let encoded_range = urlencoding::encode(range);
         let url = format!(
-            "{}/open-apis/sheets/v2/spreadsheets/{token}/values/{encoded_range}",
+            "{}/sheets/v2/spreadsheets/{token}/values/{encoded_range}",
             self.base_url
         );
         let resp = self

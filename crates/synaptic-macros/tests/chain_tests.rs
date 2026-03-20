@@ -1,9 +1,9 @@
 //! Integration tests for the `#[chain]` macro.
 
 use serde_json::{json, Value};
+use synaptic_core::runnable::Runnable;
 use synaptic_core::{RunnableConfig, SynapticError};
 use synaptic_macros::chain;
-use synaptic_runnables::Runnable;
 
 // ---------------------------------------------------------------------------
 // Basic chain

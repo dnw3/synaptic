@@ -51,8 +51,8 @@ impl TokenCache {
         }
         // Refresh
         let url = format!(
-            "{}/open-apis/auth/v3/tenant_access_token/internal",
-            self.config.base_url
+            "{}/auth/v3/tenant_access_token/internal",
+            self.config.api_url()
         );
         let body = serde_json::json!({
             "app_id": self.config.app_id,

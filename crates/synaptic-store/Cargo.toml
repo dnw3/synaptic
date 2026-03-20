@@ -1,6 +1,6 @@
 [package]
 name = "synaptic-store"
-description = "Key-value storage for Synaptic agents: Store trait and InMemoryStore"
+description = "Key-value storage for Synaptic agents: Store trait, InMemoryStore, and backend integrations"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
@@ -13,6 +13,15 @@ homepage.workspace = true
 [features]
 default = []
 filesystem = []
+postgres = ["dep:sqlx", "dep:pgvector", "dep:uuid"]
+postgres-checkpointer = ["postgres"]
+redis = ["dep:redis"]
+redis-cluster = ["redis", "redis/cluster-async"]
+redis-checkpointer = ["redis"]
+sqlite = ["dep:rusqlite", "dep:uuid"]
+sqlite-checkpointer = ["sqlite"]
+mongodb = ["dep:mongodb", "dep:bson", "dep:futures"]
+mongodb-checkpointer = ["mongodb"]
 
 [dependencies]
 async-trait.workspace = true
@@ -20,6 +29,22 @@ serde.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
 synaptic-core = { version = "0.4", path = "../synaptic-core" }
+
+# postgres
+sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "json", "chrono"], optional = true }
+pgvector = { version = "0.4", features = ["sqlx"], optional = true }
+uuid = { workspace = true, optional = true }
+
+# redis
+redis = { version = "0.27", features = ["tokio-comp", "aio", "json"], optional = true }
+
+# sqlite
+rusqlite = { version = "0.32", features = ["bundled"], optional = true }
+
+# mongodb
+mongodb = { version = "3", optional = true }
+bson = { version = "2", optional = true }
+futures = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio.workspace = true

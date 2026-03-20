@@ -16,7 +16,6 @@ serde.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
 synaptic-core = { version = "0.4", path = "../synaptic-core" }
-synaptic-runnables = { version = "0.4", path = "../synaptic-runnables" }
 
 [features]
 viking = []

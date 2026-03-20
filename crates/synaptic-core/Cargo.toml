@@ -20,12 +20,12 @@ thiserror.workspace = true
 tokio.workspace = true
 schemars = { workspace = true, optional = true }
 chrono.workspace = true
+sha2.workspace = true
 pulldown-cmark = { version = "0.12", optional = true }
 
 [features]
 schemars = ["dep:schemars"]
 message-ir = ["dep:pulldown-cmark"]
-tiktoken = []
 
 [dev-dependencies]
 serde_json.workspace = true

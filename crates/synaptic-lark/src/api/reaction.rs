@@ -14,7 +14,7 @@ pub(crate) struct ReactionApi {
 
 impl ReactionApi {
     pub fn new(config: LarkConfig) -> Self {
-        let base_url = config.base_url.clone();
+        let base_url = config.api_url();
         Self {
             token_cache: config.token_cache(),
             base_url,
@@ -31,10 +31,7 @@ impl ReactionApi {
         emoji_type: &str,
     ) -> Result<String, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!(
-            "{}/open-apis/im/v1/messages/{message_id}/reactions",
-            self.base_url
-        );
+        let url = format!("{}/im/v1/messages/{message_id}/reactions", self.base_url);
         let body = json!({
             "reaction_type": { "emoji_type": emoji_type }
         });
@@ -66,7 +63,7 @@ impl ReactionApi {
     ) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/im/v1/messages/{message_id}/reactions/{reaction_id}",
+            "{}/im/v1/messages/{message_id}/reactions/{reaction_id}",
             self.base_url
         );
         let resp: Value = self

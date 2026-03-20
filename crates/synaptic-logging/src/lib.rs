@@ -520,9 +520,13 @@ where
         };
 
         let buffer = self.buffer.clone();
-        tokio::spawn(async move {
-            buffer.push(entry).await;
-        });
+        if let Ok(handle) = tokio::runtime::Handle::try_current() {
+            handle.spawn(async move {
+                buffer.push(entry).await;
+            });
+        }
+        // If no tokio runtime is running (e.g. notify watcher thread),
+        // silently drop the log entry rather than panicking.
     }
 }
 

@@ -344,6 +344,18 @@ mod file_store;
 #[cfg(feature = "filesystem")]
 pub use file_store::FileStore;
 
+#[cfg(feature = "postgres")]
+pub mod postgres;
+
+#[cfg(feature = "redis")]
+pub mod redis;
+
+#[cfg(feature = "sqlite")]
+pub mod sqlite;
+
+#[cfg(feature = "mongodb")]
+pub mod mongodb;
+
 #[cfg(test)]
 mod tests {
     use super::*;

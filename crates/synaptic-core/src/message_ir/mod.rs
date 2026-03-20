@@ -15,7 +15,11 @@ mod parser;
 #[cfg(feature = "message-ir")]
 mod renderer;
 #[cfg(feature = "message-ir")]
-pub use renderer::{apply_lark_md_spans, escape_json_string, render_table_md};
+pub use renderer::{
+    apply_lark_md_spans, apply_spans, escape_html, escape_json_string, format_with_renderer,
+    render_table_md, render_table_plain, IRRenderer, InlineFormatter, MarkdownRenderer,
+    PlainTextRenderer,
+};
 
 use serde::{Deserialize, Serialize};
 
@@ -143,7 +147,19 @@ pub struct RenderOptions {
     pub preserve_images: bool,
 }
 
+impl Default for RenderOptions {
+    fn default() -> Self {
+        Self::new(RenderTarget::PlainText)
+    }
+}
+
 impl RenderOptions {
+    /// Create options with default target (PlainText) and default chunk limit.
+    /// For trait-based rendering, the renderer determines the format; target is ignored.
+    pub fn new_default() -> Self {
+        Self::new(RenderTarget::PlainText)
+    }
+
     /// Create options for a specific target with default chunk limit.
     pub fn new(target: RenderTarget) -> Self {
         let chunk_limit = match target {

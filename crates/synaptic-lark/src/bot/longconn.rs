@@ -137,13 +137,16 @@ impl LarkLongConnListener {
         Ok(())
     }
 
-    async fn get_ws_endpoint(&self, token: &str) -> Result<String, SynapticError> {
+    async fn get_ws_endpoint(&self) -> Result<String, SynapticError> {
         // WS endpoint lives at /callback/ws/endpoint on the domain root,
-        // NOT under /open-apis.
+        // NOT under /open-apis. Auth via body (AppID + AppSecret), not Bearer token.
         let url = format!("{}/callback/ws/endpoint", self.config.base_url);
         let raw = reqwest::Client::new()
             .post(&url)
-            .bearer_auth(token)
+            .json(&serde_json::json!({
+                "AppID": self.config.app_id,
+                "AppSecret": self.config.app_secret,
+            }))
             .send()
             .await
             .map_err(|e| SynapticError::Tool(format!("ws endpoint: {e}")))?;
@@ -165,10 +168,11 @@ impl LarkLongConnListener {
                 resp["msg"].as_str().unwrap_or("unknown")
             )));
         }
-        resp["data"]["url"]
+        // Lark returns PascalCase field names (e.g. "URL", "ClientConfig")
+        resp["data"]["URL"]
             .as_str()
             .map(String::from)
-            .ok_or_else(|| SynapticError::Tool("ws endpoint: missing url".to_string()))
+            .ok_or_else(|| SynapticError::Tool("ws endpoint: missing URL in response".to_string()))
     }
 
     /// Start the long-connection event loop. Blocks until an unrecoverable error.
@@ -181,8 +185,7 @@ impl LarkLongConnListener {
         let mut backoff_secs = 1u64;
 
         loop {
-            let token = listener.config.clone().token_cache().get_token().await?;
-            let ws_url = match listener.get_ws_endpoint(&token).await {
+            let ws_url = match listener.get_ws_endpoint().await {
                 Ok(url) => url,
                 Err(e) => {
                     tracing::warn!("LarkLongConnListener: failed to get ws endpoint: {e}");
@@ -205,41 +208,126 @@ impl LarkLongConnListener {
             backoff_secs = 1;
             tracing::info!("LarkLongConnListener: connected");
 
-            while let Some(msg) = ws_stream.next().await {
-                match msg {
-                    Ok(tokio_tungstenite::tungstenite::Message::Text(text)) => {
-                        let payload: Value = match serde_json::from_str(text.as_str()) {
-                            Ok(v) => v,
-                            Err(e) => {
-                                tracing::warn!("LarkLongConnListener: invalid JSON: {e}");
-                                continue;
+            // Extract service_id from WS URL for ping frames
+            let service_id = url::Url::parse(&ws_url)
+                .ok()
+                .and_then(|u| {
+                    u.query_pairs()
+                        .find(|(k, _)| k == "service_id")
+                        .and_then(|(_, v)| v.parse::<i32>().ok())
+                })
+                .unwrap_or(0);
+
+            let ping_interval = 90u64;
+            let mut ping_interval_timer = tokio::time::interval(Duration::from_secs(ping_interval));
+            ping_interval_timer.tick().await; // skip first immediate tick
+
+            loop {
+                tokio::select! {
+                    _ = ping_interval_timer.tick() => {
+                        let ping_frame = super::frame::Frame::ping(service_id);
+                        let bytes = prost::Message::encode_to_vec(&ping_frame);
+                        if let Err(e) = ws_stream.send(
+                            tokio_tungstenite::tungstenite::Message::Binary(bytes.into())
+                        ).await {
+                            tracing::warn!("LarkLongConnListener: ping error: {e}");
+                            break;
+                        }
+                    }
+                    msg = ws_stream.next() => {
+                        match msg {
+                            Some(Ok(tokio_tungstenite::tungstenite::Message::Binary(data))) => {
+                                use prost::Message as ProstMsg;
+                                let frame = match super::frame::Frame::decode(data.as_ref()) {
+                                    Ok(f) => f,
+                                    Err(e) => {
+                                        tracing::warn!("LarkLongConnListener: frame decode error: {e}");
+                                        continue;
+                                    }
+                                };
+
+                                let start = std::time::Instant::now();
+
+                                if frame.method == super::frame::FRAME_CONTROL {
+                                    // Pong: echo back control frame
+                                    let pong = frame.into_response(0, 0);
+                                    let bytes = pong.encode_to_vec();
+                                    let _ = ws_stream.send(
+                                        tokio_tungstenite::tungstenite::Message::Binary(bytes.into())
+                                    ).await;
+                                    continue;
+                                }
+
+                                // Data frame: extract JSON payload and dispatch
+                                if let Some(payload_bytes) = &frame.payload {
+                                    let payload_str = String::from_utf8_lossy(payload_bytes);
+                                    let payload: Value = match serde_json::from_str(&payload_str) {
+                                        Ok(v) => v,
+                                        Err(e) => {
+                                            tracing::warn!("LarkLongConnListener: payload parse error: {e}");
+                                            continue;
+                                        }
+                                    };
+
+                                    // Send ack response frame
+                                    let _biz_rt = start.elapsed().as_millis() as i64;
+                                    let ack = super::frame::Frame::response_with_headers(
+                                        frame.service,
+                                        0,
+                                        frame.headers.clone(),
+                                    );
+                                    let bytes = ack.encode_to_vec();
+                                    let _ = ws_stream.send(
+                                        tokio_tungstenite::tungstenite::Message::Binary(bytes.into())
+                                    ).await;
+
+                                    let l = listener.clone();
+                                    tokio::spawn(async move {
+                                        if let Err(e) = l.dispatch_payload(&payload).await {
+                                            tracing::error!("dispatch error: {e}");
+                                        }
+                                    });
+                                }
                             }
-                        };
-                        let ack = serde_json::json!({ "code": 0 });
-                        let _ = ws_stream
-                            .send(tokio_tungstenite::tungstenite::Message::Text(
-                                ack.to_string(),
-                            ))
-                            .await;
-                        let l = listener.clone();
-                        let p = payload.clone();
-                        tokio::spawn(async move {
-                            if let Err(e) = l.dispatch_payload(&p).await {
-                                tracing::error!("dispatch error: {e}");
+                            Some(Ok(tokio_tungstenite::tungstenite::Message::Text(text))) => {
+                                // Fallback: some Lark versions may send JSON text
+                                let payload: Value = match serde_json::from_str(text.as_str()) {
+                                    Ok(v) => v,
+                                    Err(e) => {
+                                        tracing::warn!("LarkLongConnListener: invalid JSON: {e}");
+                                        continue;
+                                    }
+                                };
+                                let ack = serde_json::json!({ "code": 0 });
+                                let _ = ws_stream
+                                    .send(tokio_tungstenite::tungstenite::Message::Text(
+                                        ack.to_string(),
+                                    ))
+                                    .await;
+                                let l = listener.clone();
+                                tokio::spawn(async move {
+                                    if let Err(e) = l.dispatch_payload(&payload).await {
+                                        tracing::error!("dispatch error: {e}");
+                                    }
+                                });
                             }
-                        });
+                            Some(Ok(tokio_tungstenite::tungstenite::Message::Close(_))) => {
+                                tracing::info!(
+                                    "LarkLongConnListener: server closed connection, reconnecting"
+                                );
+                                break;
+                            }
+                            Some(Err(e)) => {
+                                tracing::warn!("LarkLongConnListener: ws error: {e}");
+                                break;
+                            }
+                            None => {
+                                tracing::info!("LarkLongConnListener: stream ended, reconnecting");
+                                break;
+                            }
+                            _ => {}
+                        }
                     }
-                    Ok(tokio_tungstenite::tungstenite::Message::Close(_)) => {
-                        tracing::info!(
-                            "LarkLongConnListener: server closed connection, reconnecting"
-                        );
-                        break;
-                    }
-                    Err(e) => {
-                        tracing::warn!("LarkLongConnListener: ws error: {e}");
-                        break;
-                    }
-                    _ => {}
                 }
             }
             sleep(Duration::from_secs(backoff_secs)).await;

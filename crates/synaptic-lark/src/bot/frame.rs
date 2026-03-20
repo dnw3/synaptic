@@ -53,7 +53,10 @@ pub const HEADER_TIMESTAMP: &str = "timestamp";
 
 impl Header {
     pub fn new(key: &str, value: &str) -> Self {
-        Self { key: key.to_string(), value: value.to_string() }
+        Self {
+            key: key.to_string(),
+            value: value.to_string(),
+        }
     }
 }
 
@@ -93,7 +96,8 @@ impl Frame {
     pub fn into_response(mut self, code: i32, biz_rt_ms: i64) -> Self {
         let payload = serde_json::json!({ "code": code });
         // Append biz_rt header (processing duration in ms)
-        self.headers.push(Header::new(HEADER_BIZ_RT, &biz_rt_ms.to_string()));
+        self.headers
+            .push(Header::new(HEADER_BIZ_RT, &biz_rt_ms.to_string()));
         self.payload = Some(payload.to_string().into_bytes());
         self
     }

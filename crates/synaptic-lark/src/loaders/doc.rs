@@ -41,7 +41,7 @@ pub struct LarkDocLoader {
 impl LarkDocLoader {
     /// Create a new loader using the given config.
     pub fn new(config: LarkConfig) -> Self {
-        let base_url = config.base_url.clone();
+        let base_url = config.api_url();
         Self {
             token_cache: config.token_cache(),
             base_url,
@@ -72,7 +72,7 @@ impl LarkDocLoader {
     async fn fetch_doc_content(&self, doc_token: &str) -> Result<Document, SynapticError> {
         let auth = self.auth_header().await?;
         let url = format!(
-            "{}/open-apis/docx/v1/documents/{}/raw_content",
+            "{}/docx/v1/documents/{}/raw_content",
             self.base_url, doc_token
         );
         let resp = self
@@ -121,7 +121,7 @@ impl LarkDocLoader {
 
         loop {
             let mut url = format!(
-                "{}/open-apis/wiki/v2/spaces/{}/nodes?page_size=50",
+                "{}/wiki/v2/spaces/{}/nodes?page_size=50",
                 self.base_url, space_id
             );
             if let Some(ref pt) = page_token {

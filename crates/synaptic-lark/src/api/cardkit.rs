@@ -21,7 +21,7 @@ pub(crate) struct CardKitApi {
 
 impl CardKitApi {
     pub fn new(config: LarkConfig) -> Self {
-        let base_url = config.base_url.clone();
+        let base_url = config.api_url();
         Self {
             token_cache: config.token_cache(),
             base_url,
@@ -42,7 +42,7 @@ impl CardKitApi {
     /// ```
     pub async fn create(&self, card_json: &Value) -> Result<String, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/open-apis/cardkit/v1/cards", self.base_url);
+        let url = format!("{}/cardkit/v1/cards", self.base_url);
         let body = json!({
             "type": "card_json",
             "data": card_json.to_string(),
@@ -79,7 +79,7 @@ impl CardKitApi {
         card_json: &Value,
     ) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/open-apis/cardkit/v1/cards/{card_id}", self.base_url);
+        let url = format!("{}/cardkit/v1/cards/{card_id}", self.base_url);
         let body = json!({
             "sequence": sequence,
             "card": {
@@ -118,7 +118,7 @@ impl CardKitApi {
     ) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/cardkit/v1/cards/{card_id}/elements/{element_id}/content",
+            "{}/cardkit/v1/cards/{card_id}/elements/{element_id}/content",
             self.base_url
         );
         let body = json!({

@@ -1,0 +1,43 @@
+[package]
+name = "synaptic-integrations"
+description = "Third-party integrations: Confluence, Tavily, Slack, Voice, Scheduler, Langfuse"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+readme.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[features]
+default = []
+confluence = ["dep:reqwest", "dep:base64"]
+tavily = ["dep:reqwest"]
+slack = ["dep:reqwest"]
+voice = ["dep:futures", "dep:bytes"]
+voice-openai = ["voice", "dep:reqwest"]
+voice-elevenlabs = ["voice", "dep:reqwest"]
+voice-deepgram = ["voice", "dep:reqwest"]
+voice-azure = ["voice", "dep:reqwest"]
+voice-google = ["voice", "dep:reqwest", "dep:base64"]
+voice-all = ["voice-openai", "voice-elevenlabs", "voice-deepgram", "voice-azure", "voice-google"]
+scheduler = ["dep:uuid"]
+langfuse = ["dep:reqwest", "dep:base64", "dep:uuid"]
+
+[dependencies]
+async-trait.workspace = true
+serde = { workspace = true }
+serde_json.workspace = true
+tokio.workspace = true
+synaptic-core = { version = "0.4", path = "../synaptic-core" }
+
+# Optional deps shared across features
+reqwest = { workspace = true, optional = true, features = ["multipart"] }
+base64 = { workspace = true, optional = true }
+uuid = { workspace = true, optional = true }
+futures = { workspace = true, optional = true }
+bytes = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio.workspace = true

@@ -2,6 +2,7 @@ pub mod card_action;
 pub mod card_builder;
 pub mod client;
 pub mod events;
+pub mod frame;
 pub mod longconn;
 pub mod session;
 pub mod streaming;

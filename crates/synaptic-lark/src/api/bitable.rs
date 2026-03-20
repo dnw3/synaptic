@@ -17,7 +17,7 @@ pub(crate) struct BitableApi {
 
 impl BitableApi {
     pub fn new(config: LarkConfig) -> Self {
-        let base_url = config.base_url.clone();
+        let base_url = config.api_url();
         Self {
             token_cache: config.token_cache(),
             base_url,
@@ -29,14 +29,14 @@ impl BitableApi {
 
     fn records_url(&self, app_token: &str, table_id: &str) -> String {
         format!(
-            "{}/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}/records",
+            "{}/bitable/v1/apps/{app_token}/tables/{table_id}/records",
             self.base_url
         )
     }
 
     fn search_url(&self, app_token: &str, table_id: &str) -> String {
         format!(
-            "{}/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}/records/search",
+            "{}/bitable/v1/apps/{app_token}/tables/{table_id}/records/search",
             self.base_url
         )
     }
@@ -226,7 +226,7 @@ impl BitableApi {
     ) -> Result<(Vec<Value>, Option<String>), SynapticError> {
         let token = self.token_cache.get_token().await?;
         let mut url = format!(
-            "{}/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}/records?page_size=100",
+            "{}/bitable/v1/apps/{app_token}/tables/{table_id}/records?page_size=100",
             self.base_url
         );
         if let Some(v) = view_id {
@@ -267,10 +267,7 @@ impl BitableApi {
     /// List all tables in a Bitable app.
     pub async fn list_tables(&self, app_token: &str) -> Result<Vec<Value>, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!(
-            "{}/open-apis/bitable/v1/apps/{app_token}/tables",
-            self.base_url
-        );
+        let url = format!("{}/bitable/v1/apps/{app_token}/tables", self.base_url);
         let resp = self
             .client
             .get(&url)
@@ -292,10 +289,7 @@ impl BitableApi {
     /// Create a new table in a Bitable app.  Returns the new `table_id`.
     pub async fn create_table(&self, app_token: &str, name: &str) -> Result<String, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!(
-            "{}/open-apis/bitable/v1/apps/{app_token}/tables",
-            self.base_url
-        );
+        let url = format!("{}/bitable/v1/apps/{app_token}/tables", self.base_url);
         let body = json!({ "table": { "name": name } });
         let resp = self
             .client
@@ -317,7 +311,7 @@ impl BitableApi {
     pub async fn delete_table(&self, app_token: &str, table_id: &str) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}",
+            "{}/bitable/v1/apps/{app_token}/tables/{table_id}",
             self.base_url
         );
         let resp = self
@@ -344,7 +338,7 @@ impl BitableApi {
     ) -> Result<Vec<Value>, SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}/fields",
+            "{}/bitable/v1/apps/{app_token}/tables/{table_id}/fields",
             self.base_url
         );
         let resp = self
@@ -377,7 +371,7 @@ impl BitableApi {
     ) -> Result<String, SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}/fields",
+            "{}/bitable/v1/apps/{app_token}/tables/{table_id}/fields",
             self.base_url
         );
         let body = json!({ "field_name": name, "type": field_type });
@@ -410,7 +404,7 @@ impl BitableApi {
     ) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}/fields/{field_id}",
+            "{}/bitable/v1/apps/{app_token}/tables/{table_id}/fields/{field_id}",
             self.base_url
         );
         let body = json!({ "field_name": name });
@@ -438,7 +432,7 @@ impl BitableApi {
     ) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}/fields/{field_id}",
+            "{}/bitable/v1/apps/{app_token}/tables/{table_id}/fields/{field_id}",
             self.base_url
         );
         let resp = self

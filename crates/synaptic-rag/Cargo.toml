@@ -1,0 +1,83 @@
+[package]
+name = "synaptic-rag"
+description = "RAG components: embeddings, vector stores, retrieval, loaders, splitters, prompts, eval, parsers"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+readme.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[features]
+default = []
+
+# Embeddings (always-on: FakeEmbeddings, CacheBackedEmbeddings)
+embeddings = ["dep:sha2"]
+
+# Embedding providers
+huggingface = ["embeddings", "dep:reqwest"]
+voyage = ["embeddings", "dep:reqwest"]
+jina = ["embeddings", "dep:reqwest"]
+nomic = ["embeddings", "dep:reqwest"]
+flashrank = ["embeddings"]
+
+# Vector stores (always-on: InMemoryVectorStore, MultiVectorRetriever)
+vectorstores = []
+
+# Vector store providers
+qdrant = ["vectorstores", "dep:qdrant-client", "dep:uuid"]
+pinecone = ["vectorstores", "dep:reqwest", "dep:uuid"]
+chroma = ["vectorstores", "dep:reqwest"]
+weaviate = ["vectorstores", "dep:reqwest", "dep:uuid"]
+elasticsearch = ["vectorstores", "dep:reqwest"]
+opensearch = ["vectorstores", "dep:reqwest"]
+milvus = ["vectorstores", "dep:reqwest"]
+lancedb = ["vectorstores"]
+
+# Existing RAG features
+retrieval = ["embeddings"]
+loaders = ["dep:csv", "dep:reqwest", "dep:base64", "dep:quick-xml", "dep:urlencoding"]
+splitters = []
+prompts = ["dep:thiserror"]
+semantic-selector = ["prompts", "embeddings"]
+eval = ["embeddings", "dep:regex"]
+parsers = []
+
+[dependencies]
+async-trait.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+synaptic-core = { version = "0.4", path = "../synaptic-core" }
+
+# embeddings: CacheBackedEmbeddings
+sha2 = { version = "0.10", optional = true }
+
+# HTTP providers (embeddings + vectorstores + loaders)
+reqwest = { workspace = true, optional = true }
+
+# vectorstores: Qdrant
+qdrant-client = { version = "1", optional = true }
+
+# vectorstores: Weaviate, Pinecone, Qdrant (v5 needed for deterministic IDs in Qdrant)
+uuid = { version = "1", features = ["v4", "v5"], optional = true }
+
+# loaders
+csv = { workspace = true, optional = true }
+base64 = { workspace = true, optional = true }
+quick-xml = { version = "0.37", optional = true }
+urlencoding = { version = "2", optional = true }
+
+# prompts
+thiserror = { workspace = true, optional = true }
+
+# eval
+regex = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio.workspace = true
+futures.workspace = true
+synaptic-models = { version = "0.4", path = "../synaptic-models" }
+synaptic-store = { version = "0.4", path = "../synaptic-store" }

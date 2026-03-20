@@ -20,7 +20,7 @@ pub struct LarkVectorStore {
 impl LarkVectorStore {
     /// Create a new `LarkVectorStore` targeting the given Lark Search dataset.
     pub fn new(config: LarkConfig, dataset_id: impl Into<String>) -> Self {
-        let base_url = config.base_url.clone();
+        let base_url = config.api_url();
         Self {
             token_cache: config.token_cache(),
             base_url,
@@ -55,7 +55,7 @@ impl VectorStore for LarkVectorStore {
     ) -> Result<Vec<String>, SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/search/v2/datasets/{}/documents/batch_create",
+            "{}/search/v2/datasets/{}/documents/batch_create",
             self.base_url, self.dataset_id
         );
         let items: Vec<Value> = docs
@@ -96,7 +96,7 @@ impl VectorStore for LarkVectorStore {
     ) -> Result<Vec<Document>, SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/search/v2/datasets/{}/search",
+            "{}/search/v2/datasets/{}/search",
             self.base_url, self.dataset_id
         );
         let body = json!({ "query": query, "page_size": k });
@@ -162,7 +162,7 @@ impl VectorStore for LarkVectorStore {
     async fn delete(&self, ids: &[&str]) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/search/v2/datasets/{}/documents/batch_delete",
+            "{}/search/v2/datasets/{}/documents/batch_delete",
             self.base_url, self.dataset_id
         );
         let body = json!({ "document_ids": ids });

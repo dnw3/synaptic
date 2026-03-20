@@ -107,6 +107,12 @@ impl LarkConfig {
         self
     }
 
+    /// Open API base URL (`{base_url}/open-apis`).
+    /// All standard Lark REST APIs live under this prefix.
+    pub fn api_url(&self) -> String {
+        format!("{}/open-apis", self.base_url)
+    }
+
     /// Create a [`TokenCache`] backed by this config.
     pub(crate) fn token_cache(self) -> auth::TokenCache {
         auth::TokenCache::new(Arc::new(self))

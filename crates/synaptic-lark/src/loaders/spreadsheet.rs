@@ -39,7 +39,7 @@ pub struct LarkSpreadsheetLoader {
 impl LarkSpreadsheetLoader {
     /// Create a new loader using the given config.
     pub fn new(config: LarkConfig) -> Self {
-        let base_url = config.base_url.clone();
+        let base_url = config.api_url();
         Self {
             token_cache: config.token_cache(),
             base_url,
@@ -96,7 +96,7 @@ impl Loader for LarkSpreadsheetLoader {
 
         let range = format!("{}!A1:ZZ10000", self.sheet_id);
         let url = format!(
-            "{}/open-apis/sheets/v2/spreadsheets/{}/values/{}?renderType=PlainText",
+            "{}/sheets/v2/spreadsheets/{}/values/{}?renderType=PlainText",
             self.base_url,
             stoken,
             urlencoding::encode(&range)

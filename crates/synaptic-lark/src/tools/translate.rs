@@ -17,7 +17,7 @@ pub struct LarkTranslateTool {
 impl LarkTranslateTool {
     /// Create a new tool using the given config.
     pub fn new(config: LarkConfig) -> Self {
-        let base_url = config.base_url.clone();
+        let base_url = config.api_url();
         Self {
             token_cache: config.token_cache(),
             base_url,
@@ -70,7 +70,7 @@ impl Tool for LarkTranslateTool {
             body["source_language"] = json!(src);
         }
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/open-apis/translation/v1/text/translate", self.base_url);
+        let url = format!("{}/translation/v1/text/translate", self.base_url);
         let resp = self
             .client
             .post(&url)

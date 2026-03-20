@@ -24,6 +24,8 @@ hmac = "0.12"
 sha2 = "0.10"
 urlencoding = "2"
 tokio-tungstenite = { version = "0.24", optional = true, features = ["native-tls"] }
+prost = { version = "0.13", optional = true }
+url = { version = "2", optional = true }
 dashmap = { version = "6", optional = true }
 lru = { version = "0.12", optional = true }
 
@@ -31,7 +33,7 @@ lru = { version = "0.12", optional = true }
 default = []
 checkpointer = ["dep:synaptic-graph"]
 events = []
-bot = ["dep:tokio-tungstenite", "dep:dashmap", "dep:lru", "events"]
+bot = ["dep:tokio-tungstenite", "dep:prost", "dep:url", "dep:dashmap", "dep:lru", "events"]
 
 [dev-dependencies]
 tokio.workspace = true

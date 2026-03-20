@@ -35,7 +35,7 @@ pub struct LarkWikiLoader {
 impl LarkWikiLoader {
     /// Create a new loader using the given config.
     pub fn new(config: LarkConfig) -> Self {
-        let base_url = config.base_url.clone();
+        let base_url = config.api_url();
         Self {
             token_cache: config.clone().token_cache(),
             base_url,
@@ -82,7 +82,7 @@ impl LarkWikiLoader {
         }
         let space_id = self.space_id.as_deref().unwrap();
         let mut url = format!(
-            "{}/open-apis/wiki/v2/spaces/{}/nodes?page_size=50",
+            "{}/wiki/v2/spaces/{}/nodes?page_size=50",
             self.base_url, space_id
         );
         if let Some(pt) = parent_node_token {

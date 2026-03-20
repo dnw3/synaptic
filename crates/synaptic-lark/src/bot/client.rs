@@ -34,7 +34,7 @@ pub struct BotInfo {
 impl LarkBotClient {
     pub fn new(config: LarkConfig) -> Self {
         let app_id = config.app_id.clone();
-        let base_url = config.base_url.clone();
+        let base_url = config.api_url();
         // MessageApi and CardKitApi get their own token caches (same credentials).
         let msg_api = MessageApi::new(config.clone());
         let cardkit_api = CardKitApi::new(config.clone());
@@ -58,7 +58,7 @@ impl LarkBotClient {
     /// GET /bot/v3/info
     pub async fn get_bot_info(&self) -> Result<BotInfo, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/open-apis/bot/v3/info", self.base_url);
+        let url = format!("{}/bot/v3/info", self.base_url);
         let resp: serde_json::Value = self
             .client
             .get(&url)
@@ -233,7 +233,7 @@ impl LarkBotClient {
     /// Download an image by its `image_key`. Returns the raw bytes.
     pub async fn download_image(&self, image_key: &str) -> Result<Vec<u8>, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/open-apis/im/v1/image/{}", self.base_url, image_key);
+        let url = format!("{}/im/v1/image/{}", self.base_url, image_key);
         let bytes = self
             .client
             .get(&url)
@@ -259,7 +259,7 @@ impl LarkBotClient {
     ) -> Result<Vec<u8>, SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/im/v1/messages/{message_id}/resources/{file_key}?type={resource_type}",
+            "{}/im/v1/messages/{message_id}/resources/{file_key}?type={resource_type}",
             self.base_url
         );
         let bytes = self

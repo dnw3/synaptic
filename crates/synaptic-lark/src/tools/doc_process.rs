@@ -16,7 +16,7 @@ pub struct LarkDocProcessTool {
 impl LarkDocProcessTool {
     /// Create a new tool using the given config.
     pub fn new(config: LarkConfig) -> Self {
-        let base_url = config.base_url.clone();
+        let base_url = config.api_url();
         Self {
             token_cache: config.token_cache(),
             base_url,
@@ -63,10 +63,7 @@ impl Tool for LarkDocProcessTool {
         })?;
         let token = self.token_cache.get_token().await?;
         let body = json!({ "file_key": file_key, "task_type": task_type });
-        let url = format!(
-            "{}/open-apis/document_ai/v1/entity/recognize",
-            self.base_url
-        );
+        let url = format!("{}/document_ai/v1/entity/recognize", self.base_url);
         let resp = self
             .client
             .post(&url)

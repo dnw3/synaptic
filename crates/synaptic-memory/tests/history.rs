@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
+use synaptic_core::runnable::Runnable;
 use synaptic_core::{MemoryStore, Message, RunnableConfig, SynapticError};
 use synaptic_memory::{ChatMessageHistory, RunnableWithMessageHistory};
-use synaptic_runnables::Runnable;
 
 /// A simple runnable that echoes the last human message content.
 struct EchoRunnable;

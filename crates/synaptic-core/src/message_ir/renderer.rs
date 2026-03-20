@@ -417,7 +417,12 @@ fn render_plain(ir: &MessageIR, options: &RenderOptions) -> String {
     out
 }
 
-fn render_table_plain(out: &mut String, headers: &[String], rows: &[Vec<String>], mode: TableMode) {
+pub fn render_table_plain(
+    out: &mut String,
+    headers: &[String],
+    rows: &[Vec<String>],
+    mode: TableMode,
+) {
     match mode {
         TableMode::Code => {
             // Simple aligned table using padding
@@ -508,7 +513,7 @@ fn render_table_plain(out: &mut String, headers: &[String], rows: &[Vec<String>]
 // ===========================================================================
 
 /// Trait for platform-specific inline formatting.
-trait InlineFormatter {
+pub trait InlineFormatter {
     fn wrap_bold(&self, text: &str) -> String;
     fn wrap_italic(&self, text: &str) -> String;
     fn wrap_strikethrough(&self, text: &str) -> String;
@@ -522,7 +527,7 @@ trait InlineFormatter {
 }
 
 /// Apply inline spans to rich text using a given formatter.
-fn apply_spans(rt: &RichText, fmt: &dyn InlineFormatter) -> String {
+pub fn apply_spans(rt: &RichText, fmt: &dyn InlineFormatter) -> String {
     if rt.styles.is_empty() && rt.links.is_empty() {
         return fmt.escape_text(&rt.text);
     }
@@ -739,7 +744,7 @@ impl InlineFormatter for PlainFormatter {
 // Helpers
 // ===========================================================================
 
-fn escape_html(s: &str) -> String {
+pub fn escape_html(s: &str) -> String {
     s.replace('&', "&amp;")
         .replace('<', "&lt;")
         .replace('>', "&gt;")
@@ -752,6 +757,56 @@ pub fn escape_json_string(s: &str) -> String {
         .replace('\n', "\\n")
         .replace('\r', "\\r")
         .replace('\t', "\\t")
+}
+
+// ===========================================================================
+// Trait-based renderer API
+// ===========================================================================
+
+/// Trait for rendering a [`MessageIR`] to a platform-specific string format.
+///
+/// Implement this trait to add new rendering targets without modifying the core.
+pub trait IRRenderer: Send + Sync {
+    fn render(&self, ir: &MessageIR, options: &RenderOptions) -> String;
+}
+
+/// Renderer that produces standard Markdown output.
+pub struct MarkdownRenderer;
+
+impl IRRenderer for MarkdownRenderer {
+    fn render(&self, ir: &MessageIR, options: &RenderOptions) -> String {
+        let opts = RenderOptions {
+            target: RenderTarget::Markdown,
+            ..options.clone()
+        };
+        render(ir, &opts)
+    }
+}
+
+/// Renderer that strips all formatting and returns plain text.
+pub struct PlainTextRenderer;
+
+impl IRRenderer for PlainTextRenderer {
+    fn render(&self, ir: &MessageIR, options: &RenderOptions) -> String {
+        let opts = RenderOptions {
+            target: RenderTarget::PlainText,
+            ..options.clone()
+        };
+        render(ir, &opts)
+    }
+}
+
+/// Parse Markdown and render with a custom [`IRRenderer`], returning chunked strings.
+pub fn format_with_renderer(
+    text: &str,
+    renderer: &dyn IRRenderer,
+    options: &RenderOptions,
+) -> Vec<String> {
+    use super::chunker;
+    use super::parser;
+    let ir = parser::parse(text);
+    let chunks = chunker::chunk_ir(&ir, options.chunk_limit);
+    chunks.iter().map(|c| renderer.render(c, options)).collect()
 }
 
 // ===========================================================================

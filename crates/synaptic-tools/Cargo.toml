@@ -13,12 +13,31 @@ homepage.workspace = true
 [dependencies]
 async-trait.workspace = true
 serde_json.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["process", "io-util"] }
 futures.workspace = true
 reqwest.workspace = true
 urlencoding = "2"
 meval = "0.2"
 synaptic-core = { version = "0.4", path = "../synaptic-core" }
 
+# Feature-gated dependencies
+serde = { workspace = true, optional = true }
+pdf-extract = { version = "0.10", optional = true }
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"], optional = true }
+tracing = { workspace = true, optional = true }
+
+[features]
+default = []
+pdf = ["dep:pdf-extract"]
+browser = ["dep:serde"]
+browser-cdp = ["browser"]
+sql = ["dep:sqlx"]
+sandbox = ["dep:serde", "dep:tracing"]
+sandbox-docker = ["sandbox"]
+sandbox-apple = ["sandbox"]
+e2b = ["dep:serde"]
+
 [dev-dependencies]
 synaptic-macros = { workspace = true }
+tokio.workspace = true
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }

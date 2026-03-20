@@ -1,0 +1,29 @@
+use crate::{RunnableConfig, SynapticError};
+use async_trait::async_trait;
+use serde_json::Value;
+
+use super::assign::RunnableAssign;
+use super::runnable_trait::BoxRunnable;
+use super::Runnable;
+
+/// Passes the input through unchanged. Useful in parallel compositions
+/// where one branch should preserve the original input.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct RunnablePassthrough;
+
+impl RunnablePassthrough {
+    /// Create a `RunnableAssign` that passes input through and merges additional computed keys.
+    pub fn assign(branches: Vec<(String, BoxRunnable<Value, Value>)>) -> RunnableAssign {
+        RunnableAssign::new(branches)
+    }
+}
+
+#[async_trait]
+impl<T> Runnable<T, T> for RunnablePassthrough
+where
+    T: Send + Sync + 'static,
+{
+    async fn invoke(&self, input: T, _config: &RunnableConfig) -> Result<T, SynapticError> {
+        Ok(input)
+    }
+}

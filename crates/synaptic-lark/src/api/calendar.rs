@@ -12,7 +12,7 @@ pub(crate) struct CalendarApi {
 
 impl CalendarApi {
     pub fn new(config: LarkConfig) -> Self {
-        let base_url = config.base_url.clone();
+        let base_url = config.api_url();
         Self {
             token_cache: config.token_cache(),
             base_url,
@@ -35,7 +35,7 @@ impl CalendarApi {
     /// List all calendars accessible by the bot.
     pub async fn list_calendars(&self) -> Result<Vec<Value>, SynapticError> {
         let token = self.token_cache.get_token().await?;
-        let url = format!("{}/open-apis/calendar/v4/calendars", self.base_url);
+        let url = format!("{}/calendar/v4/calendars", self.base_url);
         let resp = self
             .client
             .get(&url)
@@ -65,7 +65,7 @@ impl CalendarApi {
     ) -> Result<Vec<Value>, SynapticError> {
         let token = self.token_cache.get_token().await?;
         let mut url = format!(
-            "{}/open-apis/calendar/v4/calendars/{calendar_id}/events",
+            "{}/calendar/v4/calendars/{calendar_id}/events",
             self.base_url
         );
         let mut sep = '?';
@@ -102,7 +102,7 @@ impl CalendarApi {
     ) -> Result<Value, SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/calendar/v4/calendars/{calendar_id}/events/{event_id}",
+            "{}/calendar/v4/calendars/{calendar_id}/events/{event_id}",
             self.base_url
         );
         let resp = self
@@ -131,7 +131,7 @@ impl CalendarApi {
     ) -> Result<String, SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/calendar/v4/calendars/{calendar_id}/events",
+            "{}/calendar/v4/calendars/{calendar_id}/events",
             self.base_url
         );
         let mut body = json!({
@@ -170,7 +170,7 @@ impl CalendarApi {
     ) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/calendar/v4/calendars/{calendar_id}/events/{event_id}",
+            "{}/calendar/v4/calendars/{calendar_id}/events/{event_id}",
             self.base_url
         );
         let resp = self
@@ -196,7 +196,7 @@ impl CalendarApi {
     ) -> Result<(), SynapticError> {
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/calendar/v4/calendars/{calendar_id}/events/{event_id}",
+            "{}/calendar/v4/calendars/{calendar_id}/events/{event_id}",
             self.base_url
         );
         let resp = self

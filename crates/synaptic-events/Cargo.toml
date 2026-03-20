@@ -3,6 +3,10 @@ name = "synaptic-events"
 version.workspace = true
 edition.workspace = true
 
+[features]
+default = []
+otel = ["dep:opentelemetry"]
+
 [dependencies]
 async-trait = "0.1"
 serde = { version = "1", features = ["derive"] }
@@ -12,3 +16,6 @@ tracing = "0.1"
 thiserror = "2"
 futures = "0.3"
 synaptic-core = { version = "0.4", path = "../synaptic-core" }
+
+# otel
+opentelemetry = { version = "0.28", optional = true }

@@ -34,12 +34,14 @@ fn budget_within_limit() {
             priority: Priority::CRITICAL,
             messages: vec![Message::system("You are helpful")],
             reserved_tokens: 0,
+            trim_strategy: Default::default(),
         },
         ContextSlot {
             name: "history".to_string(),
             priority: Priority::NORMAL,
             messages: vec![Message::human("Hi"), Message::ai("Hello!")],
             reserved_tokens: 0,
+            trim_strategy: Default::default(),
         },
     ];
 
@@ -59,12 +61,14 @@ fn respects_priority() {
             priority: Priority::LOW,
             messages: vec![Message::human("low priority message here")],
             reserved_tokens: 0,
+            trim_strategy: Default::default(),
         },
         ContextSlot {
             name: "critical".to_string(),
             priority: Priority::CRITICAL,
             messages: vec![Message::system("hi")],
             reserved_tokens: 0,
+            trim_strategy: Default::default(),
         },
     ];
 
@@ -85,6 +89,7 @@ fn drops_low_priority() {
             priority: Priority::CRITICAL,
             messages: vec![Message::system("You are helpful")],
             reserved_tokens: 0,
+            trim_strategy: Default::default(),
         },
         ContextSlot {
             name: "extra".to_string(),
@@ -93,6 +98,7 @@ fn drops_low_priority() {
                 "a very long message that should exceed budget limits easily",
             )],
             reserved_tokens: 0,
+            trim_strategy: Default::default(),
         },
     ];
 
@@ -113,12 +119,14 @@ fn reserved_honored() {
             priority: Priority::HIGH,
             messages: vec![Message::system("reserved")],
             reserved_tokens: 10,
+            trim_strategy: Default::default(),
         },
         ContextSlot {
             name: "normal".to_string(),
             priority: Priority::NORMAL,
             messages: vec![Message::human("hi")],
             reserved_tokens: 0,
+            trim_strategy: Default::default(),
         },
     ];
 

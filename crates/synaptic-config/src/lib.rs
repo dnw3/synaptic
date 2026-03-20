@@ -5,13 +5,22 @@ mod paths;
 mod source;
 mod tools;
 
+#[cfg(feature = "cache")]
+pub mod cache;
+#[cfg(feature = "plugin")]
+pub mod plugin;
+#[cfg(feature = "secrets")]
+pub mod secrets;
+#[cfg(feature = "session")]
+pub mod session;
+
 pub use format::{parse_config, ConfigFormat};
 pub use mcp::McpServerConfig;
 pub use model::ModelConfig;
 pub use paths::PathsConfig;
 pub use source::{
-    discover_and_load, load_from_file, load_from_source, ConfigSource, FileConfigSource,
-    StringConfigSource,
+    discover_and_load, discover_and_load_named, load_from_file, load_from_source, ConfigSource,
+    FileConfigSource, StringConfigSource,
 };
 pub use tools::ToolsConfig;
 

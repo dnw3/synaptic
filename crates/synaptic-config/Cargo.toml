@@ -18,5 +18,27 @@ serde_yml.workspace = true
 dirs.workspace = true
 synaptic-core = { version = "0.4", path = "../synaptic-core" }
 
+# Feature-gated dependencies
+async-trait = { workspace = true, optional = true }
+tokio = { workspace = true, optional = true }
+uuid = { workspace = true, optional = true }
+regex = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }
+synaptic-graph = { version = "0.4", path = "../synaptic-graph", optional = true }
+synaptic-memory = { version = "0.4", path = "../synaptic-memory", optional = true }
+synaptic-middleware = { version = "0.4", path = "../synaptic-middleware", optional = true }
+synaptic-events = { version = "0.4", path = "../synaptic-events", optional = true }
+
+[features]
+default = []
+session = ["dep:async-trait", "dep:tokio", "dep:uuid", "dep:synaptic-graph", "dep:synaptic-memory"]
+secrets = ["dep:async-trait", "dep:regex", "dep:synaptic-middleware"]
+plugin = ["dep:async-trait", "dep:tracing", "dep:synaptic-events"]
+cache = ["dep:async-trait", "dep:tokio"]
+
 [dev-dependencies]
 tokio.workspace = true
+synaptic-store = { version = "0.4", path = "../synaptic-store" }
+synaptic-models = { version = "0.4", path = "../synaptic-models" }
+synaptic-rag = { version = "0.4", path = "../synaptic-rag", features = ["embeddings"] }
+synaptic-events = { version = "0.4", path = "../synaptic-events" }

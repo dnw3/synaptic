@@ -8,6 +8,17 @@ mod parallel_executor;
 mod return_direct;
 pub mod wikipedia;
 
+#[cfg(feature = "browser")]
+pub mod browser;
+#[cfg(feature = "e2b")]
+pub mod e2b;
+#[cfg(feature = "pdf")]
+pub mod pdf;
+#[cfg(feature = "sandbox")]
+pub mod sandbox;
+#[cfg(feature = "sql")]
+pub mod sql;
+
 pub use brave::BraveSearchTool;
 pub use calculator::CalculatorTool;
 pub use duckduckgo::DuckDuckGoTool;

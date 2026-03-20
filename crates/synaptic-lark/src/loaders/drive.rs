@@ -39,7 +39,7 @@ pub struct LarkDriveLoader {
 impl LarkDriveLoader {
     /// Create a new loader using the given config.
     pub fn new(config: LarkConfig) -> Self {
-        let base_url = config.base_url.clone();
+        let base_url = config.api_url();
         Self {
             token_cache: config.clone().token_cache(),
             base_url,
@@ -76,7 +76,7 @@ impl Loader for LarkDriveLoader {
         })?;
         let token = self.token_cache.get_token().await?;
         let url = format!(
-            "{}/open-apis/drive/v1/files?folder_token={}&page_size=200",
+            "{}/drive/v1/files?folder_token={}&page_size=200",
             self.base_url, folder
         );
         let resp = self
