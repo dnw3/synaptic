@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use serde_json::{json, Value};
 use synaptic_core::{
     AIMessageChunk, ChatModel, ChatRequest, ChatResponse, ChatStream, Message, SynapticError,
-    TokenUsage, ToolCall, ToolChoice, ToolDefinition,
+    ThinkingLevel, TokenUsage, ToolCall, ToolChoice, ToolDefinition,
 };
 
 use crate::{ProviderBackend, ProviderRequest, ProviderResponse};
@@ -162,6 +162,23 @@ impl AnthropicChatModel {
                 ToolChoice::None => json!({"type": "none"}),
                 ToolChoice::Specific(name) => json!({"type": "tool", "name": name}),
             };
+        }
+
+        if let Some(ref level) = request.thinking {
+            match level {
+                ThinkingLevel::Off => body["thinking"] = json!({"type": "disabled"}),
+                ThinkingLevel::Budget(n) => {
+                    body["thinking"] = json!({"type": "enabled", "budget_tokens": (*n).max(1024)});
+                }
+                other => {
+                    let budget = match other {
+                        ThinkingLevel::Low => 2048u32,
+                        ThinkingLevel::Medium => 10240,
+                        _ => 51200,
+                    };
+                    body["thinking"] = json!({"type": "enabled", "budget_tokens": budget});
+                }
+            }
         }
 
         ProviderRequest {
