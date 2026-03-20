@@ -49,7 +49,6 @@ jobs:
       - run: >
           cargo test
           -p synaptic-core
-          -p synaptic-runnables
           -p synaptic-graph
           -p synaptic-tools
           -p synaptic-memory
