@@ -8,7 +8,7 @@ fn make_tool(name: &str) -> ToolDefinition {
     ToolDefinition {
         name: name.to_string(),
         description: format!("{name} tool"),
-        parameters: json!({"type": "object", "properties": {}}),
+        input_schema: json!({"type": "object", "properties": {}}),
         extras: None,
     }
 }

@@ -20,10 +20,10 @@ fn tool_definition() {
     assert!(!def.description.is_empty());
 
     // Parameters should include a "query" property
-    let props = def.parameters.get("properties").unwrap();
+    let props = def.input_schema.get("properties").unwrap();
     assert!(props.get("query").is_some());
 
-    let required = def.parameters.get("required").unwrap().as_array().unwrap();
+    let required = def.input_schema.get("required").unwrap().as_array().unwrap();
     assert!(required.contains(&json!("query")));
 }
 

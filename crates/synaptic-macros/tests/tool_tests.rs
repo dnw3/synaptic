@@ -261,7 +261,7 @@ async fn test_as_tool_definition() {
     let def = t.as_tool_definition();
     assert_eq!(def.name, "search");
     assert_eq!(def.description, "Search the web for information.");
-    assert!(def.parameters.get("properties").is_some());
+    assert!(def.input_schema.get("properties").is_some());
 }
 
 // ---------------------------------------------------------------------------

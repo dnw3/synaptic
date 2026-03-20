@@ -26,7 +26,7 @@ fn tool_definition() {
     let def = tool.as_tool_definition();
     assert_eq!(def.name, "lark_send_message");
     // Only "action" is globally required; per-action fields are validated in call()
-    let required = def.parameters["required"].as_array().unwrap();
+    let required = def.input_schema["required"].as_array().unwrap();
     assert!(required.contains(&json!("action")));
 }
 

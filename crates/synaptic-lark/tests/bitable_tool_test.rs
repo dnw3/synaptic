@@ -21,7 +21,7 @@ fn tool_definition_required_fields() {
     let config = LarkConfig::new("cli_test", "secret_test");
     let tool = LarkBitableTool::new(config);
     let def = tool.as_tool_definition();
-    let required = def.parameters["required"].as_array().unwrap();
+    let required = def.input_schema["required"].as_array().unwrap();
     // table_id removed from global required (checked per-action); action + app_token always required.
     assert!(required.contains(&json!("action")));
     assert!(required.contains(&json!("app_token")));

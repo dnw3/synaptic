@@ -202,5 +202,5 @@ async fn test_runtime_aware_as_tool_definition() {
     let def = t.as_tool_definition();
     assert_eq!(def.name, "echo_id");
     assert_eq!(def.description, "A tool that echoes its own tool call ID.");
-    assert!(def.parameters.get("properties").is_some());
+    assert!(def.input_schema.get("properties").is_some());
 }
