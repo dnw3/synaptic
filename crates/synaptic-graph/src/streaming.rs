@@ -42,4 +42,13 @@ pub trait StreamingOutput: Send + Sync {
 
     /// Called on error.
     async fn on_error(&self, error: &str);
+
+    /// Called when reasoning/thinking content is generated.
+    async fn on_reasoning(&self, _content: &str) {}
+
+    /// Called when a tool execution completes with result.
+    async fn on_tool_result(&self, _name: &str, _content: &str) {}
+
+    /// Periodic heartbeat during long executions (e.g. tool runs >15s).
+    async fn on_heartbeat(&self) {}
 }
