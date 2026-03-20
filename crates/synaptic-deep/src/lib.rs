@@ -42,6 +42,7 @@ pub use middleware::skills::{
     substitute_context_vars, CommandExecutor, InstallSpec, SkillDef, SkillHookEvent,
     SkillHooksExecutor, SkillOverride, SkillStatusReport, SkillTool, SubAgentSpawner,
 };
+pub use middleware::streaming::{StreamingInterceptor, StreamingOutputHandle};
 pub use middleware::subagent::{
     builtin_agent_def, expand_tool_group, BackgroundTaskRegistry, BackgroundTaskResult,
     LlmTaskTool, SubAgentDef, TaskOutputTool, TaskToolSpawner,
