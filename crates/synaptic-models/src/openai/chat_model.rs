@@ -128,22 +128,6 @@ impl OpenAiChatModel {
             };
         }
 
-        // Reasoning / extended thinking support (OpenAI-compatible).
-        // Maps ThinkingConfig → budget_tokens on the request body.
-        // ARK (doubao-seed) and DeepSeek use this to control reasoning depth.
-        if let Some(ref thinking) = request.thinking {
-            if thinking.enabled {
-                if let Some(budget) = thinking.budget_tokens {
-                    body["thinking"] = json!({
-                        "type": "enabled",
-                        "budget_tokens": budget,
-                    });
-                } else {
-                    body["thinking"] = json!({ "type": "enabled" });
-                }
-            }
-        }
-
         ProviderRequest {
             url: format!("{}/chat/completions", self.config.base_url),
             headers: vec![
