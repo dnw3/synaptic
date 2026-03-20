@@ -31,8 +31,6 @@ impl Interceptor for AgentTracingMiddleware {
     ) -> Result<ModelResponse, SynapticError> {
         let message_count = request.messages.len();
         let tool_count = request.tools.len();
-        let has_thinking = request.thinking.is_some();
-
         let system_prompt_len = request.system_prompt.as_ref().map(|s| s.len()).unwrap_or(0);
         let system_prompt = request.system_prompt.clone().unwrap_or_default();
         let user_message = request
@@ -46,7 +44,7 @@ impl Interceptor for AgentTracingMiddleware {
         tracing::info!(
             message_count,
             tool_count,
-            has_thinking,
+            thinking = ?request.thinking,
             system_prompt_len,
             system_prompt = %system_prompt,
             user_message = %user_message,
