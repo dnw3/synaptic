@@ -33,8 +33,8 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::Value;
 use synaptic_core::{
-    ChatModel, ChatRequest, ChatResponse, Message, SynapticError, ThinkingConfig, TokenUsage,
-    ToolCall, ToolChoice, ToolDefinition,
+    ChatModel, ChatRequest, ChatResponse, Message, RunContext, SynapticError, ThinkingConfig,
+    TokenUsage, ToolCall, ToolChoice, ToolDefinition,
 };
 
 // ---------------------------------------------------------------------------
@@ -167,7 +167,11 @@ pub enum CommandDecision {
 /// layers are middleware `wrap_model_call` implementations.
 #[async_trait]
 pub trait ModelCaller: Send + Sync {
-    async fn call(&self, request: ModelRequest) -> Result<ModelResponse, SynapticError>;
+    async fn call(
+        &self,
+        request: ModelRequest,
+        ctx: &RunContext,
+    ) -> Result<ModelResponse, SynapticError>;
 }
 
 /// Trait representing the next step in the tool call chain.
@@ -215,9 +219,10 @@ pub trait Interceptor: Send + Sync {
     async fn wrap_model_call(
         &self,
         request: ModelRequest,
+        ctx: &RunContext,
         next: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
-        next.call(request).await
+        next.call(request, ctx).await
     }
 
     /// Wrap a tool call. Override to intercept or modify tool execution.
@@ -260,6 +265,7 @@ impl InterceptorChain {
     pub async fn call_model(
         &self,
         mut request: ModelRequest,
+        ctx: &RunContext,
         base: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
         // Run before_model hooks in forward order
@@ -271,9 +277,10 @@ impl InterceptorChain {
         let chain = InterceptorWrapModelChain {
             interceptors: &self.interceptors,
             index: 0,
+            ctx,
             base,
         };
-        let mut response = chain.call(request.clone()).await?;
+        let mut response = chain.call(request.clone(), ctx).await?;
 
         // Run after_model hooks in reverse order
         for interceptor in self.interceptors.iter().rev() {
@@ -303,22 +310,28 @@ impl InterceptorChain {
 struct InterceptorWrapModelChain<'a> {
     interceptors: &'a [Arc<dyn Interceptor>],
     index: usize,
+    ctx: &'a RunContext,
     base: &'a dyn ModelCaller,
 }
 
 #[async_trait]
 impl ModelCaller for InterceptorWrapModelChain<'_> {
-    async fn call(&self, request: ModelRequest) -> Result<ModelResponse, SynapticError> {
+    async fn call(
+        &self,
+        request: ModelRequest,
+        ctx: &RunContext,
+    ) -> Result<ModelResponse, SynapticError> {
         if self.index >= self.interceptors.len() {
-            self.base.call(request).await
+            self.base.call(request, ctx).await
         } else {
             let next = InterceptorWrapModelChain {
                 interceptors: self.interceptors,
                 index: self.index + 1,
+                ctx: self.ctx,
                 base: self.base,
             };
             self.interceptors[self.index]
-                .wrap_model_call(request, &next)
+                .wrap_model_call(request, ctx, &next)
                 .await
         }
     }
@@ -365,7 +378,11 @@ impl BaseChatModelCaller {
 
 #[async_trait]
 impl ModelCaller for BaseChatModelCaller {
-    async fn call(&self, request: ModelRequest) -> Result<ModelResponse, SynapticError> {
+    async fn call(
+        &self,
+        request: ModelRequest,
+        _ctx: &RunContext,
+    ) -> Result<ModelResponse, SynapticError> {
         let chat_request = request.to_chat_request();
         let response = self.model.chat(chat_request).await?;
         Ok(response.into())
@@ -411,7 +428,11 @@ mod tests {
 
     #[async_trait]
     impl ModelCaller for MockModelCaller {
-        async fn call(&self, _request: ModelRequest) -> Result<ModelResponse, SynapticError> {
+        async fn call(
+            &self,
+            _request: ModelRequest,
+            _ctx: &RunContext,
+        ) -> Result<ModelResponse, SynapticError> {
             Ok(ModelResponse {
                 message: Message::ai("mock response"),
                 usage: None,
@@ -460,13 +481,14 @@ mod tests {
         async fn wrap_model_call(
             &self,
             request: ModelRequest,
+            ctx: &RunContext,
             next: &dyn ModelCaller,
         ) -> Result<ModelResponse, SynapticError> {
             self.log
                 .lock()
                 .unwrap()
                 .push(format!("wrap_model_enter:{}", self.id));
-            let resp = next.call(request).await?;
+            let resp = next.call(request, ctx).await?;
             self.log
                 .lock()
                 .unwrap()
@@ -499,7 +521,10 @@ mod tests {
 
         let chain = InterceptorChain::new(interceptors);
         let base = MockModelCaller;
-        chain.call_model(make_model_request(), &base).await.unwrap();
+        chain
+            .call_model(make_model_request(), &RunContext::default(), &base)
+            .await
+            .unwrap();
 
         let entries = log.lock().unwrap().clone();
         assert_eq!(
@@ -531,7 +556,10 @@ mod tests {
         assert!(chain.is_empty());
 
         let base = MockModelCaller;
-        let resp = chain.call_model(make_model_request(), &base).await.unwrap();
+        let resp = chain
+            .call_model(make_model_request(), &RunContext::default(), &base)
+            .await
+            .unwrap();
         assert_eq!(resp.message.content(), "mock response");
     }
 
@@ -573,7 +601,9 @@ mod tests {
 
         let chain = InterceptorChain::new(interceptors);
         let base = MockModelCaller;
-        let result = chain.call_model(make_model_request(), &base).await;
+        let result = chain
+            .call_model(make_model_request(), &RunContext::default(), &base)
+            .await;
 
         assert!(result.is_err());
         // MW2's before_model should never run

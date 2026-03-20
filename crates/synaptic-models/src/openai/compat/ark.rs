@@ -1,4 +1,4 @@
-//! ByteDance Doubao (豆包) — OpenAI-compatible provider.
+//! ByteDance Ark (火山方舟) — OpenAI-compatible provider.
 
 use std::sync::Arc;
 
@@ -10,14 +10,14 @@ pub const BASE_URL: &str = "https://ark.cn-beijing.volces.com/api/v3";
 pub const API_KEY_ENV: &str = "ARK_API_KEY";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DoubaoModel {
+pub enum ArkModel {
     DoubaoLite,
     DoubaoPlus,
     DoubaoMax,
     Custom(String),
 }
 
-impl DoubaoModel {
+impl ArkModel {
     pub fn as_str(&self) -> &str {
         match self {
             Self::DoubaoLite => "doubao-1.5-lite-32k",
@@ -28,7 +28,7 @@ impl DoubaoModel {
     }
 }
 
-impl std::fmt::Display for DoubaoModel {
+impl std::fmt::Display for ArkModel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.as_str())
     }

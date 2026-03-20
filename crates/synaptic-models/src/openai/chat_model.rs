@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use serde_json::{json, Value};
 use synaptic_core::{
     AIMessageChunk, ChatModel, ChatRequest, ChatResponse, ChatStream, Message, SynapticError,
-    TokenUsage, ToolCall, ToolChoice, ToolDefinition,
+    TokenUsage, ToolCall, ToolCallChunk, ToolChoice, ToolDefinition,
 };
 
 #[derive(Debug, Clone)]
@@ -277,12 +277,45 @@ pub(crate) fn parse_stream_chunk(data: &str) -> Option<AIMessageChunk> {
     let delta = &v["choices"][0]["delta"];
 
     let content = delta["content"].as_str().unwrap_or("").to_string();
+    // ARK/GLM models use "reasoning_content" for chain-of-thought reasoning
+    let reasoning = delta["reasoning_content"]
+        .as_str()
+        .unwrap_or("")
+        .to_string();
     let tool_calls = parse_tool_calls(delta);
     let usage = parse_usage(&v["usage"]);
 
+    // Parse streaming tool_call_chunks (partial data per chunk)
+    let tool_call_chunks: Vec<ToolCallChunk> = delta["tool_calls"]
+        .as_array()
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|tc| {
+                    let index = tc["index"].as_u64().map(|i| i as usize);
+                    let id = tc["id"].as_str().map(String::from);
+                    let name = tc["function"]["name"].as_str().map(String::from);
+                    let arguments = tc["function"]["arguments"].as_str().map(String::from);
+                    // Only create a chunk if there's at least some data
+                    if id.is_some() || name.is_some() || arguments.is_some() {
+                        Some(ToolCallChunk {
+                            id,
+                            name,
+                            arguments,
+                            index,
+                        })
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+
     Some(AIMessageChunk {
         content,
+        reasoning,
         tool_calls,
+        tool_call_chunks,
         usage,
         ..Default::default()
     })
@@ -316,22 +349,31 @@ impl ChatModel for OpenAiChatModel {
                 .map(|result| result.map_err(|e| std::io::Error::other(e.to_string())))
                 .eventsource();
 
+            let mut sse_idx = 0usize;
             while let Some(event) = event_stream.next().await {
                 match event {
                     Ok(ev) => {
                         if ev.data == "[DONE]" {
+                            tracing::debug!(sse_idx, "SSE stream [DONE]");
                             break;
                         }
+                        let preview = if ev.data.len() > 500 { &ev.data[..500] } else { &ev.data };
+                        tracing::debug!(sse_idx, data_len = ev.data.len(), data = %preview, "SSE chunk");
+                        sse_idx += 1;
                         if let Some(chunk) = parse_stream_chunk(&ev.data) {
                             yield Ok(chunk);
+                        } else {
+                            tracing::warn!(sse_idx, data = %ev.data, "SSE chunk parse returned None");
                         }
                     }
                     Err(e) => {
+                        tracing::error!(error = %e, "SSE stream error");
                         yield Err(SynapticError::Model(format!("SSE parse error: {e}")));
                         break;
                     }
                 }
             }
+            tracing::debug!(sse_idx, "SSE generator exiting (stream will close)");
         })
     }
 }

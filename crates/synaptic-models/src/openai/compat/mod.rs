@@ -4,10 +4,10 @@
 //! base URL. The submodules pre-configure [`OpenAiConfig`](crate::openai::OpenAiConfig)
 //! and [`OpenAiEmbeddingsConfig`](crate::openai::OpenAiEmbeddingsConfig) with the correct endpoint.
 
+pub mod ark;
 pub mod baichuan;
 pub mod cohere;
 pub mod deepseek;
-pub mod doubao;
 pub mod fireworks;
 pub mod groq;
 pub mod huggingface;

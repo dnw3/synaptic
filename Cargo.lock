@@ -4603,6 +4603,7 @@ dependencies = [
  "serde_json",
  "synaptic-core",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
