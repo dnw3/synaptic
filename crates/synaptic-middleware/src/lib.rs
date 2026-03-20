@@ -33,7 +33,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::Value;
 use synaptic_core::{
-    ChatModel, ChatRequest, ChatResponse, Message, RunContext, SynapticError, ThinkingConfig,
+    ChatModel, ChatRequest, ChatResponse, Message, RunContext, SynapticError, ThinkingLevel,
     TokenUsage, ToolCall, ToolChoice, ToolDefinition,
 };
 
@@ -51,7 +51,7 @@ pub struct ModelRequest {
     pub tools: Vec<ToolDefinition>,
     pub tool_choice: Option<ToolChoice>,
     pub system_prompt: Option<String>,
-    pub thinking: Option<ThinkingConfig>,
+    pub thinking: Option<ThinkingLevel>,
 }
 
 impl ModelRequest {
