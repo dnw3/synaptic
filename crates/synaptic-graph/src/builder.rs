@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-use synaptic_core::SynapticError;
+use synaptic_core::{RunContext, SynapticError};
 use tokio::sync::RwLock;
 
 use crate::compiled::{CachePolicy, CompiledGraph};
@@ -185,6 +185,7 @@ impl<S: State> StateGraph<S> {
             cache: Arc::new(RwLock::new(HashMap::new())),
             deferred: self.deferred,
             max_iterations: 100,
+            run_context: Arc::new(RwLock::new(RunContext::default())),
         })
     }
 }

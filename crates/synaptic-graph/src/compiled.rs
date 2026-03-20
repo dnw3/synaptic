@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 
 use futures::Stream;
 use serde_json::Value;
-use synaptic_core::SynapticError;
+use synaptic_core::{RunContext, SynapticError};
 use tokio::sync::RwLock;
 
 use crate::checkpoint::{Checkpoint, CheckpointConfig, Checkpointer};
@@ -110,6 +110,9 @@ pub struct CompiledGraph<S: State> {
     pub(crate) deferred: HashSet<String>,
     /// Maximum iterations (safety guard). Default: 100.
     pub(crate) max_iterations: usize,
+    /// Shared run context for the current execution.
+    /// Nodes that need access (e.g. `ChatModelNode`) hold a clone of this Arc.
+    pub(crate) run_context: Arc<RwLock<RunContext>>,
 }
 
 impl<S: State> std::fmt::Debug for CompiledGraph<S> {
@@ -188,6 +191,14 @@ impl<S: State> CompiledGraph<S> {
         self
     }
 
+    /// Returns a handle to the shared [`RunContext`].
+    ///
+    /// Nodes that need per-run context (e.g. `ChatModelNode`) should hold a
+    /// clone of this `Arc` and read it during `process()`.
+    pub fn run_context_handle(&self) -> Arc<RwLock<RunContext>> {
+        self.run_context.clone()
+    }
+
     /// Set a `StoreCheckpointer` backed by the given store.
     ///
     /// Convenience method equivalent to:
@@ -203,6 +214,22 @@ impl<S: State> CompiledGraph<S> {
     where
         S: serde::Serialize + serde::de::DeserializeOwned,
     {
+        self.invoke_with_config(state, None).await
+    }
+
+    /// Execute the graph with a [`RunContext`] for streaming/cancellation.
+    ///
+    /// The context is stored in a shared slot readable by context-aware nodes
+    /// (e.g. `ChatModelNode`).
+    pub async fn invoke_with_context(
+        &self,
+        state: S,
+        ctx: RunContext,
+    ) -> Result<GraphResult<S>, SynapticError>
+    where
+        S: serde::Serialize + serde::de::DeserializeOwned,
+    {
+        *self.run_context.write().await = ctx;
         self.invoke_with_config(state, None).await
     }
 
@@ -329,6 +356,27 @@ impl<S: State> CompiledGraph<S> {
         S: serde::Serialize + serde::de::DeserializeOwned + Clone,
     {
         self.stream_with_config(state, mode, None)
+    }
+
+    /// Stream graph execution with a [`RunContext`] for streaming/cancellation.
+    pub fn stream_with_context(
+        &self,
+        state: S,
+        mode: StreamMode,
+        ctx: RunContext,
+    ) -> GraphStream<'_, S>
+    where
+        S: serde::Serialize + serde::de::DeserializeOwned + Clone,
+    {
+        let run_context = self.run_context.clone();
+        Box::pin(async_stream::stream! {
+            *run_context.write().await = ctx;
+            let inner = self.stream_with_config(state, mode, None);
+            tokio::pin!(inner);
+            while let Some(item) = futures::StreamExt::next(&mut inner).await {
+                yield item;
+            }
+        })
     }
 
     /// Stream graph execution with optional checkpoint config.

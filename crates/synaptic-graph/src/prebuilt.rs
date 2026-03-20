@@ -62,6 +62,8 @@ struct ChatModelNode {
     /// When set, the final response (no tool calls) is re-called with
     /// structured output instructions matching this JSON schema.
     response_format: Option<Value>,
+    /// Shared run context set by `invoke_with_context` / `stream_with_context`.
+    run_context: Arc<tokio::sync::RwLock<RunContext>>,
 }
 
 impl ChatModelNode {
@@ -152,9 +154,10 @@ impl Node<MessageState> for ChatModelNode {
 
         // Call model through interceptor chain
         let base_caller = BaseChatModelCaller::new(self.model.clone());
+        let ctx = self.run_context.read().await.clone();
         let response = match self
             .interceptors
-            .call_model(request, &RunContext::default(), &base_caller)
+            .call_model(request, &ctx, &base_caller)
             .await
         {
             Ok(resp) => {
@@ -316,6 +319,7 @@ pub fn create_agent(
     let executor = SerialToolExecutor::new(registry);
 
     let interceptor_chain = Arc::new(InterceptorChain::new(options.interceptors));
+    let shared_run_context = Arc::new(tokio::sync::RwLock::new(RunContext::default()));
 
     let agent_node = ChatModelNode {
         model,
@@ -327,6 +331,7 @@ pub fn create_agent(
         pre_model_hook: options.pre_model_hook,
         post_model_hook: options.post_model_hook,
         response_format: options.response_format,
+        run_context: shared_run_context.clone(),
     };
 
     let mut tool_node = ToolNode::with_interceptors(executor, interceptor_chain)
@@ -367,6 +372,9 @@ pub fn create_agent(
     }
 
     let mut graph = builder.compile()?;
+    // Wire the shared RunContext so invoke_with_context/stream_with_context
+    // updates flow through to ChatModelNode.
+    graph.run_context = shared_run_context;
 
     if let Some(max_iter) = options.max_iterations {
         graph = graph.with_max_iterations(max_iter);
@@ -497,6 +505,7 @@ pub fn create_supervisor(
         pre_model_hook: None,
         post_model_hook: None,
         response_format: None,
+        run_context: Arc::new(tokio::sync::RwLock::new(RunContext::default())),
     };
 
     let mut builder = StateGraph::new()
