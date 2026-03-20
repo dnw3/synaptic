@@ -269,13 +269,11 @@ impl LarkLongConnListener {
                                         }
                                     };
 
-                                    // Send ack response frame
-                                    let _biz_rt = start.elapsed().as_millis() as i64;
-                                    let ack = super::frame::Frame::response_with_headers(
-                                        frame.service,
-                                        0,
-                                        frame.headers.clone(),
-                                    );
+                                    // Send ack response frame — reuse original frame's
+                                    // seq_id/log_id/headers so Lark can match the response.
+                                    // Uses HTTP 200 status code matching Go SDK convention.
+                                    let biz_rt = start.elapsed().as_millis() as i64;
+                                    let ack = frame.into_response(200, biz_rt);
                                     let bytes = ack.encode_to_vec();
                                     let _ = ws_stream.send(
                                         tokio_tungstenite::tungstenite::Message::Binary(bytes.into())
@@ -298,7 +296,7 @@ impl LarkLongConnListener {
                                         continue;
                                     }
                                 };
-                                let ack = serde_json::json!({ "code": 0 });
+                                let ack = serde_json::json!({ "code": 200, "headers": null, "data": null });
                                 let _ = ws_stream
                                     .send(tokio_tungstenite::tungstenite::Message::Text(
                                         ack.to_string(),

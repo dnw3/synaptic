@@ -258,6 +258,21 @@ impl StreamingCardWriter {
         self.state.lock().await.message_id.clone()
     }
 
+    /// Clear the internal content buffer and flush an empty update.
+    ///
+    /// Use this to reset the card content, e.g. when transitioning from
+    /// reasoning/thinking output to the final answer. The next `write` will
+    /// start fresh and Lark will replace the entire card text (no typewriter
+    /// effect for the first write after clear).
+    pub async fn clear(&self) -> Result<(), SynapticError> {
+        let mut state = self.state.lock().await;
+        if state.finished {
+            return Ok(());
+        }
+        state.content.clear();
+        Ok(())
+    }
+
     /// Flush buffered content using the element-level streaming API (typewriter effect).
     async fn flush_inner(&self, state: &mut WriterState) -> Result<(), SynapticError> {
         state.sequence += 1;
