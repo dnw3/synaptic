@@ -155,6 +155,11 @@ impl Node<MessageState> for ChatModelNode {
         // Call model through interceptor chain
         let base_caller = BaseChatModelCaller::new(self.model.clone());
         let ctx = self.run_context.read().await.clone();
+        tracing::debug!(
+            has_streaming_output = ctx.streaming_output.is_some(),
+            has_cancel_token = ctx.cancel_token.is_some(),
+            "ChatModelNode: calling model with RunContext"
+        );
         let response = match self
             .interceptors
             .call_model(request, &ctx, &base_caller)

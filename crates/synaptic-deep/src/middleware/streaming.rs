@@ -47,15 +47,34 @@ impl Interceptor for StreamingInterceptor {
         next: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
         // Check for a StreamingOutputHandle in the RunContext
-        let handle: Arc<StreamingOutputHandle> =
-            match ctx.streaming_output::<StreamingOutputHandle>() {
-                Some(h) => h,
-                None => return next.call(request, ctx).await,
-            };
+        let has_output = ctx.streaming_output.is_some();
+        let handle: Arc<StreamingOutputHandle> = match ctx
+            .streaming_output::<StreamingOutputHandle>()
+        {
+            Some(h) => {
+                tracing::info!(
+                    has_output,
+                    "StreamingInterceptor: streaming output found, using stream_chat"
+                );
+                h
+            }
+            None => {
+                tracing::debug!(
+                        has_output,
+                        "StreamingInterceptor: no streaming output handle, falling through to next.call"
+                    );
+                return next.call(request, ctx).await;
+            }
+        };
         let output = &handle.0;
 
         // Convert ModelRequest to ChatRequest and stream
         let chat_request = request.to_chat_request();
+        tracing::info!(
+            message_count = chat_request.messages.len(),
+            tool_count = chat_request.tools.len(),
+            "StreamingInterceptor: starting stream_chat"
+        );
         let mut stream = self.model.stream_chat(chat_request);
 
         let mut content = String::new();
