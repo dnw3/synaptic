@@ -4,8 +4,8 @@ use crate::{ProviderBackend, ProviderRequest, ProviderResponse};
 use async_trait::async_trait;
 use serde_json::{json, Value};
 use synaptic_core::{
-    AIMessageChunk, ChatModel, ChatRequest, ChatResponse, ChatStream, Message, SynapticError,
-    TokenUsage, ToolCall, ToolCallChunk, ToolChoice, ToolDefinition,
+    AIMessageChunk, ChatModel, ChatRequest, ChatResponse, ChatStream, ContentBlock, Message,
+    SynapticError, ThinkingLevel, TokenUsage, ToolCall, ToolCallChunk, ToolChoice, ToolDefinition,
 };
 
 #[derive(Debug, Clone)]
@@ -128,6 +128,30 @@ impl OpenAiChatModel {
             };
         }
 
+        if let Some(ref level) = request.thinking {
+            match level {
+                ThinkingLevel::Off => body["thinking"] = json!({"type": "disabled"}),
+                ThinkingLevel::Low => body["reasoning_effort"] = json!("low"),
+                ThinkingLevel::Medium => body["reasoning_effort"] = json!("medium"),
+                ThinkingLevel::High => body["reasoning_effort"] = json!("high"),
+                ThinkingLevel::Budget(n) => {
+                    let effort = if *n <= 4096 {
+                        "low"
+                    } else if *n <= 16384 {
+                        "medium"
+                    } else {
+                        "high"
+                    };
+                    body["reasoning_effort"] = json!(effort);
+                    tracing::debug!(
+                        budget = n,
+                        mapped_effort = effort,
+                        "Budget mapped to reasoning_effort"
+                    );
+                }
+            }
+        }
+
         ProviderRequest {
             url: format!("{}/chat/completions", self.config.base_url),
             headers: vec![
@@ -215,12 +239,23 @@ pub(crate) fn parse_response(resp: &ProviderResponse) -> Result<ChatResponse, Sy
     let content = choice["content"].as_str().unwrap_or("").to_string();
     let tool_calls = parse_tool_calls(choice);
 
+    let reasoning = choice["reasoning_content"]
+        .as_str()
+        .unwrap_or("")
+        .to_string();
+
     let usage = parse_usage(&resp.body["usage"]);
 
     let message = if tool_calls.is_empty() {
         Message::ai(content)
     } else {
         Message::ai_with_tool_calls(content, tool_calls)
+    };
+
+    let message = if !reasoning.is_empty() {
+        message.with_content_blocks(vec![ContentBlock::Reasoning { content: reasoning }])
+    } else {
+        message
     };
 
     Ok(ChatResponse { message, usage })
