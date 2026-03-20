@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 /// Unified routing metadata for cross-channel message delivery.
-/// Aligns with OpenClaw's DeliveryContext pattern.
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
 pub struct DeliveryContext {
     /// Channel identifier: "webchat", "slack", "telegram", "lark", "discord", etc.

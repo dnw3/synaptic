@@ -132,3 +132,56 @@ pub fn discover_and_load<T: DeserializeOwned>(path: Option<&Path>) -> Result<T, 
         "no config file found: tried ./synaptic.{toml,json,yaml} and ~/.synaptic/config.{toml,json,yaml}".to_string(),
     ))
 }
+
+/// Discover a configuration file by a custom name and load it as `T`.
+///
+/// Like [`discover_and_load`] but searches for `{name}.toml` (etc.) instead of `synaptic.toml`.
+///
+/// Search order:
+/// 1. Explicit `path` (if provided) — format detected by extension
+/// 2. `./{name}.{toml,json,yaml,yml}` in the current directory
+/// 3. `~/.{name}/config.{toml,json,yaml,yml}` in the home directory
+pub fn discover_and_load_named<T: DeserializeOwned>(
+    path: Option<&Path>,
+    name: &str,
+) -> Result<T, SynapticError> {
+    // Reject names containing path separators or traversal sequences
+    if name.contains('/') || name.contains('\\') || name.contains("..") {
+        return Err(SynapticError::Config(format!(
+            "invalid config name '{name}': must not contain path separators or '..'",
+        )));
+    }
+
+    if let Some(p) = path {
+        if p.exists() {
+            return load_from_file(p);
+        } else {
+            return Err(SynapticError::Config(format!(
+                "config file not found: {}",
+                p.display()
+            )));
+        }
+    }
+
+    // Search current directory
+    for ext in EXTENSIONS {
+        let candidate = PathBuf::from(format!("./{name}.{ext}"));
+        if candidate.exists() {
+            return load_from_file(&candidate);
+        }
+    }
+
+    // Search home directory
+    if let Some(home) = dirs::home_dir() {
+        for ext in EXTENSIONS {
+            let candidate = home.join(format!(".{name}")).join(format!("config.{ext}"));
+            if candidate.exists() {
+                return load_from_file(&candidate);
+            }
+        }
+    }
+
+    Err(SynapticError::Config(format!(
+        "no config file found: tried ./{name}.{{toml,json,yaml}} and ~/.{name}/config.{{toml,json,yaml}}"
+    )))
+}

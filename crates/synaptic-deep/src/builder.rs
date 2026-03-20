@@ -19,7 +19,7 @@ use crate::{create_deep_agent, DeepAgentOptions};
 pub async fn build_agent_from_config(
     config: &synaptic_config::SynapticAgentConfig,
 ) -> Result<CompiledGraph<MessageState>, SynapticError> {
-    let api_key = config.resolve_api_key().unwrap_or_default();
+    let api_key = config.resolve_api_key()?;
     let model = create_model_from_config(&config.model, &api_key)?;
 
     let backend = Arc::new(StateBackend::new());
@@ -28,7 +28,7 @@ pub async fn build_agent_from_config(
     options.system_prompt = config.agent.system_prompt.clone();
     options.enable_filesystem = config.agent.tools.filesystem;
     options.memory_file = Some(config.paths.memory_file.clone());
-    options.skills_dir = Some(config.paths.skills_dir.clone());
+    options.skills_dirs = vec![config.paths.skills_dir.clone()];
 
     create_deep_agent(model, options)
 }
@@ -43,7 +43,8 @@ fn create_model_from_config(
     match config.provider.as_str() {
         #[cfg(feature = "openai-provider")]
         "openai" => {
-            let mut model_config = synaptic_openai::OpenAiConfig::new(api_key, &config.model);
+            let mut model_config =
+                synaptic_models::openai::OpenAiConfig::new(api_key, &config.model);
             if let Some(ref url) = config.base_url {
                 model_config = model_config.with_base_url(url);
             }
@@ -53,43 +54,44 @@ fn create_model_from_config(
             if let Some(max) = config.max_tokens {
                 model_config = model_config.with_max_tokens(max);
             }
-            Ok(Arc::new(synaptic_openai::OpenAiChatModel::new(
+            Ok(Arc::new(synaptic_models::openai::OpenAiChatModel::new(
                 model_config,
                 http,
             )))
         }
         #[cfg(feature = "anthropic-provider")]
         "anthropic" => {
-            let mut model_config = synaptic_anthropic::AnthropicConfig::new(api_key, &config.model);
+            let mut model_config =
+                synaptic_models::anthropic::AnthropicConfig::new(api_key, &config.model);
             if let Some(ref url) = config.base_url {
                 model_config = model_config.with_base_url(url);
             }
             if let Some(max) = config.max_tokens {
                 model_config = model_config.with_max_tokens(max);
             }
-            Ok(Arc::new(synaptic_anthropic::AnthropicChatModel::new(
-                model_config,
-                http,
-            )))
+            Ok(Arc::new(
+                synaptic_models::anthropic::AnthropicChatModel::new(model_config, http),
+            ))
         }
         #[cfg(feature = "gemini-provider")]
         "gemini" => {
-            let mut model_config = synaptic_gemini::GeminiConfig::new(api_key, &config.model);
+            let mut model_config =
+                synaptic_models::gemini::GeminiConfig::new(api_key, &config.model);
             if let Some(ref url) = config.base_url {
                 model_config = model_config.with_base_url(url);
             }
-            Ok(Arc::new(synaptic_gemini::GeminiChatModel::new(
+            Ok(Arc::new(synaptic_models::gemini::GeminiChatModel::new(
                 model_config,
                 http,
             )))
         }
         #[cfg(feature = "ollama-provider")]
         "ollama" => {
-            let mut model_config = synaptic_ollama::OllamaConfig::new(&config.model);
+            let mut model_config = synaptic_models::ollama::OllamaConfig::new(&config.model);
             if let Some(ref url) = config.base_url {
                 model_config = model_config.with_base_url(url);
             }
-            Ok(Arc::new(synaptic_ollama::OllamaChatModel::new(
+            Ok(Arc::new(synaptic_models::ollama::OllamaChatModel::new(
                 model_config,
                 http,
             )))
@@ -104,7 +106,8 @@ fn create_model_from_config(
                         config.provider
                     ))
                 })?;
-                let mut model_config = synaptic_openai::OpenAiConfig::new(api_key, &config.model);
+                let mut model_config =
+                    synaptic_models::openai::OpenAiConfig::new(api_key, &config.model);
                 model_config = model_config.with_base_url(base_url);
                 if let Some(temp) = config.temperature {
                     model_config = model_config.with_temperature(temp);
@@ -112,7 +115,7 @@ fn create_model_from_config(
                 if let Some(max) = config.max_tokens {
                     model_config = model_config.with_max_tokens(max);
                 }
-                Ok(Arc::new(synaptic_openai::OpenAiChatModel::new(
+                Ok(Arc::new(synaptic_models::openai::OpenAiChatModel::new(
                     model_config,
                     http,
                 )))
