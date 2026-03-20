@@ -194,7 +194,18 @@ impl Node<MessageState> for ChatModelNode {
             }
         };
 
-        state.messages.push(response.message.clone());
+        let mut ai_msg = response.message.clone();
+        if let Some(ref usage) = response.usage {
+            ai_msg = ai_msg.with_response_metadata_entry(
+                "usage",
+                serde_json::json!({
+                    "input_tokens": usage.input_tokens,
+                    "output_tokens": usage.output_tokens,
+                    "total_tokens": usage.total_tokens,
+                }),
+            );
+        }
+        state.messages.push(ai_msg);
 
         // Run post_model_hook
         if let Some(ref hook) = self.post_model_hook {
