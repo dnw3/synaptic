@@ -20,6 +20,7 @@ pub mod error;
 pub mod message;
 pub mod message_ir;
 pub mod provenance;
+pub mod run_context;
 pub mod runnable;
 pub mod store;
 pub mod token_counter;
@@ -39,6 +40,7 @@ pub use delivery::DeliveryContext;
 pub use dm_policy::{DmAccessDenied, DmPolicy, DmPolicyEnforcer, PairingChallenge, PairingError};
 pub use error::SynapticError;
 pub use provenance::{InputProvenance, ProvenanceKind};
+pub use run_context::RunContext;
 pub use token_counter::{HeuristicTokenCounter, TokenCounter};
 
 // Message types
