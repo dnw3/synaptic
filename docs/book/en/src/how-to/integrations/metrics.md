@@ -6,7 +6,7 @@ Export agent metrics in Prometheus text exposition format. The `synaptic-metrics
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["metrics", "callbacks"] }
+synaptic = { version = "0.4", features = ["metrics", "callbacks"] }
 ```
 
 ## Quick Start

@@ -24,14 +24,14 @@ pub struct DeepAgentOptions {
     pub backend: Arc<dyn Backend>,                    // 必需
     pub system_prompt: Option<String>,                // None
     pub tools: Vec<Arc<dyn Tool>>,                    // 空
-    pub middleware: Vec<Arc<dyn AgentMiddleware>>,     // 空
+    pub interceptors: Vec<Arc<dyn Interceptor>>,         // 空
     pub checkpointer: Option<Arc<dyn Checkpointer>>,  // None
     pub store: Option<Arc<dyn Store>>,                // None
     pub max_input_tokens: usize,                      // 128_000
     pub summarization_threshold: f64,                  // 0.85
     pub eviction_threshold: usize,                     // 20_000
     pub max_subagent_depth: usize,                     // 3
-    pub skills_dir: Option<String>,                    // Some(".skills")
+    pub skills_dirs: Vec<String>,                       // vec![".skills"]
     pub memory_file: Option<String>,                   // Some("AGENTS.md")
     pub subagents: Vec<SubAgentDef>,                   // 空
     pub enable_subagents: bool,                        // true
@@ -75,13 +75,13 @@ options.tools = vec![
 ];
 ```
 
-### middleware
+### interceptors
 
-在整个内置栈之后运行的自定义中间件层。详见[中间件栈](#中间件栈)了解顺序细节。
+在整个内置栈之后运行的自定义拦截器层。详见[中间件栈](#中间件栈)了解顺序细节。
 
 ```rust,ignore
 let mut options = DeepAgentOptions::new(backend.clone());
-options.middleware = vec![
+options.interceptors = vec![
     Arc::new(AuditLogMiddleware::new(log_file)),
 ];
 ```
@@ -145,13 +145,13 @@ let mut options = DeepAgentOptions::new(backend.clone());
 options.max_subagent_depth = 2;
 ```
 
-### skills_dir
+### skills_dirs
 
-后端中扫描技能文件的目录路径（默认 `Some(".skills")`）。设置为 `None` 可禁用技能扫描，即使 `enable_skills` 为 true 也是如此。
+后端中扫描技能文件的目录路径列表（默认 `vec![".skills"]`）。设置为空 vec 可禁用技能扫描，即使 `enable_skills` 为 true 也是如此。多个目录按顺序扫描，前面的目录优先级更高。
 
 ```rust,ignore
 let mut options = DeepAgentOptions::new(backend.clone());
-options.skills_dir = Some("my-skills".into());
+options.skills_dirs = vec!["my-skills".into()];
 ```
 
 ### memory_file

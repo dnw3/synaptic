@@ -1,6 +1,6 @@
 # OpenSearch
 
-[OpenSearch](https://opensearch.org/) 是一款开源搜索和分析引擎，内置 k-NN（k 近邻）插件支持近似向量搜索。`synaptic-opensearch` crate 使用 OpenSearch 基于 HNSW 的 k-NN 索引实现 `VectorStore` trait。
+[OpenSearch](https://opensearch.org/) 是一款开源搜索和分析引擎，内置 k-NN（k 近邻）插件支持近似向量搜索。`synaptic-rag` crate（feature `opensearch`） 使用 OpenSearch 基于 HNSW 的 k-NN 索引实现 `VectorStore` trait。
 
 ## 安装
 
@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["opensearch"] }
+synaptic = { version = "0.4", features = ["opensearch"] }
 ```
 
 使用 Docker 本地运行 OpenSearch：

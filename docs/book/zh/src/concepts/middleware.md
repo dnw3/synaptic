@@ -2,19 +2,46 @@
 
 中间件在定义明确的生命周期节点拦截和转换智能体行为。中间件不直接修改智能体逻辑，而是包裹在模型调用和工具调用外层，添加横切关注点，如速率限制、人工审批、摘要生成和上下文管理。本页介绍中间件抽象、生命周期钩子以及可用的中间件类别。
 
-## AgentMiddleware Trait
+## Interceptor Trait
 
-所有中间件实现一个包含六个钩子的 trait：
+所有中间件实现 `Interceptor` trait，提供四个带有默认空实现的钩子：
 
 ```rust
 #[async_trait]
-pub trait AgentMiddleware: Send + Sync {
-    async fn before_agent(&self, state: &MessageState) -> Result<(), SynapticError> { Ok(()) }
-    async fn after_agent(&self, state: &MessageState) -> Result<(), SynapticError> { Ok(()) }
-    async fn before_model(&self, messages: &mut Vec<Message>) -> Result<(), SynapticError> { Ok(()) }
-    async fn after_model(&self, response: &mut ChatResponse) -> Result<(), SynapticError> { Ok(()) }
-    async fn wrap_model_call(&self, messages: Vec<Message>, next: ModelCallFn) -> Result<ChatResponse, SynapticError>;
-    async fn wrap_tool_call(&self, name: &str, args: &Value, next: ToolCallFn) -> Result<Value, SynapticError>;
+pub trait Interceptor: Send + Sync {
+    /// 在每次模型调用前执行。可以修改请求。
+    /// 按正序执行（先注册先调用）。
+    async fn before_model(&self, _req: &mut ModelRequest) -> Result<(), SynapticError> {
+        Ok(())
+    }
+
+    /// 在每次模型调用后执行。可以修改响应。
+    /// 按逆序执行（后注册先调用）。
+    async fn after_model(
+        &self,
+        _req: &ModelRequest,
+        _resp: &mut ModelResponse,
+    ) -> Result<(), SynapticError> {
+        Ok(())
+    }
+
+    /// 包裹模型调用。重写以拦截或修改请求/响应。
+    async fn wrap_model_call(
+        &self,
+        request: ModelRequest,
+        next: &dyn ModelCaller,
+    ) -> Result<ModelResponse, SynapticError> {
+        next.call(request).await
+    }
+
+    /// 包裹工具调用。重写以拦截或修改工具执行。
+    async fn wrap_tool_call(
+        &self,
+        request: ToolCallRequest,
+        next: &dyn ToolCaller,
+    ) -> Result<Value, SynapticError> {
+        next.call(request).await
+    }
 }
 ```
 
@@ -24,30 +51,43 @@ pub trait AgentMiddleware: Send + Sync {
 
 单次智能体轮次遵循以下顺序：
 
+```text
+loop {
+  before_model（正序） ->  wrap_model_call（洋葱） ->  after_model（逆序）
+  for each tool_call { wrap_tool_call（洋葱） }
+}
 ```
-before_agent → before_model → wrap_model_call → after_model → wrap_tool_call（每个工具） → after_agent
-```
 
-1. **`before_agent`** -- 在每次智能体轮次开始时调用一次。用于初始化、日志记录或状态检查。
-2. **`before_model`** -- 在 LLM 请求之前调用。可以修改消息（如注入上下文、裁剪历史记录）。
-3. **`wrap_model_call`** -- 包裹实际的模型调用。可以进行重试、添加降级方案，或完全替换调用。
-4. **`after_model`** -- 在 LLM 响应之后调用。可以修改响应（如修复工具调用、添加元数据）。
-5. **`wrap_tool_call`** -- 包裹每个工具调用。可以审批/拒绝、添加日志，或修改参数。
-6. **`after_agent`** -- 在每次智能体轮次结束时调用一次。用于清理或状态持久化。
+1. **`before_model`** -- 在 LLM 请求之前调用。可以修改 `ModelRequest`（如注入上下文、调整系统提示词、裁剪历史记录）。按**正序**执行（MW1, MW2, MW3）。
+2. **`wrap_model_call`** -- 以洋葱模式包裹实际的模型调用（MW1 包裹 MW2 包裹 MW3 包裹 LLM）。可以进行重试、添加降级方案、缓存，或完全替换调用。
+3. **`after_model`** -- 在 LLM 响应之后调用。可以修改 `ModelResponse`（如记录用量、修复工具调用）。按**逆序**执行（MW3, MW2, MW1）。
+4. **`wrap_tool_call`** -- 以相同的洋葱模式包裹每个工具调用。可以审批/拒绝、添加日志，或修改参数。
 
-## MiddlewareChain
+## InterceptorChain
 
-多个中间件实例组合成一个 `MiddlewareChain`。链对 "before" 钩子按顺序应用，对 "after" 钩子按逆序应用（洋葱模型）：
+多个拦截器组合成一个 `InterceptorChain`。链会自动按正确的生命周期顺序执行拦截器：
 
 ```rust
-use synaptic::middleware::MiddlewareChain;
+use synaptic::middleware::InterceptorChain;
 
-let chain = MiddlewareChain::new(vec![
+let chain = InterceptorChain::new(vec![
     Arc::new(ToolCallLimitMiddleware::new(10)),
     Arc::new(HumanInTheLoopMiddleware::new(callback)),
     Arc::new(SummarizationMiddleware::new(model, 4000)),
 ]);
 ```
+
+### 执行顺序
+
+给定三个按顺序注册的拦截器（MW1, MW2, MW3）：
+
+```text
+MW1.before_model -> MW2.before_model -> MW3.before_model   （正序）
+  MW1.wrap 包裹 MW2 包裹 MW3 包裹 LLM                      （洋葱）
+MW3.after_model -> MW2.after_model -> MW1.after_model       （逆序）
+```
+
+这确保 `before_model` 钩子按注册顺序看到请求，洋葱包裹给最外层拦截器首/末控制权，`after_model` 钩子按逆序看到响应。
 
 ## 可用中间件
 
@@ -57,6 +97,12 @@ let chain = MiddlewareChain::new(vec![
 
 - **使用场景**：防止智能体在无限循环中反复调用工具导致失控。
 - **配置**：`ToolCallLimitMiddleware::new(max_calls)`
+
+### ModelCallLimitMiddleware
+
+限制每次运行的模型调用次数，防止无限制的 LLM 调用。
+
+- **配置**：`ModelCallLimitMiddleware::new(max_calls)`
 
 ### HumanInTheLoopMiddleware
 
@@ -79,13 +125,31 @@ let chain = MiddlewareChain::new(vec![
 - **`ContextStrategy::LastN(n)`** -- 仅保留最后 N 条消息（保留开头的系统消息）。
 - **`ContextStrategy::StripToolCalls`** -- 移除工具调用/结果消息，仅保留人类和 AI 的内容消息。
 
-### ModelRetryMiddleware
+### ToolRetryMiddleware
 
-用重试逻辑包裹模型调用，在遇到临时故障时多次尝试调用。
+以指数退避重试失败的工具调用。
+
+- **配置**：`ToolRetryMiddleware::new(max_retries)`
 
 ### ModelFallbackMiddleware
 
 在主模型失败时提供降级模型。按顺序尝试备选模型，直到有一个成功。
+
+### SecurityMiddleware
+
+基于风险等级的工具执行控制，支持可配置的确认策略。
+
+### SsrfGuardMiddleware
+
+通过拒绝私有 IP 和云元数据端点的请求来拦截 SSRF 攻击。
+
+### CircuitBreakerMiddleware
+
+使用熔断器模式防止级联故障。跟踪失败次数，达到阈值时打开熔断器。
+
+### TodoListMiddleware
+
+在每次模型调用前向智能体上下文注入任务列表。
 
 ## 中间件与图特性的对比
 

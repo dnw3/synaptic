@@ -6,7 +6,7 @@ FlashRank 是基于 BM25 评分的快速零依赖本地重排序器。它完全�
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["flashrank"] }
+synaptic = { version = "0.4", features = ["flashrank"] }
 ```
 
 无需 API 密钥，无需外部服务。

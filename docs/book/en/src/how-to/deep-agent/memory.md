@@ -4,7 +4,7 @@ A Deep Agent can persist learned context across sessions by reading and writing 
 
 ## How It Works
 
-The `DeepMemoryMiddleware` implements `AgentMiddleware`. On every model call, its `before_model()` hook reads the configured memory file from the backend. If the file exists and is not empty, its contents are wrapped in `<agent_memory>` tags and appended to the system prompt:
+The `DeepMemoryMiddleware` implements `Interceptor`. On every model call, its `before_model()` hook reads the configured memory file from the backend. If the file exists and is not empty, its contents are wrapped in `<agent_memory>` tags and appended to the system prompt:
 
 ```text
 <agent_memory>
@@ -85,7 +85,7 @@ impl DeepMemoryMiddleware {
 }
 ```
 
-It implements `AgentMiddleware` with a single hook:
+It implements `Interceptor` with a single hook:
 
 - **`before_model()`** -- reads the memory file from the backend. If the content is non-empty, wraps it in `<agent_memory>` tags and appends to the system prompt. If the file is missing or empty, does nothing.
 

@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["tools"] }
+synaptic = { version = "0.4", features = ["tools"] }
 ```
 
 在 [brave.com/search/api](https://brave.com/search/api/) 获取 API 密钥。

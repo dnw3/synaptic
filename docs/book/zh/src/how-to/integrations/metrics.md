@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["metrics", "callbacks"] }
+synaptic = { version = "0.4", features = ["metrics", "callbacks"] }
 ```
 
 ## 快速开始

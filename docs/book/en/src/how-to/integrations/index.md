@@ -34,7 +34,7 @@ Add the desired feature flags to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai", "qdrant", "redis"] }
+synaptic = { version = "0.4", features = ["openai", "qdrant", "redis"] }
 ```
 
 You can combine any number of feature flags. Each integration pulls in only the dependencies it needs.

@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["lark"] }
+synaptic = { version = "0.4", features = ["lark"] }
 ```
 
 在[飞书开发者后台](https://open.feishu.cn/app)创建自定义应用，获取 **App ID** 和 **App Secret**，并开启所需权限（详见[权限说明](#权限说明)）。

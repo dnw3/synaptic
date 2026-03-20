@@ -6,27 +6,27 @@ Synaptic 采用**以 Provider 为中心**的集成架构。每个集成位于独
 
 ```text
 synaptic-core（定义 trait）
-  ├── synaptic-openai         (ChatModel + Embeddings)
-  │     └── compat/           (10 个 OpenAI 兼容 Provider 子模块：
-  │           groq, deepseek, fireworks, together, xai, perplexity,
-  │           mistral, huggingface, cohere, openrouter)
-  ├── synaptic-anthropic      (ChatModel)
-  ├── synaptic-gemini         (ChatModel)
-  ├── synaptic-ollama         (ChatModel + Embeddings)
-  ├── synaptic-bedrock        (ChatModel)
-  ├── synaptic-cohere         (Reranker / DocumentCompressor + Embeddings)
-  ├── synaptic-qdrant         (VectorStore)
-  ├── synaptic-postgres       (VectorStore + Store + LlmCache + Checkpointer)
-  ├── synaptic-pinecone       (VectorStore)
-  ├── synaptic-chroma         (VectorStore)
-  ├── synaptic-mongodb        (VectorStore)
-  ├── synaptic-elasticsearch  (VectorStore)
-  ├── synaptic-weaviate       (VectorStore)
-  ├── synaptic-redis          (Store + LlmCache + Checkpointer)
-  ├── synaptic-sqlite         (LlmCache)
-  ├── synaptic-pdf            (Loader)
-  ├── synaptic-tavily         (Tool)
-  └── synaptic-sqltoolkit     (Tool×3: ListTables, DescribeTable, ExecuteQuery)
+  ├── synaptic-models           (所有 LLM 提供商，feature 门控)
+  │     ├── openai              (ChatModel + Embeddings + 10 个兼容子模块)
+  │     ├── anthropic           (ChatModel)
+  │     ├── gemini              (ChatModel)
+  │     ├── ollama              (ChatModel + Embeddings)
+  │     ├── bedrock             (ChatModel)
+  │     └── cohere              (DocumentCompressor + Embeddings)
+  ├── synaptic-rag              (完整 RAG 管道，feature 门控)
+  │     ├── loaders, splitters, embeddings, vectorstores, retrieval
+  │     └── 后端: qdrant, pinecone, chroma, elasticsearch,
+  │           weaviate, mongodb, milvus, opensearch, lancedb, pgvector
+  ├── synaptic-store            (键值存储 + 持久化后端，feature 门控)
+  │     ├── postgres            (Store + Cache + Checkpointer)
+  │     ├── redis               (Store + Cache + Checkpointer)
+  │     ├── sqlite              (Cache + Checkpointer)
+  │     └── mongodb             (Checkpointer)
+  ├── synaptic-tools            (工具系统 + 内置工具，feature 门控)
+  │     ├── pdf                 (Loader)
+  │     ├── tavily              (Tool)
+  │     └── sqltoolkit          (Tool×3)
+  └── synaptic-integrations     (runnables、prompts、parsers、callbacks、cache、session)
 ```
 
 所有集成 crate 遵循统一模式：
@@ -92,7 +92,7 @@ let results = store.similarity_search("query", 5, &embeddings).await?;
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai", "qdrant"] }
+synaptic = { version = "0.4", features = ["openai", "qdrant"] }
 ```
 
 | Feature | 集成 |
@@ -248,11 +248,11 @@ println!("{}", response.message.content().unwrap_or_default());
 
 添加新集成的步骤：
 
-1. 在 `crates/` 下创建新 crate `synaptic-{name}`
-2. 依赖 `synaptic-core` 获取 trait 定义
-3. 实现相应的 trait
+1. 在对应的合并 crate 中添加新模块（如 `synaptic-models` 用于新提供商，`synaptic-rag` 用于新向量存储，`synaptic-store` 用于新存储后端）
+2. 使用 feature flag 进行门控
+3. 实现 `synaptic-core` 中对应的 trait
 4. 在 `synaptic` facade crate 中添加 feature flag
-5. 在 facade 的 `lib.rs` 中通过 `pub use synaptic_{name} as {name}` 再导出
+5. 在 facade 的 `lib.rs` 中进行重导出
 
 ## 另请参阅
 

@@ -8,7 +8,7 @@ Add the `pdf` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["pdf"] }
+synaptic = { version = "0.4", features = ["pdf"] }
 ```
 
 The PDF extraction is handled by the `pdf_extract` library, which is pulled in automatically.

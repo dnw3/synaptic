@@ -8,10 +8,10 @@ Add the `openai` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
-Azure OpenAI support is included in the `synaptic-openai` crate, so no additional feature flag is needed.
+Azure OpenAI support is included in the `synaptic-models` crate (with feature `openai`), so no additional feature flag is needed.
 
 ## Configuration
 

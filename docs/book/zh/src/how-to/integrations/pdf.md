@@ -13,7 +13,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["pdf"] }
+synaptic = { version = "0.4", features = ["pdf"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 

@@ -8,7 +8,7 @@ Add the required Synaptic crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["rag"] }
+synaptic = { version = "0.4", features = ["rag"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 

@@ -122,7 +122,7 @@ store.put(&["app", "settings"], "theme", json!("dark")).await?;
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["store-filesystem", "graph"] }
+synaptic = { version = "0.4", features = ["store-filesystem", "graph"] }
 ```
 
 ## 从 FileSaver 迁移

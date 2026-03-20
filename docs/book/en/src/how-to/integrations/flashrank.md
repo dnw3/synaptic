@@ -6,7 +6,7 @@ FlashRank is a fast, zero-dependency local reranker based on BM25 scoring. It ru
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["flashrank"] }
+synaptic = { version = "0.4", features = ["flashrank"] }
 ```
 
 No API key required. No external service needed.

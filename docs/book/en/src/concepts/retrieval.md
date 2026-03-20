@@ -176,7 +176,7 @@ Stores small child chunks for embedding (which improves retrieval precision) but
 
 ### MultiVectorRetriever
 
-Similar to `ParentDocumentRetriever`, but implemented at the vector store level. `MultiVectorRetriever` stores child document embeddings in a `VectorStore` and maintains a separate docstore mapping child IDs to parent documents. At query time, it searches for matching child chunks and then looks up their parent documents for return. This is available in `synaptic-vectorstores`.
+Similar to `ParentDocumentRetriever`, but implemented at the vector store level. `MultiVectorRetriever` stores child document embeddings in a `VectorStore` and maintains a separate docstore mapping child IDs to parent documents. At query time, it searches for matching child chunks and then looks up their parent documents for return. This is available in `synaptic-rag`.
 
 ## Connecting Retrieval to Generation
 

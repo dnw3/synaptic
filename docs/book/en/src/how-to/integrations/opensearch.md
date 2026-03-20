@@ -2,7 +2,7 @@
 
 [OpenSearch](https://opensearch.org/) is an open-source search and analytics
 engine with a k-NN (k-Nearest Neighbor) plugin for approximate vector search.
-The `synaptic-opensearch` crate implements the `VectorStore` trait using
+The `synaptic-rag` crate (with feature `opensearch`) implements the `VectorStore` trait using
 OpenSearch's HNSW-based k-NN indexing.
 
 ## Setup
@@ -11,7 +11,7 @@ Add the feature flag to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["opensearch"] }
+synaptic = { version = "0.4", features = ["opensearch"] }
 ```
 
 Run OpenSearch locally with Docker:

@@ -40,11 +40,11 @@ my-project/
     main.rs
 ```
 
-每个技能位于自己的子目录中。`SkillsMiddleware` 通过列出配置的 `skills_dir` 下的目录并从每个目录读取 `{skills_dir}/{dir}/SKILL.md` 来发现技能。
+每个技能位于自己的子目录中。`SkillsMiddleware` 通过列出 `skills_dirs` 中配置的每个目录路径下的子目录，并从每个子目录读取 `{dir}/SKILL.md` 来发现技能。
 
 ## 发现机制
 
-`SkillsMiddleware` 实现了 `AgentMiddleware` trait。在每次调用 `before_model()` 时，它会：
+`SkillsMiddleware` 实现了 `Interceptor` trait。在每次调用 `before_model()` 时，它会：
 
 1. 通过后端的 `ls()` 方法列出技能目录中的条目。
 2. 对每个目录条目，读取 `{dir}/SKILL.md` 的前 50 行。
@@ -71,12 +71,12 @@ use std::sync::Arc;
 use synaptic::deep::{create_deep_agent, DeepAgentOptions};
 
 let mut options = DeepAgentOptions::new(backend);
-options.skills_dir = Some(".skills".to_string());  // 默认值
+options.skills_dirs = vec![".skills".to_string()];  // 默认值
 options.enable_skills = true;                       // 默认值
 let agent = create_deep_agent(model, options)?;
 ```
 
-要完全禁用技能，设置 `enable_skills = false`。要更改技能目录，将 `skills_dir` 设置为后端中的其他路径。
+要完全禁用技能，设置 `enable_skills = false`。要更改技能目录，将 `skills_dirs` 设置为后端中的其他路径。
 
 ## 示例：添加 Rust 重构技能
 

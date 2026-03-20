@@ -8,14 +8,14 @@ Add the `session` feature (which pulls in `graph`, `memory`, and `store`):
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["session"] }
+synaptic = { version = "0.4", features = ["session"] }
 ```
 
 For filesystem persistence, also enable `store-filesystem`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["session", "store-filesystem"] }
+synaptic = { version = "0.4", features = ["session", "store-filesystem"] }
 ```
 
 ## SessionManager

@@ -2,13 +2,13 @@
 
 [Groq](https://groq.com/) delivers ultra-fast LLM inference using their proprietary LPU (Language Processing Unit) hardware. Response speeds regularly exceed 500 tokens per second, making Groq ideal for real-time applications, interactive agents, and latency-sensitive pipelines.
 
-The Groq API is fully compatible with the OpenAI API format. Groq is available as a compatibility submodule inside `synaptic-openai`. No separate crate is needed.
+The Groq API is fully compatible with the OpenAI API format. Groq is available as a compatibility submodule inside `synaptic-models`. No separate crate is needed.
 
 ## Setup
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 Sign up at [console.groq.com](https://console.groq.com/) to obtain an API key. Keys are prefixed with `gsk-`.

@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai", "elasticsearch"] }
+synaptic = { version = "0.4", features = ["openai", "elasticsearch"] }
 ```
 
 启动 Elasticsearch 实例（例如通过 Docker）：

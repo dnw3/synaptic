@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["cohere"] }
+synaptic = { version = "0.4", features = ["cohere"] }
 ```
 
 设置 API 密钥环境变量：

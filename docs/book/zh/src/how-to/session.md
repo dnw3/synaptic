@@ -8,14 +8,14 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["session"] }
+synaptic = { version = "0.4", features = ["session"] }
 ```
 
 如需文件系统持久化，还需启用 `store-filesystem`：
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["session", "store-filesystem"] }
+synaptic = { version = "0.4", features = ["session", "store-filesystem"] }
 ```
 
 ## SessionManager

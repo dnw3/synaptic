@@ -6,7 +6,7 @@ Voyage AI's reranking models are high-quality cross-encoder rerankers that signi
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["voyage"] }
+synaptic = { version = "0.4", features = ["voyage"] }
 ```
 
 Sign up at [voyageai.com](https://www.voyageai.com/) and create an API key.

@@ -6,7 +6,7 @@ Load academic papers from arXiv as Synaptic documents. Returns paper abstracts w
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["loaders"] }
+synaptic = { version = "0.4", features = ["loaders"] }
 ```
 
 No API key required — arXiv provides a free public API.

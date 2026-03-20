@@ -8,10 +8,10 @@ Each provider adapter lives in its own crate. You enable only the providers you 
 
 | Provider | Adapter | Crate | Feature |
 |----------|---------|-------|---------|
-| OpenAI | `OpenAiChatModel` | `synaptic-openai` | `"openai"` |
-| Anthropic | `AnthropicChatModel` | `synaptic-anthropic` | `"anthropic"` |
-| Google Gemini | `GeminiChatModel` | `synaptic-gemini` | `"gemini"` |
-| Ollama (local) | `OllamaChatModel` | `synaptic-ollama` | `"ollama"` |
+| OpenAI | `OpenAiChatModel` | `synaptic-models` | `"openai"` |
+| Anthropic | `AnthropicChatModel` | `synaptic-models` | `"anthropic"` |
+| Google Gemini | `GeminiChatModel` | `synaptic-models` | `"gemini"` |
+| Ollama (local) | `OllamaChatModel` | `synaptic-models` | `"ollama"` |
 
 ```rust
 use std::sync::Arc;

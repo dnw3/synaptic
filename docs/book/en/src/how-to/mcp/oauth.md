@@ -6,7 +6,7 @@ Authenticate MCP HTTP and SSE connections with OAuth 2.1, including PKCE support
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["mcp"] }
+synaptic = { version = "0.4", features = ["mcp"] }
 ```
 
 ## Configuration

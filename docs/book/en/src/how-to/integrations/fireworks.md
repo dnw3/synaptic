@@ -2,13 +2,13 @@
 
 [Fireworks AI](https://fireworks.ai/) delivers the fastest open-source model inference available, with sub-100ms time-to-first-token for popular models. It uses an OpenAI-compatible API and supports Llama, DeepSeek, Qwen, and other leading open models.
 
-Fireworks AI is available as a compatibility submodule inside `synaptic-openai`. No separate crate is needed.
+Fireworks AI is available as a compatibility submodule inside `synaptic-models`. No separate crate is needed.
 
 ## Setup
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 Sign up at [fireworks.ai](https://fireworks.ai/) to obtain an API key (prefixed with `fw-`).

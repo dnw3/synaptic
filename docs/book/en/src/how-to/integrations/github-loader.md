@@ -6,7 +6,7 @@ Load source code files and documentation from GitHub repositories via the GitHub
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["loaders"] }
+synaptic = { version = "0.4", features = ["loaders"] }
 ```
 
 ## Usage

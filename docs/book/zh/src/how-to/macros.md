@@ -16,13 +16,11 @@ use synaptic::macros::tool;    // 或按需导入
 | `#[entrypoint]` | 工作流入口点 | 本页 |
 | `#[task]` | 可追踪任务 | 本页 |
 | `#[traceable]` | 链路追踪 | 本页 |
-| `#[before_agent]` | 中间件：Agent 循环开始前 | [中间件宏](macros-middleware.md) |
-| `#[before_model]` | 中间件：模型调用前 | [中间件宏](macros-middleware.md) |
-| `#[after_model]` | 中间件：模型调用后 | [中间件宏](macros-middleware.md) |
-| `#[after_agent]` | 中间件：Agent 循环结束后 | [中间件宏](macros-middleware.md) |
-| `#[wrap_model_call]` | 中间件：包装模型调用 | [中间件宏](macros-middleware.md) |
-| `#[wrap_tool_call]` | 中间件：包装工具调用 | [中间件宏](macros-middleware.md) |
-| `#[dynamic_prompt]` | 中间件：动态生成系统提示词 | [中间件宏](macros-middleware.md) |
+| `#[before_model]` | 拦截器：模型调用前 | [中间件宏](macros-middleware.md) |
+| `#[after_model]` | 拦截器：模型调用后 | [中间件宏](macros-middleware.md) |
+| `#[wrap_model_call]` | 拦截器：包装模型调用 | [中间件宏](macros-middleware.md) |
+| `#[wrap_tool_call]` | 拦截器：包装工具调用 | [中间件宏](macros-middleware.md) |
+| `#[system_prompt]` | 拦截器：动态生成系统提示词 | [中间件宏](macros-middleware.md) |
 
 完整的端到端场景请参见 [宏使用示例](macros-examples.md)。
 
@@ -138,7 +136,7 @@ async fn analyze(
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["macros", "schemars"] }
+synaptic = { version = "0.4", features = ["macros", "schemars"] }
 schemars = { version = "0.8", features = ["derive"] }
 ```
 

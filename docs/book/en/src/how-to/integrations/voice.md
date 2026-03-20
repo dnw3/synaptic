@@ -8,7 +8,7 @@ Add the `voice` feature to your `Cargo.toml`, along with a provider sub-feature:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["voice"] }
+synaptic = { version = "0.4", features = ["voice"] }
 ```
 
 Provider sub-features:

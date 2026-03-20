@@ -2,7 +2,7 @@
 
 The `synaptic-macros` crate ships 12 attribute macros that eliminate boilerplate
 when building agents with Synaptic. Instead of manually implementing traits such
-as `Tool`, `AgentMiddleware`, or `Entrypoint`, you annotate an ordinary function
+as `Tool`, `Interceptor`, or `Entrypoint`, you annotate an ordinary function
 and the macro generates the struct, the trait implementation, and a factory
 function for you.
 
@@ -21,13 +21,11 @@ use synaptic::macros::tool;    // or pick individually
 | `#[entrypoint]` | Workflow entry points | This page |
 | `#[task]` | Trackable tasks | This page |
 | `#[traceable]` | Tracing instrumentation | This page |
-| `#[before_agent]` | Middleware: before agent loop | [Middleware Macros](macros-middleware.md) |
-| `#[before_model]` | Middleware: before model call | [Middleware Macros](macros-middleware.md) |
-| `#[after_model]` | Middleware: after model call | [Middleware Macros](macros-middleware.md) |
-| `#[after_agent]` | Middleware: after agent loop | [Middleware Macros](macros-middleware.md) |
-| `#[wrap_model_call]` | Middleware: wrap model call | [Middleware Macros](macros-middleware.md) |
-| `#[wrap_tool_call]` | Middleware: wrap tool call | [Middleware Macros](macros-middleware.md) |
-| `#[dynamic_prompt]` | Middleware: dynamic system prompt | [Middleware Macros](macros-middleware.md) |
+| `#[before_model]` | Interceptor: before model call | [Middleware Macros](macros-middleware.md) |
+| `#[after_model]` | Interceptor: after model call | [Middleware Macros](macros-middleware.md) |
+| `#[wrap_model_call]` | Interceptor: wrap model call | [Middleware Macros](macros-middleware.md) |
+| `#[wrap_tool_call]` | Interceptor: wrap tool call | [Middleware Macros](macros-middleware.md) |
+| `#[system_prompt]` | Interceptor: dynamic system prompt | [Middleware Macros](macros-middleware.md) |
 
 For complete end-to-end scenarios, see [Macro Examples](macros-examples.md).
 
@@ -145,7 +143,7 @@ on your parameter types.
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["macros", "schemars"] }
+synaptic = { version = "0.4", features = ["macros", "schemars"] }
 schemars = { version = "0.8", features = ["derive"] }
 ```
 

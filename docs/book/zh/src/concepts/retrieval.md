@@ -176,7 +176,7 @@ Parsed:
 
 ### MultiVectorRetriever
 
-与 `ParentDocumentRetriever` 类似，但在向量存储层实现。`MultiVectorRetriever` 将子文档嵌入存储在 `VectorStore` 中，并维护一个单独的 docstore 将子 ID 映射到父文档。查询时，它搜索匹配的子片段，然后查找其父文档返回。此功能在 `synaptic-vectorstores` 中可用。
+与 `ParentDocumentRetriever` 类似，但在向量存储层实现。`MultiVectorRetriever` 将子文档嵌入存储在 `VectorStore` 中，并维护一个单独的 docstore 将子 ID 映射到父文档。查询时，它搜索匹配的子片段，然后查找其父文档返回。此功能在 `synaptic-rag` 中可用。
 
 ## 将检索连接到生成
 

@@ -1,12 +1,12 @@
 # SQL Database Toolkit
 
-`synaptic-sqltoolkit` provides a set of read-only SQL tools for use with LLM agents. Agents can discover available tables, inspect schemas, and run SELECT queries — without any risk of data modification.
+`synaptic-tools` (with feature `sqltoolkit`) provides a set of read-only SQL tools for use with LLM agents. Agents can discover available tables, inspect schemas, and run SELECT queries — without any risk of data modification.
 
 ## Setup
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["sqltoolkit"] }
+synaptic = { version = "0.4", features = ["sqltoolkit"] }
 sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }
 ```
 

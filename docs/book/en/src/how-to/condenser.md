@@ -82,7 +82,7 @@ let pipeline = PipelineCondenser::new(vec![
 
 ## CondenserMiddleware
 
-Wraps any condenser as an `AgentMiddleware`, automatically condensing messages before each model call.
+Wraps any condenser as an `Interceptor`, automatically condensing messages before each model call.
 
 ```rust,ignore
 use synaptic::condenser::CondenserMiddleware;

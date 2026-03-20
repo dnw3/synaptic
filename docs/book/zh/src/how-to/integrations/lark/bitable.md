@@ -104,7 +104,7 @@ let history = store.get_messages("session_001").await?;
 
 ```toml
 [dependencies]
-synaptic-lark = { version = "0.2", features = ["checkpointer"] }
+synaptic-lark = { version = "0.4", features = ["checkpointer"] }
 ```
 
 ```rust,ignore

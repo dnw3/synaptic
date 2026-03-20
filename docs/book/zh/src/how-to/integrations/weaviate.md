@@ -1,12 +1,12 @@
 # Weaviate
 
-[Weaviate](https://weaviate.io/) 是一款云原生、开源的向量数据库，原生支持混合搜索和多租户。`synaptic-weaviate` 使用 Weaviate v1 REST API 实现了 [`VectorStore`] trait。
+[Weaviate](https://weaviate.io/) 是一款云原生、开源的向量数据库，原生支持混合搜索和多租户。`synaptic-rag`（feature `weaviate`） 使用 Weaviate v1 REST API 实现了 [`VectorStore`] trait。
 
 ## 设置
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["weaviate"] }
+synaptic = { version = "0.4", features = ["weaviate"] }
 ```
 
 使用 Docker 在本地运行 Weaviate：

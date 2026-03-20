@@ -6,10 +6,10 @@ Synaptic 提供四种持久化检查点后端：
 
 | 后端 | Crate | 适用场景 |
 |------|-------|----------|
-| Redis | `synaptic-redis` | 低延迟、支持 TTL 自动过期 |
-| PostgreSQL | `synaptic-postgres` | 关系型工作负载、ACID 保证 |
-| SQLite | `synaptic-sqlite` | 单机部署、无需外部服务 |
-| MongoDB | `synaptic-mongodb` | 分布式部署、文档型存储 |
+| Redis | `synaptic-store`（feature `redis`） | 低延迟、支持 TTL 自动过期 |
+| PostgreSQL | `synaptic-store`（feature `postgres`） | 关系型工作负载、ACID 保证 |
+| SQLite | `synaptic-store`（feature `sqlite`） | 单机部署、无需外部服务 |
+| MongoDB | `synaptic-store`（feature `mongodb`） | 分布式部署、文档型存储 |
 
 ## 设置
 
@@ -18,20 +18,16 @@ Synaptic 提供四种持久化检查点后端：
 ```toml
 # Redis 检查点
 [dependencies]
-synaptic = { version = "0.2", features = ["agent", "redis"] }
-synaptic-redis = { version = "0.2" }
+synaptic = { version = "0.4", features = ["agent", "redis"] }
 
 # PostgreSQL 检查点
-synaptic = { version = "0.2", features = ["agent", "postgres"] }
-synaptic-postgres = { version = "0.2" }
+synaptic = { version = "0.4", features = ["agent", "postgres"] }
 
 # SQLite 检查点（无需外部服务）
-synaptic = { version = "0.2", features = ["agent", "sqlite"] }
-synaptic-sqlite = { version = "0.2" }
+synaptic = { version = "0.4", features = ["agent", "sqlite"] }
 
 # MongoDB 检查点
-synaptic = { version = "0.2", features = ["agent", "mongodb"] }
-synaptic-mongodb = { version = "0.2" }
+synaptic = { version = "0.4", features = ["agent", "mongodb"] }
 ```
 
 ## Redis 检查点
@@ -39,7 +35,7 @@ synaptic-mongodb = { version = "0.2" }
 ### 快速开始
 
 ```rust,ignore
-use synaptic_redis::{RedisCheckpointer, RedisCheckpointerConfig};
+use synaptic::store::redis::{RedisCheckpointer, RedisCheckpointerConfig};
 use synaptic::graph::{create_react_agent, MessageState};
 use std::sync::Arc;
 
@@ -59,7 +55,7 @@ let result = graph.invoke_with_config(state, config).await?;
 ### 配置
 
 ```rust,ignore
-use synaptic_redis::RedisCheckpointerConfig;
+use synaptic::store::redis::RedisCheckpointerConfig;
 
 let config = RedisCheckpointerConfig::new("redis://127.0.0.1/")
     .with_ttl(86400)          // 检查点 24 小时后过期
@@ -89,7 +85,7 @@ Redis 使用以下键方案存储检查点：
 
 ```rust,ignore
 use sqlx::postgres::PgPoolOptions;
-use synaptic_postgres::PgCheckpointer;
+use synaptic::store::postgres::PgCheckpointer;
 use synaptic::graph::{create_react_agent, MessageState};
 use std::sync::Arc;
 
@@ -140,7 +136,7 @@ checkpointer.initialize().await?;
 ### 快速开始
 
 ```rust,ignore
-use synaptic_sqlite::SqliteCheckpointer;
+use synaptic::store::sqlite::SqliteCheckpointer;
 use synaptic::graph::{create_react_agent, MessageState};
 use std::sync::Arc;
 
@@ -159,7 +155,7 @@ let result = graph.invoke_with_config(state, config).await?;
 ### 内存模式（适合测试）
 
 ```rust,ignore
-use synaptic_sqlite::SqliteCheckpointer;
+use synaptic::store::sqlite::SqliteCheckpointer;
 
 let checkpointer = SqliteCheckpointer::in_memory()?;
 ```
@@ -200,7 +196,7 @@ CREATE TABLE IF NOT EXISTS synaptic_checkpoint_idx (
 ### 快速开始
 
 ```rust,ignore
-use synaptic_mongodb::MongoCheckpointer;
+use synaptic::store::mongodb::MongoCheckpointer;
 use synaptic::graph::{create_react_agent, MessageState};
 use std::sync::Arc;
 
@@ -247,7 +243,7 @@ let result = graph.invoke_with_config(state, config).await?;
 
 ```rust,ignore
 use synaptic::graph::{StateGraph, MessageState, StreamMode};
-use synaptic_sqlite::SqliteCheckpointer;
+use synaptic::store::sqlite::SqliteCheckpointer;
 use std::sync::Arc;
 
 let checkpointer = Arc::new(SqliteCheckpointer::new("/var/lib/myapp/checkpoints.db")?);
@@ -271,7 +267,7 @@ let final_result = graph.invoke_with_config(updated, config).await?;
 通过检查点 ID 检索任意历史检查点，用于调试或重放：
 
 ```rust,ignore
-use synaptic_graph::{CheckpointConfig, Checkpointer};
+use synaptic::graph::{CheckpointConfig, Checkpointer};
 
 let config = CheckpointConfig::with_checkpoint_id("thread-123", "specific-checkpoint-id");
 if let Some(checkpoint) = checkpointer.get(&config).await? {

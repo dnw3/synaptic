@@ -8,7 +8,7 @@ Add the required Synaptic crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["graph"] }
+synaptic = { version = "0.4", features = ["graph"] }
 async-trait = "0.1"
 futures = "0.3"
 serde = { version = "1", features = ["derive"] }

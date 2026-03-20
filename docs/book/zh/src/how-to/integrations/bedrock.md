@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["bedrock"] }
+synaptic = { version = "0.4", features = ["bedrock"] }
 ```
 
 Bedrock 使用 AWS SDK 进行认证，通过标准 AWS 环境变量配置凭证：

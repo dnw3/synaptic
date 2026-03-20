@@ -1,12 +1,12 @@
 # SQL 数据库工具包
 
-`synaptic-sqltoolkit` 为 LLM Agent 提供一组只读 SQL 工具。Agent 可发现可用表、查看表结构、执行 SELECT 查询，而不会造成任何数据修改风险。
+`synaptic-tools`（feature `sqltoolkit`） 为 LLM Agent 提供一组只读 SQL 工具。Agent 可发现可用表、查看表结构、执行 SELECT 查询，而不会造成任何数据修改风险。
 
 ## 设置
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["sqltoolkit"] }
+synaptic = { version = "0.4", features = ["sqltoolkit"] }
 sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }
 ```
 

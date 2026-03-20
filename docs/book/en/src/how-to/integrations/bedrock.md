@@ -8,7 +8,7 @@ Add the `bedrock` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["bedrock"] }
+synaptic = { version = "0.4", features = ["bedrock"] }
 ```
 
 ### AWS credentials

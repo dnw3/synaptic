@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai", "tavily"] }
+synaptic = { version = "0.4", features = ["openai", "tavily"] }
 ```
 
 设置 API 密钥环境变量：

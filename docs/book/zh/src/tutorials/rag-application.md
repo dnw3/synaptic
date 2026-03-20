@@ -32,7 +32,7 @@ RAG 管道由五个阶段组成，每个阶段对应 Synaptic 中的一个或多
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["rag"] }
+synaptic = { version = "0.4", features = ["rag"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 

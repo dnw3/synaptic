@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["slack"] }
+synaptic = { version = "0.4", features = ["slack"] }
 ```
 
 在 [api.slack.com/apps](https://api.slack.com/apps) 创建 Slack App，添加 `channels:history` OAuth 权限范围，安装到工作区并复制 Bot Token（`xoxb-...`）。

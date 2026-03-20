@@ -24,14 +24,14 @@ pub struct DeepAgentOptions {
     pub backend: Arc<dyn Backend>,                    // required
     pub system_prompt: Option<String>,                // None
     pub tools: Vec<Arc<dyn Tool>>,                    // empty
-    pub middleware: Vec<Arc<dyn AgentMiddleware>>,     // empty
+    pub interceptors: Vec<Arc<dyn Interceptor>>,         // empty
     pub checkpointer: Option<Arc<dyn Checkpointer>>,  // None
     pub store: Option<Arc<dyn Store>>,                // None
     pub max_input_tokens: usize,                      // 128_000
     pub summarization_threshold: f64,                  // 0.85
     pub eviction_threshold: usize,                     // 20_000
     pub max_subagent_depth: usize,                     // 3
-    pub skills_dir: Option<String>,                    // Some(".skills")
+    pub skills_dirs: Vec<String>,                       // vec![".skills"]
     pub memory_file: Option<String>,                   // Some("AGENTS.md")
     pub subagents: Vec<SubAgentDef>,                   // empty
     pub enable_subagents: bool,                        // true
@@ -75,13 +75,13 @@ options.tools = vec![
 ];
 ```
 
-### middleware
+### interceptors
 
-Custom middleware layers that run after the entire built-in stack. See [Middleware Stack](#middleware-stack) for ordering details.
+Custom interceptor layers that run after the entire built-in stack. See [Middleware Stack](#middleware-stack) for ordering details.
 
 ```rust,ignore
 let mut options = DeepAgentOptions::new(backend.clone());
-options.middleware = vec![
+options.interceptors = vec![
     Arc::new(AuditLogMiddleware::new(log_file)),
 ];
 ```
@@ -145,13 +145,13 @@ let mut options = DeepAgentOptions::new(backend.clone());
 options.max_subagent_depth = 2;
 ```
 
-### skills_dir
+### skills_dirs
 
-Directory path within the backend to scan for skill files (default `Some(".skills")`). Set to `None` to disable skill scanning even when `enable_skills` is true.
+Directory paths within the backend to scan for skill files (default `vec![".skills"]`). Set to an empty vec to disable skill scanning even when `enable_skills` is true. Multiple directories are scanned in order, with earlier directories taking priority.
 
 ```rust,ignore
 let mut options = DeepAgentOptions::new(backend.clone());
-options.skills_dir = Some("my-skills".into());
+options.skills_dirs = vec!["my-skills".into()];
 ```
 
 ### memory_file

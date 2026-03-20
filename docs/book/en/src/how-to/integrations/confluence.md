@@ -6,7 +6,7 @@ Load Confluence wiki pages into Synaptic documents using the Confluence REST API
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["confluence"] }
+synaptic = { version = "0.4", features = ["confluence"] }
 ```
 
 Create an API token at [id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens).

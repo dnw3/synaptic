@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["jina"] }
+synaptic = { version = "0.4", features = ["jina"] }
 ```
 
 在 [cloud.jina.ai](https://cloud.jina.ai/) 获取 API 密钥。

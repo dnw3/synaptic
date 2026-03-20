@@ -6,7 +6,7 @@ Load messages from Slack channels into Synaptic documents using the Slack Web AP
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["slack"] }
+synaptic = { version = "0.4", features = ["slack"] }
 ```
 
 Create a Slack app at [api.slack.com/apps](https://api.slack.com/apps), add the `channels:history` OAuth scope, install it to your workspace, and copy the Bot Token (`xoxb-...`).

@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["nomic"] }
+synaptic = { version = "0.4", features = ["nomic"] }
 ```
 
 Get a free API key at [atlas.nomic.ai](https://atlas.nomic.ai/).

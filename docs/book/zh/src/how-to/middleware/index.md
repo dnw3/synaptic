@@ -1,18 +1,16 @@
 # Middleware 概述
 
-Middleware 系统在 Agent 生命周期的每个节点拦截和修改行为——Agent 运行前/后、每次模型调用前/后，以及每次工具调用前后。当你需要处理横切关注点（速率限制、重试、上下文管理）而不修改 Agent 逻辑时，可以使用 Middleware。
+Middleware 系统在 Agent 生命周期的每个节点拦截和修改行为——每次模型调用前/后，以及每次工具调用前后。当你需要处理横切关注点（速率限制、重试、上下文管理）而不修改 Agent 逻辑时，可以使用 Middleware。
 
-## AgentMiddleware Trait
+## Interceptor Trait
 
 所有方法都有默认的空实现。只需重写你需要的钩子方法即可。
 
 ```rust,ignore
 #[async_trait]
-pub trait AgentMiddleware: Send + Sync {
-    async fn before_agent(&self, messages: &mut Vec<Message>) -> Result<(), SynapticError>;
-    async fn after_agent(&self, messages: &mut Vec<Message>) -> Result<(), SynapticError>;
-    async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError>;
-    async fn after_model(&self, request: &ModelRequest, response: &mut ModelResponse) -> Result<(), SynapticError>;
+pub trait Interceptor: Send + Sync {
+    async fn before_model(&self, req: &mut ModelRequest) -> Result<(), SynapticError>;
+    async fn after_model(&self, req: &ModelRequest, resp: &mut ModelResponse) -> Result<(), SynapticError>;
     async fn wrap_model_call(&self, request: ModelRequest, next: &dyn ModelCaller) -> Result<ModelResponse, SynapticError>;
     async fn wrap_tool_call(&self, request: ToolCallRequest, next: &dyn ToolCaller) -> Result<Value, SynapticError>;
 }
@@ -21,28 +19,26 @@ pub trait AgentMiddleware: Send + Sync {
 ## 生命周期图
 
 ```text
-before_agent(messages)
-  loop {
-    before_model(request)
-      -> wrap_model_call(request, next)
-    after_model(request, response)
-    for each tool_call {
-      wrap_tool_call(request, next)
-    }
+loop {
+  before_model(request)
+    -> wrap_model_call(request, next)
+  after_model(request, response)
+  for each tool_call {
+    wrap_tool_call(request, next)
   }
-after_agent(messages)
+}
 ```
 
-`before_agent` 和 `after_agent` 在每次调用中各执行一次。内部循环在每个 Agent 步骤（模型调用后跟工具执行）中重复执行。`before_model` / `after_model` 在每次模型调用前后执行，可以修改请求或响应。`wrap_model_call` 和 `wrap_tool_call` 是洋葱式包装器，接收一个 `next` 调用器以委托给下一层。
+内部循环在每个 Agent 步骤（模型调用后跟工具执行）中重复执行。`before_model` / `after_model` 在每次模型调用前后执行，可以修改请求或响应。`wrap_model_call` 和 `wrap_tool_call` 是洋葱式包装器，接收一个 `next` 调用器以委托给下一层。
 
-## MiddlewareChain
+## InterceptorChain
 
-`MiddlewareChain` 组合多个 Middleware，对 `before_*` 钩子按注册顺序执行，对 `after_*` 钩子按反序执行。
+`InterceptorChain` 组合多个拦截器，对 `before_model` 钩子按注册顺序执行，对 `after_model` 钩子按反序执行。`wrap_model_call` 和 `wrap_tool_call` 钩子使用洋葱式嵌套。
 
 ```rust,ignore
-use synaptic::middleware::MiddlewareChain;
+use synaptic::middleware::InterceptorChain;
 
-let chain = MiddlewareChain::new(vec![
+let chain = InterceptorChain::new(vec![
     Arc::new(ModelCallLimitMiddleware::new(10)),
     Arc::new(ToolRetryMiddleware::new(3)),
 ]);
@@ -50,7 +46,7 @@ let chain = MiddlewareChain::new(vec![
 
 ## 在 `create_agent` 中使用 Middleware
 
-通过 `AgentOptions::middleware` 传入 Middleware。Agent 图会自动将它们连接到模型节点和工具节点。
+通过 `AgentOptions::middleware` 传入拦截器。Agent 图会自动将它们连接到模型节点和工具节点。
 
 ```rust,ignore
 use synaptic::graph::{create_agent, AgentOptions};
@@ -69,32 +65,20 @@ let graph = create_agent(model, tools, options)?;
 
 ## 文件与 Shell 钩子
 
-Middleware trait 还提供了文件操作和 Shell 命令的钩子。这些钩子在 Deep Agent 工具执行文件系统或命令操作时被调用，允许你拦截并授权或拒绝操作。
+Middleware 系统还提供了文件操作和 Shell 命令的钩子。这些钩子在 Deep Agent 工具执行文件系统或命令操作时被调用，允许你拦截并授权或拒绝操作。
 
 ```rust,ignore
 use synaptic::middleware::{FileOp, FileOpDecision, CommandOp, CommandDecision};
 
+struct MySecurityMiddleware;
+
 #[async_trait]
-impl AgentMiddleware for MySecurityMiddleware {
-    async fn before_file_op(&self, op: &FileOp) -> Result<FileOpDecision, SynapticError> {
-        if op.path.starts_with("/etc") {
-            Ok(FileOpDecision::Deny("不允许修改系统文件".to_string()))
-        } else {
-            Ok(FileOpDecision::Allow)
-        }
-    }
-
-    async fn before_command(&self, cmd: &CommandOp) -> Result<CommandDecision, SynapticError> {
-        if cmd.command.contains("rm -rf") {
-            Ok(CommandDecision::Deny("危险命令已被拦截".to_string()))
-        } else {
-            Ok(CommandDecision::Allow)
-        }
-    }
+impl Interceptor for MySecurityMiddleware {
+    // ... 按需实现 model/tool 钩子 ...
 }
-```
 
-四个钩子（`before_file_op`、`after_file_op`、`before_command`、`after_command`）都有默认实现，默认允许所有操作。`MiddlewareChain` 通过 `run_before_file_op()`、`run_after_file_op()`、`run_before_command()` 和 `run_after_command()` 分发这些钩子。
+// 文件/Shell 钩子通过 InterceptorChain 单独分发。
+```
 
 ## 内置 Middleware
 
@@ -113,14 +97,14 @@ impl AgentMiddleware for MySecurityMiddleware {
 
 ## 编写自定义 Middleware
 
-使用中间件宏可以快速定义自定义 Middleware，无需手动实现 `AgentMiddleware` trait。每个宏对应一个钩子方法：
+使用中间件宏可以快速定义自定义 Middleware，无需手动实现 `Interceptor` trait。每个宏对应一个钩子方法：
 
 ```rust,ignore
 use synaptic::macros::before_model;
 use synaptic::middleware::ModelRequest;
 use synaptic::core::SynapticError;
 
-// 使用 #[before_model] 宏——函数会自动生成 LoggingMiddleware 结构体和 AgentMiddleware 实现
+// 使用 #[before_model] 宏——函数会自动生成 LoggingMiddleware 结构体和 Interceptor 实现
 #[before_model]
 async fn logging(request: &mut ModelRequest) -> Result<(), SynapticError> {
     println!("模型调用，包含 {} 条消息", request.messages.len());
@@ -132,10 +116,10 @@ async fn logging(request: &mut ModelRequest) -> Result<(), SynapticError> {
 
 ```rust,ignore
 let options = AgentOptions {
-    middleware: vec![logging()],  // logging() 返回 Arc<dyn AgentMiddleware>
+    middleware: vec![logging()],  // logging() 返回 Arc<dyn Interceptor>
     ..Default::default()
 };
 let graph = create_agent(model, tools, options)?;
 ```
 
-> **提示：** 除了 `#[before_model]`，还有 `#[after_model]`、`#[before_agent]`、`#[after_agent]`、`#[wrap_model_call]`、`#[wrap_tool_call]`、`#[dynamic_prompt]` 等宏，分别对应不同的钩子。详见[过程宏](../macros.md)。如果需要更精细的控制，也可以手动实现 `AgentMiddleware` trait。
+> **提示：** 除了 `#[before_model]`，还有 `#[after_model]`、`#[wrap_model_call]`、`#[wrap_tool_call]`、`#[system_prompt]` 等宏，分别对应不同的钩子。详见[过程宏](../macros.md)。如果需要更精细的控制，也可以手动实现 `Interceptor` trait。

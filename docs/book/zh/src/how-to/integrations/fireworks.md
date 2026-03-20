@@ -2,13 +2,13 @@
 
 [Fireworks AI](https://fireworks.ai/) 提供最快的开源模型推理，主流模型首 token 延迟低于 100ms。采用 OpenAI 兼容 API，支持 Llama、DeepSeek、Qwen 等主流开源模型。
 
-Fireworks AI 作为 `synaptic-openai` 内的兼容子模块提供，无需单独的 crate。
+Fireworks AI 作为 `synaptic-models` 内的兼容子模块提供，无需单独的 crate。
 
 ## 安装
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 在 [fireworks.ai](https://fireworks.ai/) 注册以获取 API 密钥（以 `fw-` 开头）。

@@ -1,12 +1,12 @@
 # Architecture
 
-Synaptic is organized as a workspace of focused Rust crates. Each crate owns exactly one concern, and they compose together through shared traits defined in a single core crate. This page explains the layered design, the principles behind it, and how the crates depend on each other.
+Synaptic is organized as a workspace of focused Rust crates. In v0.4, 47 fine-grained crates were consolidated into 18 cohesive units. Each crate owns a clear concern, and they compose together through shared traits defined in a single core crate. This page explains the layered design, the principles behind it, and how the crates depend on each other.
 
 ## Design Principles
 
 **Async-first.** Every trait in Synaptic is async via `#[async_trait]`, and the runtime is tokio. This is not an afterthought bolted onto a synchronous API -- async is the foundation. LLM calls, tool execution, memory access, and embedding queries are all naturally asynchronous operations, and Synaptic models them as such from the start.
 
-**One crate, one concern.** Each provider has its own crate: `synaptic-openai`, `synaptic-anthropic`, `synaptic-gemini`, `synaptic-ollama`. The `synaptic-tools` crate knows how to register and execute tools. The `synaptic-memory` crate knows how to store and retrieve conversation history. No crate does two jobs. This keeps compile times manageable, makes it possible to use only what you need, and ensures that changes to one subsystem do not cascade across the codebase.
+**Feature-gated consolidation.** Each consolidated crate uses feature flags to control which backends and providers are compiled. For example, `synaptic-models` has `openai`, `anthropic`, `gemini`, `ollama`, `bedrock`, and `cohere` features. You only compile the providers you actually use. This keeps compile times manageable while reducing the number of crates to manage.
 
 **Shared traits in core.** The `synaptic-core` crate defines every trait and type that crosses crate boundaries: `ChatModel`, `Tool`, `MemoryStore`, `CallbackHandler`, `Message`, `ChatRequest`, `ChatResponse`, `ToolCall`, `SynapticError`, `RunnableConfig`, and more. Implementation crates depend on core, never on each other (unless composition requires it).
 
@@ -40,17 +40,10 @@ Each crate implements one core concern:
 
 | Crate | Purpose |
 |-------|---------|
-| `synaptic-models` | `ProviderBackend` abstraction, test doubles (`ScriptedChatModel`), wrappers (`RetryChatModel`, `RateLimitedChatModel`, `StructuredOutputChatModel<T>`, `BoundToolsChatModel`) |
-| `synaptic-openai` | `OpenAiChatModel` + `OpenAiEmbeddings` |
-| `synaptic-anthropic` | `AnthropicChatModel` |
-| `synaptic-gemini` | `GeminiChatModel` |
-| `synaptic-ollama` | `OllamaChatModel` + `OllamaEmbeddings` |
-| `synaptic-tools` | `ToolRegistry`, `SerialToolExecutor`, `ParallelToolExecutor`, `HandleErrorTool`, `ReturnDirectTool` |
+| `synaptic-models` | All LLM providers (`OpenAiChatModel`, `AnthropicChatModel`, `GeminiChatModel`, `OllamaChatModel`, `BedrockChatModel`, `CohereReranker`) + `ProviderBackend` abstraction, test doubles (`ScriptedChatModel`), wrappers (`RetryChatModel`, `RateLimitedChatModel`, `StructuredOutputChatModel<T>`, `BoundToolsChatModel`). Enable providers via feature flags: `openai`, `anthropic`, `gemini`, `ollama`, `bedrock`, `cohere` |
+| `synaptic-tools` | `ToolRegistry`, `SerialToolExecutor`, `ParallelToolExecutor`, `HandleErrorTool`, `ReturnDirectTool` + built-in tools: `PdfLoader` (feature `pdf`), Tavily search (feature `tavily`), SQL toolkit (feature `sqltoolkit`) |
 | `synaptic-memory` | `ChatMessageHistory` and strategy types: Buffer, Window, Summary, TokenBuffer, SummaryBuffer, `RunnableWithMessageHistory` |
-| `synaptic-callbacks` | `RecordingCallback`, `TracingCallback`, `CompositeCallback` |
-| `synaptic-prompts` | `PromptTemplate`, `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate`, `ExampleSelector` |
-| `synaptic-parsers` | Output parsers: `StrOutputParser`, `JsonOutputParser`, `StructuredOutputParser<T>`, `ListOutputParser`, `EnumOutputParser`, `BooleanOutputParser`, `MarkdownListOutputParser`, `NumberedListOutputParser`, `XmlOutputParser`, `RetryOutputParser`, `FixingOutputParser` |
-| `synaptic-cache` | `InMemoryCache`, `SemanticCache`, `CachedChatModel` |
+| `synaptic-integrations` | LCEL composition (`Runnable` trait, `BoxRunnable`, pipe operator, `RunnableSequence`, `RunnableParallel`, `RunnableBranch`, `RunnableWithFallbacks`, `RunnableAssign`, `RunnablePick`, `RunnableEach`, `RunnableRetry`, `RunnableGenerator`), prompt templates (`PromptTemplate`, `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate`, `ExampleSelector`), output parsers (string, JSON, structured, list, enum, boolean, XML, markdown list, numbered list, retry, fixing), callbacks (`RecordingCallback`, `TracingCallback`, `CompositeCallback`), LLM caching (`InMemoryCache`, `SemanticCache`, `CachedChatModel`), session management, condenser strategies |
 | `synaptic-eval` | Evaluators (ExactMatch, JsonValidity, RegexMatch, EmbeddingDistance, LLMJudge), `Dataset`, batch evaluation pipeline |
 
 ### Layer 3: Composition and Retrieval
@@ -59,17 +52,9 @@ These crates combine the implementation crates into higher-level abstractions:
 
 | Crate | Purpose |
 |-------|---------|
-| `synaptic-runnables` | The LCEL system: `Runnable` trait, `BoxRunnable` with pipe operator, `RunnableSequence`, `RunnableParallel`, `RunnableBranch`, `RunnableWithFallbacks`, `RunnableAssign`, `RunnablePick`, `RunnableEach`, `RunnableRetry`, `RunnableGenerator` |
 | `synaptic-graph` | LangGraph-style state machines: `StateGraph` builder, `CompiledGraph`, `Node` trait, `ToolNode`, `create_react_agent()`, `StoreCheckpointer`, streaming, visualization |
-| `synaptic-loaders` | Document loaders: `TextLoader`, `JsonLoader`, `CsvLoader`, `DirectoryLoader`, `FileLoader`, `MarkdownLoader`, `WebLoader` |
-| `synaptic-splitters` | Text splitters: `CharacterTextSplitter`, `RecursiveCharacterTextSplitter`, `MarkdownHeaderTextSplitter`, `HtmlHeaderTextSplitter`, `LanguageTextSplitter`, `TokenTextSplitter` |
-| `synaptic-embeddings` | `Embeddings` trait, `FakeEmbeddings`, `CacheBackedEmbeddings` |
-| `synaptic-vectorstores` | `VectorStore` trait, `InMemoryVectorStore`, `MultiVectorRetriever` |
-| `synaptic-retrieval` | `Retriever` trait and seven implementations: InMemory, BM25, MultiQuery, Ensemble, ContextualCompression, SelfQuery, ParentDocument |
-| `synaptic-qdrant` | `QdrantVectorStore` (Qdrant integration) |
-| `synaptic-postgres` | `PgVectorStore`, `PgStore`, `PgCache`, `PgCheckpointer` (PostgreSQL integration) |
-| `synaptic-redis` | `RedisStore` + `RedisCache` (Redis integration) |
-| `synaptic-pdf` | `PdfLoader` (PDF document loading) |
+| `synaptic-rag` | Full RAG pipeline: document loaders (`TextLoader`, `JsonLoader`, `CsvLoader`, `DirectoryLoader`, `FileLoader`, `MarkdownLoader`, `WebLoader`), text splitters (`CharacterTextSplitter`, `RecursiveCharacterTextSplitter`, `MarkdownHeaderTextSplitter`, `HtmlHeaderTextSplitter`, `LanguageTextSplitter`, `TokenTextSplitter`), `Embeddings` trait + `FakeEmbeddings` + `CacheBackedEmbeddings`, vector stores (`VectorStore` trait, `InMemoryVectorStore`, `MultiVectorRetriever`) + backends (Qdrant, pgvector, Pinecone, Chroma, MongoDB, Elasticsearch, Weaviate, Milvus, OpenSearch, LanceDB), retrievers (`Retriever` trait, InMemory, BM25, MultiQuery, Ensemble, ContextualCompression, SelfQuery, ParentDocument). Enable backends via feature flags |
+| `synaptic-store` | `Store` trait implementation, `InMemoryStore`, `FileStore` + persistent backends: PostgreSQL (`PgVectorStore`, `PgStore`, `PgCache`, `PgCheckpointer`), Redis (`RedisStore`, `RedisCache`), SQLite, MongoDB. Enable via feature flags: `postgres`, `redis`, `sqlite`, `mongodb` |
 
 ### Layer 4: Facade
 
@@ -77,7 +62,7 @@ The `synaptic` crate re-exports everything from all sub-crates under a unified n
 
 ```toml
 [dependencies]
-synaptic = "0.2"
+synaptic = "0.4"
 ```
 
 And then import from organized modules:
@@ -97,44 +82,31 @@ use synaptic::runnables::{BoxRunnable, Runnable};
                              |
         +--------------------+--------------------+
         |                    |                    |
-   synaptic-graph      synaptic-runnables    synaptic-eval
+   synaptic-graph      synaptic-rag          synaptic-eval
         |                    |                    |
-   synaptic-tools        synaptic-core       synaptic-embeddings
+   synaptic-tools        synaptic-core       synaptic-models
         |                    ^                    |
    synaptic-core              |               synaptic-core
                              |
-        +--------+-----------+-----------+--------+--------+
-        |        |           |           |        |        |
-   synap-   synap-    synap-    synap-   synap-  Provider
-   tic-     tic-      tic-      tic-     tic-    crates:
-   models   memory    callbacks prompts  parsers openai,
-        |        |           |           |        | anthropic,
-        +--------+-----------+-----------+--------+ gemini,
-                             |                      ollama
+        +--------+-----------+-----------+--------+
+        |        |           |           |        |
+   synaptic-  synaptic-  synaptic-  synaptic-  synaptic-
+   models     memory     integr.    store      rag
+        |        |           |           |        |
+        +--------+-----------+-----------+--------+
+                             |
                         synaptic-core
-
-   Retrieval pipeline (all depend on synaptic-core):
-
-   synaptic-loaders --> synaptic-splitters --> synaptic-embeddings
-                                                   |
-                                            synaptic-vectorstores
-                                                   |
-                                            synaptic-retrieval
-
-   Integration crates (each depends on synaptic-core):
-
-   synaptic-qdrant, synaptic-postgres, synaptic-redis, synaptic-pdf
 ```
 
-The arrows point downward toward dependencies. Every crate ultimately depends on `synaptic-core`. The composition crates (`synaptic-graph`, `synaptic-runnables`) additionally depend on the implementation crates they orchestrate.
+The arrows point downward toward dependencies. Every crate ultimately depends on `synaptic-core`. The composition crates (`synaptic-graph`, `synaptic-rag`) additionally depend on the implementation crates they orchestrate.
 
 ## Provider Abstraction
 
-Each LLM provider lives in its own crate (`synaptic-openai`, `synaptic-anthropic`, `synaptic-gemini`, `synaptic-ollama`). They all use the `ProviderBackend` trait from `synaptic-models` to separate HTTP concerns from protocol mapping. `HttpBackend` makes real HTTP requests; `FakeBackend` returns scripted responses for testing. This means you can test any code that uses `ChatModel` without network access and without mocking at the HTTP level. You only compile the providers you actually use.
+All LLM providers now live in the `synaptic-models` crate, each behind a feature flag (`openai`, `anthropic`, `gemini`, `ollama`, etc.). They all use the `ProviderBackend` trait to separate HTTP concerns from protocol mapping. `HttpBackend` makes real HTTP requests; `FakeBackend` returns scripted responses for testing. This means you can test any code that uses `ChatModel` without network access and without mocking at the HTTP level. You only compile the providers you actually use.
 
 ## The Runnable Abstraction
 
-The `Runnable<I, O>` trait in `synaptic-runnables` is the universal composition primitive. Prompt templates, output parsers, chat models, and entire graphs can all be treated as runnables. They compose via the `|` pipe operator into chains that can be invoked, batched, or streamed. See [Runnables & LCEL](./runnables-lcel.md) for details.
+The `Runnable<I, O>` trait in `synaptic-integrations` is the universal composition primitive. Prompt templates, output parsers, chat models, and entire graphs can all be treated as runnables. They compose via the `|` pipe operator into chains that can be invoked, batched, or streamed. See [Runnables & LCEL](./runnables-lcel.md) for details.
 
 ## The Graph Abstraction
 

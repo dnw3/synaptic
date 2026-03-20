@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["e2b"] }
+synaptic = { version = "0.4", features = ["e2b"] }
 ```
 
 Get an API key from [e2b.dev](https://e2b.dev/).

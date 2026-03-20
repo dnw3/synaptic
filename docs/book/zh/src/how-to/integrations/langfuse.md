@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["langfuse"] }
+synaptic = { version = "0.4", features = ["langfuse"] }
 ```
 
 在 [cloud.langfuse.com](https://cloud.langfuse.com/) 注册或自托管。

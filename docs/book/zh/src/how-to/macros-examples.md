@@ -89,7 +89,7 @@ async fn main() -> Result<(), SynapticError> {
 
 ```rust,ignore
 use synaptic::core::{Message, SynapticError};
-use synaptic::middleware::{AgentMiddleware, MiddlewareChain, ModelRequest, ModelResponse, ModelCaller};
+use synaptic::middleware::{Interceptor, InterceptorChain,ModelRequest, ModelResponse, ModelCaller};
 use std::sync::Arc;
 
 // 记录每次模型调用
@@ -118,7 +118,7 @@ async fn retry_model(
 }
 
 // 根据对话长度动态调整系统提示词
-#[dynamic_prompt]
+#[system_prompt]
 fn adaptive_prompt(messages: &[Message]) -> String {
     if messages.len() > 20 {
         "请简洁回答，总结而非展开。".into()
@@ -127,7 +127,7 @@ fn adaptive_prompt(messages: &[Message]) -> String {
     }
 }
 
-fn build_middleware_stack() -> Vec<Arc<dyn AgentMiddleware>> {
+fn build_middleware_stack() -> Vec<Arc<dyn Interceptor>> {
     vec![
         adaptive_prompt(),
         retry_model(2),
@@ -146,7 +146,7 @@ fn build_middleware_stack() -> Vec<Arc<dyn AgentMiddleware>> {
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["agent", "store", "schemars"] }
+synaptic = { version = "0.4", features = ["agent", "store", "schemars"] }
 schemars = { version = "0.8", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -341,13 +341,13 @@ async fn main() -> Result<(), SynapticError> {
 
 ## 场景 F：工具权限控制与审计日志
 
-本示例展示如何使用 `#[wrap_tool_call]` 配合 `#[field]` 实现工具白名单控制，以及 `#[before_agent]` 和 `#[after_agent]` 的生命周期审计日志。
+本示例展示如何使用 `#[wrap_tool_call]` 配合 `#[field]` 实现工具白名单控制，以及 `#[before_model]` 的审计日志。
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic::core::{Message, SynapticError};
-use synaptic::macros::{wrap_tool_call, before_agent, after_agent};
-use synaptic::middleware::{AgentMiddleware, ToolCallRequest, ToolCaller};
+use synaptic::core::SynapticError;
+use synaptic::macros::{wrap_tool_call, before_model};
+use synaptic::middleware::{Interceptor, ModelRequest, ToolCallRequest, ToolCaller};
 use serde_json::Value;
 
 // --- 工具权限控制 ---
@@ -370,39 +370,29 @@ async fn tool_permission_guard(
     next.call(request).await
 }
 
-// --- Agent 启动审计 ---
+// --- 模型调用审计 ---
 // #[field] label 使中间件可配置，可在日志中标识不同的 Agent
 
-#[before_agent]
-async fn audit_start(
+#[before_model]
+async fn audit_model(
     #[field] label: String,
-    messages: &mut Vec<Message>,
+    request: &mut ModelRequest,
 ) -> Result<(), SynapticError> {
-    println!("[审计] Agent 启动 (label={}, 初始消息数={})", label, messages.len());
-    Ok(())
-}
-
-// --- Agent 结束审计 ---
-
-#[after_agent]
-async fn audit_end(messages: &mut Vec<Message>) -> Result<(), SynapticError> {
-    println!("[审计] Agent 执行完毕 (最终消息数={})", messages.len());
+    println!("[审计] 模型调用 (label={}, 消息数={})", label, request.messages.len());
     Ok(())
 }
 
 // --- 组装中间件栈 ---
 
-fn build_secure_middleware_stack() -> Vec<Arc<dyn AgentMiddleware>> {
+fn build_secure_middleware_stack() -> Vec<Arc<dyn Interceptor>> {
     vec![
-        // 审计：记录 Agent 启动
-        audit_start("生产环境 Agent".into()),
+        // 审计：记录模型调用
+        audit_model("生产环境 Agent".into()),
         // 权限：只允许 search 和 get_weather 两个工具
         tool_permission_guard(vec![
             "search".into(),
             "get_weather".into(),
         ]),
-        // 审计：记录 Agent 结束
-        audit_end(),
     ]
 }
 ```
@@ -410,7 +400,7 @@ fn build_secure_middleware_stack() -> Vec<Arc<dyn AgentMiddleware>> {
 **要点：**
 
 - `#[wrap_tool_call]` 可完全控制工具执行——批准、拒绝或转换参数均可
-- `#[before_agent]` / `#[after_agent]` 包围整个 Agent 生命周期，适合审计日志和指标收集
+- `#[before_model]` 在每次模型调用前执行，适合审计日志和指标收集
 - `#[field]` 使中间件可配置、可复用——同一个中间件可以为不同 Agent 配置不同的白名单或标签
 
 ## 场景 G：状态感知工具与原始参数转发
@@ -516,7 +506,7 @@ async fn api_proxy(
 | `RunnableLambda(fn)` | `#[chain]` | 创建可运行单元。Rust 宏自动生成 `RunnableLambda` 包装 |
 | `@entrypoint` | `#[entrypoint]` | LangGraph 工作流入口 |
 | `@task` | `#[task]` | LangGraph 可追踪任务 |
-| 自定义 `RunnableMiddleware` | `#[before_agent]` 等 | Python 通常手写中间件类，Rust 用宏一行生成 |
+| 自定义 `RunnableMiddleware` | `#[before_model]` 等 | Python 通常手写中间件类，Rust 用宏一行生成 |
 | `langsmith.traceable` | `#[traceable]` | Python 装饰器 vs Rust 属性宏，均基于 span 概念 |
 | `InjectedState` 类型注解 | `#[inject(state)]` | Python 用 `Annotated[T, InjectedState]`，Rust 用参数属性 |
 | `InjectedStore` 类型注解 | `#[inject(store)]` | 同上 |
@@ -526,7 +516,7 @@ async fn api_proxy(
 
 - **类型安全**：Rust 宏在编译期生成 JSON Schema 并进行类型检查，Python 在运行时进行。
 - **零成本抽象**：生成的结构体和 trait 实现在编译后没有额外的间接开销。
-- **显式异步**：所有异步钩子需要标注 `async fn`，`#[dynamic_prompt]` 明确要求同步函数。
+- **显式异步**：所有异步钩子需要标注 `async fn`，`#[system_prompt]` 明确要求同步函数。
 - **返回类型**：工厂函数返回 `Arc<dyn Trait>` 而非裸对象，便于在多线程运行时中共享。
 
 ---
@@ -572,9 +562,9 @@ Tool Message 回到对话中
 | `Tool` / `RuntimeAwareTool` trait | `crates/synaptic-core/src/lib.rs` |
 | `ToolDefinition`、`ToolCall` 类型 | `crates/synaptic-core/src/lib.rs` |
 | `ToolNode`（分发调用） | `crates/synaptic-graph/src/tool_node.rs` |
-| OpenAI 适配器 | `crates/synaptic-models/src/openai.rs` |
-| Anthropic 适配器 | `crates/synaptic-models/src/anthropic.rs` |
-| Gemini 适配器 | `crates/synaptic-models/src/gemini.rs` |
+| OpenAI 适配器 | `crates/synaptic-models/src/openai/` |
+| Anthropic 适配器 | `crates/synaptic-models/src/anthropic/` |
+| Gemini 适配器 | `crates/synaptic-models/src/gemini/` |
 
 ## 测试宏生成的代码
 

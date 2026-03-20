@@ -10,25 +10,25 @@ Synaptic 是一个用于构建 AI Agent、链式调用和检索管道的 Rust �
 
 | LangChain (Python) | Synaptic (Rust) | 所在 Crate |
 |---|---|---|
-| `ChatOpenAI` | `OpenAiChatModel` | `synaptic-openai` |
-| `ChatAnthropic` | `AnthropicChatModel` | `synaptic-anthropic` |
-| `ChatGoogleGenerativeAI` | `GeminiChatModel` | `synaptic-gemini` |
+| `ChatOpenAI` | `OpenAiChatModel` | `synaptic-models` |
+| `ChatAnthropic` | `AnthropicChatModel` | `synaptic-models` |
+| `ChatGoogleGenerativeAI` | `GeminiChatModel` | `synaptic-models` |
 | `HumanMessage` / `AIMessage` | `Message::human()` / `Message::ai()` | `synaptic-core` |
-| `RunnableSequence` / LCEL `\|` | `BoxRunnable` / `\|` 管道运算符 | `synaptic-runnables` |
-| `RunnableLambda` | `RunnableLambda` | `synaptic-runnables` |
-| `RunnableParallel` | `RunnableParallel` | `synaptic-runnables` |
-| `RunnableBranch` | `RunnableBranch` | `synaptic-runnables` |
-| `RunnablePassthrough.assign()` | `RunnableAssign` | `synaptic-runnables` |
-| `ChatPromptTemplate` | `ChatPromptTemplate` | `synaptic-prompts` |
+| `RunnableSequence` / LCEL `\|` | `BoxRunnable` / `\|` 管道运算符 | `synaptic-integrations` |
+| `RunnableLambda` | `RunnableLambda` | `synaptic-integrations` |
+| `RunnableParallel` | `RunnableParallel` | `synaptic-integrations` |
+| `RunnableBranch` | `RunnableBranch` | `synaptic-integrations` |
+| `RunnablePassthrough.assign()` | `RunnableAssign` | `synaptic-integrations` |
+| `ChatPromptTemplate` | `ChatPromptTemplate` | `synaptic-integrations` |
 | `ToolNode` | `ToolNode` | `synaptic-graph` |
 | `StateGraph` | `StateGraph` | `synaptic-graph` |
 | `create_react_agent` | `create_react_agent` | `synaptic-graph` |
 | `InMemorySaver` | `StoreCheckpointer` | `synaptic-graph` |
-| `StrOutputParser` | `StrOutputParser` | `synaptic-parsers` |
-| `JsonOutputParser` | `JsonOutputParser` | `synaptic-parsers` |
-| `VectorStoreRetriever` | `VectorStoreRetriever` | `synaptic-vectorstores` |
-| `RecursiveCharacterTextSplitter` | `RecursiveCharacterTextSplitter` | `synaptic-splitters` |
-| `OpenAIEmbeddings` | `OpenAiEmbeddings` | `synaptic-openai` |
+| `StrOutputParser` | `StrOutputParser` | `synaptic-integrations` |
+| `JsonOutputParser` | `JsonOutputParser` | `synaptic-integrations` |
+| `VectorStoreRetriever` | `VectorStoreRetriever` | `synaptic-rag` |
+| `RecursiveCharacterTextSplitter` | `RecursiveCharacterTextSplitter` | `synaptic-rag` |
+| `OpenAIEmbeddings` | `OpenAiEmbeddings` | `synaptic-models` |
 
 ## 与 LangChain Python 的关键差异
 

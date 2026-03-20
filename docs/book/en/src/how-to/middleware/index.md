@@ -1,18 +1,16 @@
 # Middleware Overview
 
-The middleware system intercepts and modifies agent behavior at every lifecycle point -- before/after the agent run, before/after each model call, and around each tool call. Use middleware when you need cross-cutting concerns (rate limiting, retries, context management) without modifying your agent logic.
+The middleware system intercepts and modifies agent behavior at every lifecycle point -- before/after each model call, and around each tool call. Use middleware when you need cross-cutting concerns (rate limiting, retries, context management) without modifying your agent logic.
 
-## AgentMiddleware Trait
+## Interceptor Trait
 
 All methods have default no-op implementations. Override only the hooks you need.
 
 ```rust,ignore
 #[async_trait]
-pub trait AgentMiddleware: Send + Sync {
-    async fn before_agent(&self, messages: &mut Vec<Message>) -> Result<(), SynapticError>;
-    async fn after_agent(&self, messages: &mut Vec<Message>) -> Result<(), SynapticError>;
-    async fn before_model(&self, request: &mut ModelRequest) -> Result<(), SynapticError>;
-    async fn after_model(&self, request: &ModelRequest, response: &mut ModelResponse) -> Result<(), SynapticError>;
+pub trait Interceptor: Send + Sync {
+    async fn before_model(&self, req: &mut ModelRequest) -> Result<(), SynapticError>;
+    async fn after_model(&self, req: &ModelRequest, resp: &mut ModelResponse) -> Result<(), SynapticError>;
     async fn wrap_model_call(&self, request: ModelRequest, next: &dyn ModelCaller) -> Result<ModelResponse, SynapticError>;
     async fn wrap_tool_call(&self, request: ToolCallRequest, next: &dyn ToolCaller) -> Result<Value, SynapticError>;
 }
@@ -21,28 +19,26 @@ pub trait AgentMiddleware: Send + Sync {
 ## Lifecycle Diagram
 
 ```text
-before_agent(messages)
-  loop {
-    before_model(request)
-      -> wrap_model_call(request, next)
-    after_model(request, response)
-    for each tool_call {
-      wrap_tool_call(request, next)
-    }
+loop {
+  before_model(request)
+    -> wrap_model_call(request, next)
+  after_model(request, response)
+  for each tool_call {
+    wrap_tool_call(request, next)
   }
-after_agent(messages)
+}
 ```
 
-`before_agent` and `after_agent` run once per invocation. The inner loop repeats for each agent step (model call followed by tool execution). `before_model` / `after_model` run around every model call and can mutate the request or response. `wrap_model_call` and `wrap_tool_call` are onion-style wrappers that receive a `next` caller to delegate to the next layer.
+The inner loop repeats for each agent step (model call followed by tool execution). `before_model` / `after_model` run around every model call and can mutate the request or response. `wrap_model_call` and `wrap_tool_call` are onion-style wrappers that receive a `next` caller to delegate to the next layer.
 
-## MiddlewareChain
+## InterceptorChain
 
-`MiddlewareChain` composes multiple middlewares and executes them in registration order for `before_*` hooks, and in reverse order for `after_*` hooks.
+`InterceptorChain` composes multiple interceptors and executes them in registration order for `before_model`, and in reverse order for `after_model`. The `wrap_model_call` and `wrap_tool_call` hooks use onion-style nesting.
 
 ```rust,ignore
-use synaptic::middleware::MiddlewareChain;
+use synaptic::middleware::InterceptorChain;
 
-let chain = MiddlewareChain::new(vec![
+let chain = InterceptorChain::new(vec![
     Arc::new(ModelCallLimitMiddleware::new(10)),
     Arc::new(ToolRetryMiddleware::new(3)),
 ]);
@@ -50,7 +46,7 @@ let chain = MiddlewareChain::new(vec![
 
 ## Using Middleware with `create_agent`
 
-Pass middlewares through `AgentOptions::middleware`. The agent graph wires them into both the model node and the tool node automatically.
+Pass interceptors through `AgentOptions::middleware`. The agent graph wires them into both the model node and the tool node automatically.
 
 ```rust,ignore
 use synaptic::graph::{create_agent, AgentOptions};
@@ -69,32 +65,20 @@ let graph = create_agent(model, tools, options)?;
 
 ## File & Shell Hooks
 
-The middleware trait also provides hooks for file operations and shell commands. These are called by Deep Agent tools when performing filesystem or command operations, allowing you to intercept and authorize or deny actions.
+The middleware system also provides hooks for file operations and shell commands. These are called by Deep Agent tools when performing filesystem or command operations, allowing you to intercept and authorize or deny actions.
 
 ```rust,ignore
 use synaptic::middleware::{FileOp, FileOpDecision, CommandOp, CommandDecision};
 
+struct MySecurityMiddleware;
+
 #[async_trait]
-impl AgentMiddleware for MySecurityMiddleware {
-    async fn before_file_op(&self, op: &FileOp) -> Result<FileOpDecision, SynapticError> {
-        if op.path.starts_with("/etc") {
-            Ok(FileOpDecision::Deny("Cannot modify system files".to_string()))
-        } else {
-            Ok(FileOpDecision::Allow)
-        }
-    }
-
-    async fn before_command(&self, cmd: &CommandOp) -> Result<CommandDecision, SynapticError> {
-        if cmd.command.contains("rm -rf") {
-            Ok(CommandDecision::Deny("Dangerous command blocked".to_string()))
-        } else {
-            Ok(CommandDecision::Allow)
-        }
-    }
+impl Interceptor for MySecurityMiddleware {
+    // ... model/tool hooks as needed ...
 }
-```
 
-All four hooks (`before_file_op`, `after_file_op`, `before_command`, `after_command`) have default implementations that allow all operations. The `MiddlewareChain` dispatches these through `run_before_file_op()`, `run_after_file_op()`, `run_before_command()`, and `run_after_command()`.
+// File/shell hooks are dispatched separately through the InterceptorChain.
+```
 
 ## Built-in Middlewares
 
@@ -113,7 +97,7 @@ All four hooks (`before_file_op`, `after_file_op`, `before_command`, `after_comm
 
 ## Writing a Custom Middleware
 
-The easiest way to define a middleware is with the corresponding macro. Each lifecycle hook has its own macro (`#[before_agent]`, `#[before_model]`, `#[after_model]`, `#[after_agent]`, `#[wrap_model_call]`, `#[wrap_tool_call]`, `#[dynamic_prompt]`). The macro generates the struct, `AgentMiddleware` trait implementation, and a factory function automatically.
+The easiest way to define a middleware is with the corresponding macro. Each lifecycle hook has its own macro (`#[before_model]`, `#[after_model]`, `#[wrap_model_call]`, `#[wrap_tool_call]`, `#[system_prompt]`). The macro generates the struct, `Interceptor` trait implementation, and a factory function automatically.
 
 ```rust,ignore
 use synaptic::macros::before_model;
@@ -137,4 +121,4 @@ let options = AgentOptions {
 let graph = create_agent(model, tools, options)?;
 ```
 
-> **Note:** The `log_model_call()` factory function returns `Arc<dyn AgentMiddleware>`. For stateful middleware, use `#[field]` parameters on the function. See [Procedural Macros](../macros.md#middleware-macros) for the full reference, including all seven middleware macros and stateful middleware with `#[field]`.
+> **Note:** The `log_model_call()` factory function returns `Arc<dyn Interceptor>`. For stateful middleware, use `#[field]` parameters on the function. See [Procedural Macros](../macros.md#middleware-macros) for the full reference, including all five middleware macros and stateful middleware with `#[field]`.

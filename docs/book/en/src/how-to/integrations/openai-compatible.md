@@ -8,10 +8,10 @@ Add the `openai` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
-All OpenAI-compatible providers use the `synaptic-openai` crate under the hood, so only the `openai` feature is required.
+All OpenAI-compatible providers use the `synaptic-models` crate under the hood, so only the `openai` feature is required.
 
 ## Supported Providers
 

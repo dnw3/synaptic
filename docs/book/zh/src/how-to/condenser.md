@@ -82,7 +82,7 @@ let pipeline = PipelineCondenser::new(vec![
 
 ## CondenserMiddleware
 
-将任意压缩器包装为 `AgentMiddleware`，在每次模型调用前自动压缩消息。
+将任意压缩器包装为 `Interceptor`，在每次模型调用前自动压缩消息。
 
 ```rust,ignore
 use synaptic::condenser::CondenserMiddleware;

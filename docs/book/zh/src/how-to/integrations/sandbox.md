@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["sandbox"] }
+synaptic = { version = "0.4", features = ["sandbox"] }
 ```
 
 ## SandboxBackend Trait

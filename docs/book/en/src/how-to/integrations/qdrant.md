@@ -8,7 +8,7 @@ Add the `qdrant` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai", "qdrant"] }
+synaptic = { version = "0.4", features = ["openai", "qdrant"] }
 ```
 
 Start a Qdrant instance (e.g. via Docker):

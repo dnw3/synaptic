@@ -6,7 +6,7 @@ Run untrusted code safely inside containers with resource limits. The `synaptic-
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["sandbox"] }
+synaptic = { version = "0.4", features = ["sandbox"] }
 ```
 
 ## SandboxBackend Trait

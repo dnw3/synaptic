@@ -68,8 +68,8 @@ The path you provide becomes the agent's root directory. All tool paths are reso
 > **Feature gate:** `FilesystemBackend` requires the `filesystem` Cargo feature on `synaptic-deep`. The `synaptic` facade does not forward this feature, so add `synaptic-deep` as an explicit dependency:
 >
 > ```toml
-> synaptic = { version = "0.2", features = ["deep"] }
-> synaptic-deep = { version = "0.2", features = ["filesystem"] }
+> synaptic = { version = "0.4", features = ["deep"] }
+> synaptic-deep = { version = "0.4", features = ["filesystem"] }
 > ```
 
 **When to use:** Local CLI tools, coding assistants, any scenario where the agent must interact with real files.

@@ -10,35 +10,25 @@ cargo doc --workspace --open
 
 ## Crate 一览
 
-下表列出了 Synaptic 的所有 crate 及其职责：
+v0.4 将原来的 47 个 crate 整合为 18 个。下表列出了 Synaptic 的所有 crate 及其职责：
 
 | Crate | 说明 |
 |---|---|
 | [`synaptic`](https://docs.rs/synaptic) | 统一 facade crate，重新导出所有子 crate |
 | [`synaptic-core`](https://docs.rs/synaptic-core) | 核心 trait 和类型：`ChatModel`、`Message`、`Tool`、`SynapticError`、`RunnableConfig` 等 |
-| [`synaptic-models`](https://docs.rs/synaptic-models) | `ProviderBackend` 抽象、`ScriptedChatModel` 测试替身、ChatModel 包装器（重试、速率限制、结构化输出、BoundTools） |
-| [`synaptic-prompts`](https://docs.rs/synaptic-prompts) | 提示模板：`PromptTemplate`、`ChatPromptTemplate`、`FewShotChatMessagePromptTemplate` |
-| [`synaptic-parsers`](https://docs.rs/synaptic-parsers) | 输出解析器：`StrOutputParser`、`JsonOutputParser`、`StructuredOutputParser`、`ListOutputParser`、`EnumOutputParser` 等 |
-| [`synaptic-runnables`](https://docs.rs/synaptic-runnables) | LCEL 组合原语：`Runnable` trait、`BoxRunnable`、管道运算符、`RunnableParallel`、`RunnableBranch` 等 |
-| [`synaptic-tools`](https://docs.rs/synaptic-tools) | 工具注册表（`ToolRegistry`）和串行执行器（`SerialToolExecutor`） |
+| [`synaptic-models`](https://docs.rs/synaptic-models) | 所有 LLM 提供商（`OpenAiChatModel`、`AnthropicChatModel`、`GeminiChatModel`、`OllamaChatModel` 等）+ `ProviderBackend` 抽象、`ScriptedChatModel` 测试替身、ChatModel 包装器。通过 feature flag 启用：`openai`、`anthropic`、`gemini`、`ollama`、`bedrock`、`cohere` |
+| [`synaptic-integrations`](https://docs.rs/synaptic-integrations) | LCEL 组合原语（`Runnable` trait、`BoxRunnable`、管道运算符）、提示模板、输出解析器、回调处理器、会话管理、上下文压缩策略、密钥脱敏 |
+| [`synaptic-tools`](https://docs.rs/synaptic-tools) | 工具注册表（`ToolRegistry`）、串行执行器（`SerialToolExecutor`）+ 内置工具：PDF 加载器、Tavily 搜索、SQL 工具包。通过 feature flag 启用：`pdf`、`tavily`、`sqltoolkit` |
 | [`synaptic-memory`](https://docs.rs/synaptic-memory) | 会话记忆策略：Buffer、Window、Summary、Token Buffer、Summary Buffer |
 | [`synaptic-graph`](https://docs.rs/synaptic-graph) | LangGraph 风格状态机：`StateGraph`、`CompiledGraph`、`ToolNode`、`create_react_agent` |
-| [`synaptic-callbacks`](https://docs.rs/synaptic-callbacks) | 回调处理器：`RecordingCallback`、`TracingCallback`、`CompositeCallback` |
-| [`synaptic-cache`](https://docs.rs/synaptic-cache) | LLM 缓存：`InMemoryCache`（可选 TTL）、`SemanticCache`（嵌入相似度匹配） |
-| [`synaptic-loaders`](https://docs.rs/synaptic-loaders) | 文档加载器：`TextLoader`、`JsonLoader`、`CsvLoader`、`DirectoryLoader` |
-| [`synaptic-splitters`](https://docs.rs/synaptic-splitters) | 文本分割器：`CharacterTextSplitter`、`RecursiveCharacterTextSplitter`、`MarkdownHeaderTextSplitter`、`TokenTextSplitter` |
-| [`synaptic-embeddings`](https://docs.rs/synaptic-embeddings) | 嵌入模型：`Embeddings` trait、`FakeEmbeddings`、`CacheBackedEmbeddings` |
-| [`synaptic-vectorstores`](https://docs.rs/synaptic-vectorstores) | 向量存储：`InMemoryVectorStore`（cosine 相似度）、`VectorStoreRetriever` |
-| [`synaptic-retrieval`](https://docs.rs/synaptic-retrieval) | 检索器：`BM25Retriever`、`MultiQueryRetriever`、`EnsembleRetriever`、`SelfQueryRetriever`、`ParentDocumentRetriever` 等 |
-| [`synaptic-openai`](https://docs.rs/synaptic-openai) | OpenAI 提供商：`OpenAiChatModel`、`OpenAiEmbeddings` |
-| [`synaptic-anthropic`](https://docs.rs/synaptic-anthropic) | Anthropic 提供商：`AnthropicChatModel` |
-| [`synaptic-gemini`](https://docs.rs/synaptic-gemini) | Google Gemini 提供商：`GeminiChatModel` |
-| [`synaptic-ollama`](https://docs.rs/synaptic-ollama) | Ollama 提供商：`OllamaChatModel`、`OllamaEmbeddings` |
-| [`synaptic-qdrant`](https://docs.rs/synaptic-qdrant) | Qdrant 向量存储：`QdrantVectorStore` |
-| [`synaptic-postgres`](https://docs.rs/synaptic-postgres) | PostgreSQL 集成：`PgVectorStore`、`PgStore`、`PgCache`、`PgCheckpointer` |
-| [`synaptic-redis`](https://docs.rs/synaptic-redis) | Redis 存储和缓存：`RedisStore`、`RedisCache` |
-| [`synaptic-pdf`](https://docs.rs/synaptic-pdf) | PDF 文档加载器：`PdfLoader` |
+| [`synaptic-store`](https://docs.rs/synaptic-store) | 键值存储（`InMemoryStore`、`FileStore`）+ 持久化后端：PostgreSQL（`PgStore`、`PgCache`、`PgCheckpointer`）、Redis（`RedisStore`、`RedisCache`、`RedisCheckpointer`）、SQLite（`SqliteCheckpointer`）、MongoDB（`MongoCheckpointer`）。通过 feature flag 启用：`postgres`、`redis`、`sqlite`、`mongodb` |
+| [`synaptic-rag`](https://docs.rs/synaptic-rag) | 完整 RAG 管道：文档加载器、文本分割器、嵌入模型、向量存储、检索器 + 向量数据库后端：Qdrant、Pinecone、Chroma、Elasticsearch、pgvector 等。通过 feature flag 启用 |
 | [`synaptic-eval`](https://docs.rs/synaptic-eval) | 评估器：`ExactMatchEvaluator`、`RegexMatchEvaluator`、`LLMJudgeEvaluator` 等 |
+| [`synaptic-middleware`](https://docs.rs/synaptic-middleware) | `Interceptor` trait、`InterceptorChain`、内置中间件 |
+| [`synaptic-mcp`](https://docs.rs/synaptic-mcp) | Model Context Protocol 适配器 |
+| [`synaptic-macros`](https://docs.rs/synaptic-macros) | 过程宏：`#[tool]`、`#[chain]`、`#[entrypoint]`、`#[traceable]` |
+| [`synaptic-deep`](https://docs.rs/synaptic-deep) | Deep Agent 运行框架 |
+| [`synaptic-lark`](https://docs.rs/synaptic-lark) | 飞书/Lark 集成（文档加载器、机器人框架、多维表格检查点） |
 
 ## 常用导入
 
@@ -51,7 +41,7 @@ use synaptic::core::{Tool, ToolCall, ToolChoice, ToolDefinition};
 use synaptic::core::{RunnableConfig, TokenUsage, RunEvent};
 use synaptic::core::{AIMessageChunk, ChatStream};
 
-// 提供商模型
+// 提供商模型（均在 synaptic-models 中，通过 feature flag 启用）
 use synaptic::openai::OpenAiChatModel;
 use synaptic::anthropic::AnthropicChatModel;
 use synaptic::gemini::GeminiChatModel;
@@ -61,16 +51,16 @@ use synaptic::ollama::OllamaChatModel;
 use synaptic::models::{ScriptedChatModel, RetryChatModel, RateLimitedChatModel};
 use synaptic::models::StructuredOutputChatModel;
 
-// Runnables
+// Runnables（在 synaptic-integrations 中）
 use synaptic::runnables::{Runnable, BoxRunnable, RunnableLambda};
 use synaptic::runnables::{RunnableParallel, RunnableBranch, RunnablePassthrough};
 use synaptic::runnables::{RunnableAssign, RunnablePick, RunnableWithFallbacks};
 
-// Prompts
+// Prompts（在 synaptic-integrations 中）
 use synaptic::prompts::{ChatPromptTemplate, MessageTemplate};
 use synaptic::prompts::FewShotChatMessagePromptTemplate;
 
-// Parsers
+// Parsers（在 synaptic-integrations 中）
 use synaptic::parsers::{StrOutputParser, JsonOutputParser, StructuredOutputParser};
 
 // Graph
@@ -78,7 +68,7 @@ use synaptic::graph::{StateGraph, CompiledGraph, MessageState, ToolNode};
 use synaptic::graph::{create_react_agent, StreamMode, GraphEvent};
 use synaptic::graph::StoreCheckpointer;
 
-// Retrieval
+// Retrieval（在 synaptic-rag 中）
 use synaptic::retrieval::{Retriever, InMemoryRetriever, BM25Retriever};
 use synaptic::vectorstores::{InMemoryVectorStore, VectorStoreRetriever};
 use synaptic::embeddings::FakeEmbeddings;

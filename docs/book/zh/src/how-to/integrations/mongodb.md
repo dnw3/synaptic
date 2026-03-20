@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai", "mongodb"] }
+synaptic = { version = "0.4", features = ["openai", "mongodb"] }
 ```
 
 ### 前置条件

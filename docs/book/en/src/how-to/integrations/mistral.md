@@ -2,13 +2,13 @@
 
 [Mistral AI](https://mistral.ai/) offers state-of-the-art open and proprietary language models with excellent multilingual support and strong function-calling capabilities. The Mistral API is fully compatible with the OpenAI API format.
 
-Mistral AI is available as a compatibility submodule inside `synaptic-openai`. No separate crate is needed. The submodule also provides an `embeddings` helper for the Mistral embeddings endpoint.
+Mistral AI is available as a compatibility submodule inside `synaptic-models`. No separate crate is needed. The submodule also provides an `embeddings` helper for the Mistral embeddings endpoint.
 
 ## Setup
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 Obtain an API key from [console.mistral.ai](https://console.mistral.ai/).

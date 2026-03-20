@@ -11,7 +11,7 @@ Add the `redis` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai", "redis"] }
+synaptic = { version = "0.4", features = ["openai", "redis"] }
 ```
 
 Ensure you have a Redis server running:
@@ -201,7 +201,7 @@ Enable the `redis-cluster` feature in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["redis-cluster"] }
+synaptic = { version = "0.4", features = ["redis-cluster"] }
 ```
 
 ### Creating a cluster store

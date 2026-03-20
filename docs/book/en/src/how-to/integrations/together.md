@@ -2,13 +2,13 @@
 
 [Together AI](https://www.together.ai/) provides access to leading open-source models (Llama, DeepSeek, Qwen, Mixtral) via an OpenAI-compatible API. It offers serverless inference at competitive prices, making it ideal for production workloads that require state-of-the-art open models.
 
-Together AI is available as a compatibility submodule inside `synaptic-openai`. No separate crate is needed.
+Together AI is available as a compatibility submodule inside `synaptic-models`. No separate crate is needed.
 
 ## Setup
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 Sign up at [api.together.xyz](https://api.together.xyz/) to obtain an API key.

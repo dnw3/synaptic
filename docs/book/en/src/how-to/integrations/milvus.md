@@ -1,7 +1,7 @@
 # Milvus
 
 [Milvus](https://milvus.io/) is a purpose-built vector database designed for
-billion-scale Approximate Nearest Neighbor Search (ANNS). The `synaptic-milvus`
+billion-scale Approximate Nearest Neighbor Search (ANNS). The `synaptic-rag` (with feature `milvus`)
 crate implements the `VectorStore` trait using the Milvus REST API v2.
 
 ## Setup
@@ -10,7 +10,7 @@ Add the feature flag to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["milvus"] }
+synaptic = { version = "0.4", features = ["milvus"] }
 ```
 
 Run Milvus locally with Docker:

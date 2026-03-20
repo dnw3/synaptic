@@ -6,7 +6,7 @@ Load content from Notion pages into Synaptic documents using the Notion API.
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["loaders"] }
+synaptic = { version = "0.4", features = ["loaders"] }
 ```
 
 Create an integration at [notion.so/my-integrations](https://www.notion.so/my-integrations) and get an Internal Integration Token. Share the page with your integration.

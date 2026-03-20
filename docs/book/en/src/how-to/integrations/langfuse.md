@@ -8,7 +8,7 @@ as Langfuse traces for debugging, cost monitoring, and quality evaluation.
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["langfuse"] }
+synaptic = { version = "0.4", features = ["langfuse"] }
 ```
 
 Sign up at [cloud.langfuse.com](https://cloud.langfuse.com/) or self-host.

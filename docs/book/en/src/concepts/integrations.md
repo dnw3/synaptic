@@ -6,27 +6,27 @@ Synaptic uses a **provider-centric** architecture for external service integrati
 
 ```text
 synaptic-core (defines traits)
-  ├── synaptic-openai          (ChatModel + Embeddings)
-  │     └── compat/            (10 OpenAI-compatible provider submodules:
-  │           groq, deepseek, fireworks, together, xai, perplexity,
-  │           mistral, huggingface, cohere, openrouter)
-  ├── synaptic-anthropic       (ChatModel)
-  ├── synaptic-gemini          (ChatModel)
-  ├── synaptic-ollama          (ChatModel + Embeddings)
-  ├── synaptic-bedrock         (ChatModel)
-  ├── synaptic-cohere          (DocumentCompressor + Embeddings)
-  ├── synaptic-qdrant          (VectorStore)
-  ├── synaptic-postgres        (VectorStore + Store + LlmCache + Checkpointer)
-  ├── synaptic-pinecone        (VectorStore)
-  ├── synaptic-chroma          (VectorStore)
-  ├── synaptic-mongodb         (VectorStore)
-  ├── synaptic-elasticsearch   (VectorStore)
-  ├── synaptic-weaviate        (VectorStore)
-  ├── synaptic-redis           (Store + LlmCache + Checkpointer)
-  ├── synaptic-sqlite          (LlmCache)
-  ├── synaptic-pdf             (Loader)
-  ├── synaptic-tavily          (Tool)
-  └── synaptic-sqltoolkit      (Tool×3: ListTables, DescribeTable, ExecuteQuery)
+  ├── synaptic-models           (all LLM providers, feature-gated)
+  │     ├── openai              (ChatModel + Embeddings + 10 compat submodules)
+  │     ├── anthropic           (ChatModel)
+  │     ├── gemini              (ChatModel)
+  │     ├── ollama              (ChatModel + Embeddings)
+  │     ├── bedrock             (ChatModel)
+  │     └── cohere              (DocumentCompressor + Embeddings)
+  ├── synaptic-rag              (full RAG pipeline, feature-gated)
+  │     ├── loaders, splitters, embeddings, vectorstores, retrieval
+  │     └── backends: qdrant, pinecone, chroma, elasticsearch,
+  │           weaviate, mongodb, milvus, opensearch, lancedb, pgvector
+  ├── synaptic-store            (key-value + persistent backends, feature-gated)
+  │     ├── postgres            (Store + Cache + Checkpointer)
+  │     ├── redis               (Store + Cache + Checkpointer)
+  │     ├── sqlite              (Cache + Checkpointer)
+  │     └── mongodb             (Checkpointer)
+  ├── synaptic-tools            (tool system + built-in tools, feature-gated)
+  │     ├── pdf                 (Loader)
+  │     ├── tavily              (Tool)
+  │     └── sqltoolkit          (Tool×3)
+  └── synaptic-integrations     (runnables, prompts, parsers, callbacks, cache, session)
 ```
 
 All integration crates share a common pattern:
@@ -90,7 +90,7 @@ Each integration has its own feature flag in the `synaptic` facade crate:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai", "qdrant"] }
+synaptic = { version = "0.4", features = ["openai", "qdrant"] }
 ```
 
 | Feature | Integration |
@@ -246,11 +246,11 @@ This pipeline demonstrates:
 
 To add a new integration:
 
-1. Create a new crate `synaptic-{name}` in `crates/`
-2. Depend on `synaptic-core` for trait definitions
-3. Implement the appropriate trait(s)
-4. Add a feature flag in the `synaptic` facade crate
-5. Re-export via `pub use synaptic_{name} as {name}` in the facade `lib.rs`
+1. Add a new module to the appropriate consolidated crate (e.g., `synaptic-models` for a new provider, `synaptic-rag` for a new vector store, `synaptic-store` for a new storage backend)
+2. Gate it behind a feature flag
+3. Implement the appropriate trait(s) from `synaptic-core`
+4. Add the feature flag to the `synaptic` facade crate
+5. Re-export in the facade `lib.rs`
 
 ## See Also
 

@@ -8,7 +8,7 @@ Synaptic 的 OpenTelemetry 回调与 OpenTelemetry 生态系统集成，
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["callbacks", "otel"] }
+synaptic = { version = "0.4", features = ["callbacks", "otel"] }
 opentelemetry = "0.27"
 opentelemetry_sdk = { version = "0.27", features = ["rt-tokio"] }
 opentelemetry-otlp = { version = "0.27", features = ["http-proto"] }

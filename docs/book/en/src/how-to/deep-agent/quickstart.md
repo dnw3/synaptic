@@ -8,7 +8,7 @@ Add the required crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["deep", "openai"] }
+synaptic = { version = "0.4", features = ["deep", "openai"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -96,7 +96,7 @@ Key defaults:
 | `summarization_threshold` | 0.85 |
 | `eviction_threshold` | 20,000 |
 | `max_subagent_depth` | 3 |
-| `skills_dir` | `".skills"` |
+| `skills_dirs` | `[".skills"]` |
 | `memory_file` | `"AGENTS.md"` |
 | `enable_subagents` | `true` |
 | `enable_filesystem` | `true` |

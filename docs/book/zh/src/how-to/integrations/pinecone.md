@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai", "pinecone"] }
+synaptic = { version = "0.4", features = ["openai", "pinecone"] }
 ```
 
 你需要在 Pinecone 控制台中创建一个索引，并获取以下信息：

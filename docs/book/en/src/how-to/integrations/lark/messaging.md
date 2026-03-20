@@ -70,7 +70,7 @@ The bot features require the `bot` feature flag.
 
 ```toml
 [dependencies]
-synaptic-lark = { version = "0.2", features = ["bot"] }
+synaptic-lark = { version = "0.4", features = ["bot"] }
 ```
 
 ### LarkBotClient

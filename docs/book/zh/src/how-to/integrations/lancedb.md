@@ -8,14 +8,14 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["lancedb"] }
+synaptic = { version = "0.4", features = ["lancedb"] }
 ```
 
 无需 Docker 容器或外部服务。
 
 ## 依赖说明
 
-`lancedb` crate（>= 0.20）具有要求 Rust >= 1.91 的传递依赖项。当前 `synaptic-lancedb` crate 提供一个纯 Rust 内存后端，实现完整的 `VectorStore` 接口，使您的应用程序能够在 MSRV 1.88 下编译和测试。待工具链需求对齐后，实现将升级为使用原生 Lance 磁盘存储。
+`lancedb` crate（>= 0.20）具有要求 Rust >= 1.91 的传递依赖项。当前 `synaptic-rag` crate（feature `lancedb`） 提供一个纯 Rust 内存后端，实现完整的 `VectorStore` 接口，使您的应用程序能够在 MSRV 1.88 下编译和测试。待工具链需求对齐后，实现将升级为使用原生 Lance 磁盘存储。
 
 ## 使用示例
 

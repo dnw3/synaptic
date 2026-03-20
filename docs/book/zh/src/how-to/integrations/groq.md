@@ -2,13 +2,13 @@
 
 [Groq](https://groq.com/) 利用其专有的 LPU（语言处理单元）硬件，提供超高速的 LLM 推理服务。响应速度通常超过每秒 500 个 token，使 Groq 非常适合实时应用、交互式 Agent 和对延迟敏感的流水线。
 
-Groq API 与 OpenAI API 格式完全兼容。Groq 作为 `synaptic-openai` 内的兼容子模块提供，无需单独的 crate。
+Groq API 与 OpenAI API 格式完全兼容。Groq 作为 `synaptic-models` 内的兼容子模块提供，无需单独的 crate。
 
 ## 设置
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 前往 [console.groq.com](https://console.groq.com/) 注册并获取 API 密钥。密钥以 `gsk-` 开头。

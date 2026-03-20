@@ -2,13 +2,13 @@
 
 [xAI](https://x.ai/) develops the Grok family of LLMs known for their real-time reasoning capabilities and integration with X (Twitter) data. The Grok API is OpenAI-compatible.
 
-xAI is available as a compatibility submodule inside `synaptic-openai`. No separate crate is needed.
+xAI is available as a compatibility submodule inside `synaptic-models`. No separate crate is needed.
 
 ## Setup
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 Sign up at [x.ai](https://x.ai/) to obtain an API key.

@@ -18,7 +18,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["scheduler"] }
+synaptic = { version = "0.4", features = ["scheduler"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 

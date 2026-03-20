@@ -4,7 +4,7 @@ Deep Agent 可以通过在工作区中读写记忆文件（默认为 `AGENTS.md`
 
 ## 工作原理
 
-`DeepMemoryMiddleware` 实现了 `AgentMiddleware`。在每次模型调用时，其 `before_model()` 钩子会从后端读取配置的记忆文件。如果文件存在且非空，其内容会被包裹在 `<agent_memory>` 标签中并追加到系统提示词：
+`DeepMemoryMiddleware` 实现了 `Interceptor`。在每次模型调用时，其 `before_model()` 钩子会从后端读取配置的记忆文件。如果文件存在且非空，其内容会被包裹在 `<agent_memory>` 标签中并追加到系统提示词：
 
 ```text
 <agent_memory>
@@ -85,7 +85,7 @@ impl DeepMemoryMiddleware {
 }
 ```
 
-它实现了 `AgentMiddleware`，只有一个钩子：
+它实现了 `Interceptor`，只有一个钩子：
 
 - **`before_model()`** -- 从后端读取记忆文件。如果内容非空，将其包裹在 `<agent_memory>` 标签中并追加到系统提示词。如果文件缺失或为空，则不做任何操作。
 

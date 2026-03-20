@@ -4,7 +4,7 @@ The key-value store provides persistent, namespaced storage for structured data.
 
 ## The Store Trait
 
-The `Store` trait is defined in `synaptic-core` and implemented in `synaptic-store`:
+The `Store` trait is defined in `synaptic-core` and implemented in the `synaptic-store` crate:
 
 ```rust
 #[async_trait]

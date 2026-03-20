@@ -21,7 +21,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["postgres"] }
+synaptic = { version = "0.4", features = ["postgres"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 

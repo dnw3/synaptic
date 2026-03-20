@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["gemini"] }
+synaptic = { version = "0.4", features = ["gemini"] }
 ```
 
 ### API 密钥

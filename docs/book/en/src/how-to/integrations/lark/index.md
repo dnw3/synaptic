@@ -1,12 +1,12 @@
 # Feishu / Lark Integration
 
-The `synaptic-lark` crate integrates Synaptic with the [Feishu/Lark Open Platform](https://open.feishu.cn/), providing document loaders and Agent tools for interacting with Feishu services.
+The `synaptic-lark` crate integrates Synaptic with the [Feishu/Lark Open Platform](https://open.feishu.cn/), providing document loaders, bot framework, and Agent tools for interacting with Feishu services.
 
 ## Setup
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["lark"] }
+synaptic = { version = "0.4", features = ["lark"] }
 ```
 
 Create a custom app at the [Feishu Developer Console](https://open.feishu.cn/app), obtain your **App ID** and **App Secret**, and enable the required scopes (see [Permissions](#permissions) below).

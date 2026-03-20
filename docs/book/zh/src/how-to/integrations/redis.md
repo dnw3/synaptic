@@ -15,7 +15,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["redis"] }
+synaptic = { version = "0.4", features = ["redis"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -240,7 +240,7 @@ Synaptic 支持 Redis Cluster，适用于需要水平扩展和高可用的生产
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["redis-cluster"] }
+synaptic = { version = "0.4", features = ["redis-cluster"] }
 ```
 
 ### 创建集群 Store

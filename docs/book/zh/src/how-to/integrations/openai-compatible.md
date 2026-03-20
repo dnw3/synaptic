@@ -8,10 +8,10 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
-所有 OpenAI 兼容的提供商底层都使用 `synaptic-openai` crate，因此只需启用 `openai` feature。
+所有 OpenAI 兼容的提供商底层都使用 `synaptic-models` crate，因此只需启用 `openai` feature。
 
 ## 支持的提供商
 

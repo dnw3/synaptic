@@ -1,35 +1,25 @@
 # API Reference
 
-Synaptic is organized as a workspace of focused crates. Each crate has its own API documentation generated from doc comments in the source code.
+Synaptic is organized as a workspace of 18 focused crates (consolidated from 47 in v0.3). Each crate has its own API documentation generated from doc comments in the source code.
 
 ## Crate Reference
 
 | Crate | Description | Docs |
 |-------|-------------|------|
 | `synaptic-core` | Shared traits and types (`ChatModel`, `Tool`, `Message`, `SynapticError`, etc.) | [docs.rs](https://docs.rs/synaptic-core) |
-| `synaptic-models` | `ProviderBackend` abstraction, `ScriptedChatModel` test double, wrappers (retry, rate limit, structured output, bound tools) | [docs.rs](https://docs.rs/synaptic-models) |
-| `synaptic-openai` | OpenAI provider (`OpenAiChatModel`, `OpenAiEmbeddings`) | [docs.rs](https://docs.rs/synaptic-openai) |
-| `synaptic-anthropic` | Anthropic provider (`AnthropicChatModel`) | [docs.rs](https://docs.rs/synaptic-anthropic) |
-| `synaptic-gemini` | Google Gemini provider (`GeminiChatModel`) | [docs.rs](https://docs.rs/synaptic-gemini) |
-| `synaptic-ollama` | Ollama provider (`OllamaChatModel`, `OllamaEmbeddings`) | [docs.rs](https://docs.rs/synaptic-ollama) |
-| `synaptic-runnables` | LCEL composition (`Runnable` trait, `BoxRunnable`, pipe operator, parallel, branch, fallbacks, assign, pick) | [docs.rs](https://docs.rs/synaptic-runnables) |
-| `synaptic-prompts` | Prompt templates (`PromptTemplate`, `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate`) | [docs.rs](https://docs.rs/synaptic-prompts) |
-| `synaptic-parsers` | Output parsers (string, JSON, structured, list, enum, boolean, XML, fixing, retry) | [docs.rs](https://docs.rs/synaptic-parsers) |
-| `synaptic-tools` | Tool system (`ToolRegistry`, `SerialToolExecutor`, `ParallelToolExecutor`) | [docs.rs](https://docs.rs/synaptic-tools) |
+| `synaptic-models` | All LLM providers (`OpenAiChatModel`, `AnthropicChatModel`, `GeminiChatModel`, `OllamaChatModel`, etc.) + `ProviderBackend` abstraction, `ScriptedChatModel` test double, wrappers (retry, rate limit, structured output, bound tools). Enable providers via feature flags: `openai`, `anthropic`, `gemini`, `ollama`, `bedrock`, `cohere` | [docs.rs](https://docs.rs/synaptic-models) |
+| `synaptic-integrations` | LCEL composition (`Runnable` trait, `BoxRunnable`, pipe operator, parallel, branch, fallbacks, assign, pick), prompt templates, output parsers, callback handlers, session management, condenser strategies, secrets masking | [docs.rs](https://docs.rs/synaptic-integrations) |
+| `synaptic-tools` | Tool system (`ToolRegistry`, `SerialToolExecutor`, `ParallelToolExecutor`) + built-in tools: PDF loader (`PdfLoader`), Tavily search, SQL toolkit. Enable via feature flags: `pdf`, `tavily`, `sqltoolkit` | [docs.rs](https://docs.rs/synaptic-tools) |
 | `synaptic-memory` | Memory strategies (buffer, window, summary, token buffer, summary buffer, `RunnableWithMessageHistory`) | [docs.rs](https://docs.rs/synaptic-memory) |
-| `synaptic-callbacks` | Callback handlers (`RecordingCallback`, `TracingCallback`, `CompositeCallback`) | [docs.rs](https://docs.rs/synaptic-callbacks) |
-| `synaptic-retrieval` | Retriever implementations (in-memory, BM25, multi-query, ensemble, contextual compression, self-query, parent document) | [docs.rs](https://docs.rs/synaptic-retrieval) |
-| `synaptic-loaders` | Document loaders (text, JSON, CSV, directory, file, markdown, web) | [docs.rs](https://docs.rs/synaptic-loaders) |
-| `synaptic-splitters` | Text splitters (character, recursive character, markdown header, token, HTML header, language) | [docs.rs](https://docs.rs/synaptic-splitters) |
-| `synaptic-embeddings` | Embeddings trait, `FakeEmbeddings`, `CacheBackedEmbeddings` | [docs.rs](https://docs.rs/synaptic-embeddings) |
-| `synaptic-vectorstores` | Vector store implementations (`InMemoryVectorStore`, `VectorStoreRetriever`, `MultiVectorRetriever`) | [docs.rs](https://docs.rs/synaptic-vectorstores) |
-| `synaptic-qdrant` | Qdrant vector store (`QdrantVectorStore`) | [docs.rs](https://docs.rs/synaptic-qdrant) |
-| `synaptic-postgres` | PostgreSQL integration (`PgVectorStore`, `PgStore`, `PgCache`, `PgCheckpointer`) | [docs.rs](https://docs.rs/synaptic-postgres) |
-| `synaptic-redis` | Redis store and cache (`RedisStore`, `RedisCache`) | [docs.rs](https://docs.rs/synaptic-redis) |
-| `synaptic-pdf` | PDF document loader (`PdfLoader`) | [docs.rs](https://docs.rs/synaptic-pdf) |
 | `synaptic-graph` | Graph orchestration (`StateGraph`, `CompiledGraph`, `ToolNode`, `create_react_agent`, checkpointing, streaming) | [docs.rs](https://docs.rs/synaptic-graph) |
-| `synaptic-cache` | LLM caching (`InMemoryCache`, `SemanticCache`, `CachedChatModel`) | [docs.rs](https://docs.rs/synaptic-cache) |
+| `synaptic-store` | Key-value store (`InMemoryStore`, `FileStore`) + persistent backends: PostgreSQL (`PgStore`, `PgCache`, `PgCheckpointer`), Redis (`RedisStore`, `RedisCache`, `RedisCheckpointer`), SQLite (`SqliteCache`, `SqliteCheckpointer`), MongoDB (`MongoCheckpointer`). Enable via feature flags: `postgres`, `redis`, `sqlite`, `mongodb` | [docs.rs](https://docs.rs/synaptic-store) |
+| `synaptic-rag` | Full RAG pipeline: document loaders, text splitters, embeddings, vector stores (`InMemoryVectorStore`, `VectorStoreRetriever`, `MultiVectorRetriever`), retrievers (BM25, multi-query, ensemble, contextual compression, self-query, parent document) + vector store backends: Qdrant, Pinecone, Chroma, Elasticsearch, Weaviate, Milvus, OpenSearch, LanceDB, pgvector. Enable via feature flags: `qdrant`, `pinecone`, `chroma`, `elasticsearch`, `weaviate`, `milvus`, `opensearch`, `lancedb`, `pgvector` | [docs.rs](https://docs.rs/synaptic-rag) |
 | `synaptic-eval` | Evaluation framework (exact match, regex, JSON validity, embedding distance, LLM judge evaluators; `Dataset` and `evaluate()`) | [docs.rs](https://docs.rs/synaptic-eval) |
+| `synaptic-middleware` | `Interceptor` trait, `InterceptorChain`, built-in middleware (model retry, circuit breaker, model fallback, tool retry, SSRF guard, summarization, human-in-the-loop approval, tool call limiting, security) | [docs.rs](https://docs.rs/synaptic-middleware) |
+| `synaptic-mcp` | Model Context Protocol adapters (`MultiServerMcpClient`, Stdio/SSE/HTTP transports) | [docs.rs](https://docs.rs/synaptic-mcp) |
+| `synaptic-macros` | Procedural macros (`#[tool]`, `#[chain]`, `#[entrypoint]`, `#[task]`, `#[traceable]`) | [docs.rs](https://docs.rs/synaptic-macros) |
+| `synaptic-deep` | Deep Agent harness (`Backend` trait, filesystem tools, sub-agents, skills, `create_deep_agent()`) | [docs.rs](https://docs.rs/synaptic-deep) |
+| `synaptic-lark` | Feishu/Lark integration (document loaders, bot framework, Bitable checkpointer) | [docs.rs](https://docs.rs/synaptic-lark) |
 | `synaptic` | Unified facade crate that re-exports all sub-crates under a single namespace | [docs.rs](https://docs.rs/synaptic) |
 
 > **Note:** The docs.rs links above will become active once the crates are published to crates.io. In the meantime, generate local documentation as described below.
@@ -56,7 +46,7 @@ If you prefer a single dependency instead of listing individual crates, use the 
 
 ```toml
 [dependencies]
-synaptic = "0.2"
+synaptic = "0.4"
 ```
 
 Then import through the unified namespace:

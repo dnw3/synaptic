@@ -66,7 +66,7 @@ You will also need the `"openai"` feature enabled in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 The rest of the code stays the same -- `ChatModel::chat()` has the same signature regardless of provider.

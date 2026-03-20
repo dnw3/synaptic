@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["anthropic"] }
+synaptic = { version = "0.4", features = ["anthropic"] }
 ```
 
 ### API 密钥

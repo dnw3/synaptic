@@ -2,13 +2,13 @@
 
 [Perplexity AI](https://www.perplexity.ai/) provides online search-augmented language models through its Sonar model family. Unlike traditional LLMs, Sonar models access real-time web information and return cited sources, making them ideal for factual queries and research tasks.
 
-Perplexity AI is available as a compatibility submodule inside `synaptic-openai`. No separate crate is needed.
+Perplexity AI is available as a compatibility submodule inside `synaptic-models`. No separate crate is needed.
 
 ## Setup
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 Sign up at [perplexity.ai](https://www.perplexity.ai/) to obtain an API key (prefixed with `pplx-`).

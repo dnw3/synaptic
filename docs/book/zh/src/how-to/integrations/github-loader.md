@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["loaders"] }
+synaptic = { version = "0.4", features = ["loaders"] }
 ```
 
 ## 使用示例

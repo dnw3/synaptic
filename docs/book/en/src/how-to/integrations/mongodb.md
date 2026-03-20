@@ -8,7 +8,7 @@ Add the `mongodb` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai", "mongodb"] }
+synaptic = { version = "0.4", features = ["openai", "mongodb"] }
 ```
 
 ### Prerequisites

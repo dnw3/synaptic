@@ -25,7 +25,7 @@ cd deep-agent-tutorial
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["deep"] }
+synaptic = { version = "0.4", features = ["deep"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -151,7 +151,7 @@ Agent 使用 `write_file` 和 `edit_file` 完成修改。
 
 ## 第 4 步：添加技能
 
-技能是存储为 `SKILL.md` 文件的领域特定指令，保存在 Backend 中。`SkillsMiddleware` 在每次模型调用时扫描 `{skills_dir}/*/SKILL.md`，解析 YAML frontmatter 中的 `name` 和 `description`，并将技能索引注入系统提示。然后 Agent 可以通过 `read_file` 读取任何技能的完整详情。
+技能是存储为 `SKILL.md` 文件的领域特定指令，保存在 Backend 中。`SkillsMiddleware` 在每次模型调用时扫描 `{skills_dirs}/*/SKILL.md`，解析 YAML frontmatter 中的 `name` 和 `description`，并将技能索引注入系统提示。然后 Agent 可以通过 `read_file` 读取任何技能的完整详情。
 
 直接向 Backend 写入一个技能文件：
 
@@ -286,12 +286,12 @@ options.enable_skills = true;             // default
 options.enable_memory = true;             // default
 
 // Paths in the backend
-options.skills_dir = Some(".skills".to_string());    // default
+options.skills_dirs = vec![".skills".to_string()];    // default
 options.memory_file = Some("AGENTS.md".to_string()); // default
 
-// Extensibility: add your own tools, middleware, checkpointer, or store
+// Extensibility: add your own tools, interceptors, checkpointer, or store
 options.tools = vec![];
-options.middleware = vec![];
+options.interceptors = vec![];
 options.checkpointer = None;
 options.store = None;
 options.subagents = vec![];
@@ -369,10 +369,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 1. **DeepMemoryMiddleware** -- 读取 `AGENTS.md` 并将其追加到系统提示中。
 2. **SkillsMiddleware** -- 扫描 `.skills/*/SKILL.md` 并将技能索引注入系统提示。
 3. **FilesystemMiddleware** -- 注册文件系统工具。将大于 `eviction_threshold` token 的结果驱逐到 `.evicted/` 文件中，并提供预览。
-4. **SubAgentMiddleware** -- 提供 `task` 工具用于生成子 Agent。
+4. **SubAgentMiddleware** -- 提供 `task` 工具用于生成子 Agent（实现 `Interceptor`）。
 5. **DeepSummarizationMiddleware** -- 当 token 数超过阈值时摘要较旧的消息，将完整历史保存到 `.context/history_N.md`。
 6. **PatchToolCallsMiddleware** -- 修复格式错误的工具调用（去除代码围栏、去重 ID、移除空名称）。
-7. **用户中间件** -- `options.middleware` 中的任何内容最后运行。
+7. **用户拦截器** -- `options.interceptors` 中的任何内容最后运行。
 
 ## 使用真实文件系统 Backend
 
@@ -380,8 +380,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["deep"] }
-synaptic-deep = { version = "0.2", features = ["filesystem"] }
+synaptic = { version = "0.4", features = ["deep"] }
 ```
 
 ```rust,ignore

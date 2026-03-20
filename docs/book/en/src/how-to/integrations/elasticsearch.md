@@ -8,7 +8,7 @@ Add the `elasticsearch` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai", "elasticsearch"] }
+synaptic = { version = "0.4", features = ["openai", "elasticsearch"] }
 ```
 
 Start an Elasticsearch instance (e.g. via Docker):

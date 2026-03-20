@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["huggingface"] }
+synaptic = { version = "0.4", features = ["huggingface"] }
 ```
 
 可选设置 HuggingFace API 密鑰：

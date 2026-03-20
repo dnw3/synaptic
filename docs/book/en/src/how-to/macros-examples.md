@@ -94,7 +94,7 @@ and dynamic prompting.
 
 ```rust,ignore
 use synaptic::core::{Message, SynapticError};
-use synaptic::middleware::{AgentMiddleware, MiddlewareChain, ModelRequest, ModelResponse, ModelCaller};
+use synaptic::middleware::{Interceptor, InterceptorChain,ModelRequest, ModelResponse, ModelCaller};
 use std::sync::Arc;
 
 // Log every model call
@@ -123,7 +123,7 @@ async fn retry_model(
 }
 
 // Dynamic system prompt based on conversation length
-#[dynamic_prompt]
+#[system_prompt]
 fn adaptive_prompt(messages: &[Message]) -> String {
     if messages.len() > 20 {
         "Be concise. Summarize rather than elaborate.".into()
@@ -132,7 +132,7 @@ fn adaptive_prompt(messages: &[Message]) -> String {
     }
 }
 
-fn build_middleware_stack() -> Vec<Arc<dyn AgentMiddleware>> {
+fn build_middleware_stack() -> Vec<Arc<dyn Interceptor>> {
     vec![
         adaptive_prompt(),
         retry_model(2),
@@ -152,7 +152,7 @@ shared store and tool call ID are injected transparently by the agent runtime.
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["agent", "store", "schemars"] }
+synaptic = { version = "0.4", features = ["agent", "store", "schemars"] }
 schemars = { version = "0.8", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -341,14 +341,13 @@ async fn main() -> Result<(), SynapticError> {
 ## Scenario F: Tool Permission Gating with Audit Logging
 
 This scenario demonstrates `#[wrap_tool_call]` with an allowlist field for
-permission gating, plus `#[before_agent]` and `#[after_agent]` for lifecycle
-audit logging.
+permission gating, plus `#[before_model]` for audit logging on each model call.
 
 ```rust,ignore
 use std::sync::Arc;
-use synaptic::core::{Message, SynapticError};
-use synaptic::macros::{before_agent, after_agent, wrap_tool_call};
-use synaptic::middleware::{AgentMiddleware, ToolCallRequest, ToolCaller};
+use synaptic::core::SynapticError;
+use synaptic::macros::{before_model, wrap_tool_call};
+use synaptic::middleware::{Interceptor, ModelRequest, ToolCallRequest, ToolCaller};
 use serde_json::Value;
 
 // --- Permission gating ---
@@ -370,42 +369,29 @@ async fn permission_gate(
     next.call(request).await
 }
 
-// --- Audit: before agent ---
-// Log the number of messages when the agent starts.
+// --- Audit: before model ---
+// Log the number of messages before each model call.
 
-#[before_agent]
-async fn audit_start(
+#[before_model]
+async fn audit_model(
     #[field] label: String,
-    messages: &mut Vec<Message>,
+    request: &mut ModelRequest,
 ) -> Result<(), SynapticError> {
-    println!("[{}] Agent starting with {} messages", label, messages.len());
-    Ok(())
-}
-
-// --- Audit: after agent ---
-// Log the number of messages when the agent finishes.
-
-#[after_agent]
-async fn audit_end(
-    #[field] label: String,
-    messages: &mut Vec<Message>,
-) -> Result<(), SynapticError> {
-    println!("[{}] Agent completed with {} messages", label, messages.len());
+    println!("[{}] Model call with {} messages", label, request.messages.len());
     Ok(())
 }
 
 // --- Assemble the middleware stack ---
 
-fn build_secured_stack() -> Vec<Arc<dyn AgentMiddleware>> {
+fn build_secured_stack() -> Vec<Arc<dyn Interceptor>> {
     let allowed = vec![
         "web_search".to_string(),
         "get_weather".to_string(),
     ];
 
     vec![
-        audit_start("prod-agent".into()),
+        audit_model("prod-agent".into()),
         permission_gate(allowed),
-        audit_end("prod-agent".into()),
     ]
 }
 ```
@@ -415,9 +401,8 @@ fn build_secured_stack() -> Vec<Arc<dyn AgentMiddleware>> {
 - `#[wrap_tool_call]` gives full control over tool execution. Check
   permissions, transform arguments, or deny the call entirely by returning
   an error instead of calling `next.call()`.
-- `#[before_agent]` and `#[after_agent]` bracket the entire agent lifecycle,
-  making them ideal for audit logging, metrics collection, or resource
-  setup/teardown.
+- `#[before_model]` runs before each model call, making it useful for
+  audit logging and metrics collection.
 - `#[field]` makes each middleware configurable and reusable. The
   `permission_gate` can be instantiated with different allowlists for
   different agents, and the audit middleware accepts a label for log
@@ -533,7 +518,7 @@ macros map to their Python equivalents:
 | `RunnableLambda(fn)` | `#[chain]` | Rust version returns `BoxRunnable<I, O>` with auto-detected output type |
 | `@entrypoint` | `#[entrypoint]` | Both define a workflow entry point; Rust adds `checkpointer` hint |
 | `@task` | `#[task]` | Both mark a function as a named sub-task |
-| Middleware classes | `#[before_agent]`, `#[before_model]`, `#[after_model]`, `#[after_agent]`, `#[wrap_model_call]`, `#[wrap_tool_call]`, `#[dynamic_prompt]` | Rust splits each hook into its own macro for clarity |
+| Middleware classes | `#[before_model]`, `#[after_model]`, `#[wrap_model_call]`, `#[wrap_tool_call]`, `#[system_prompt]` | Rust splits each hook into its own macro for clarity |
 | `@traceable` | `#[traceable]` | Rust uses `tracing` crate spans; Python uses LangSmith |
 | `InjectedState`, `InjectedStore`, `InjectedToolCallId` | `#[inject(state)]`, `#[inject(store)]`, `#[inject(tool_call_id)]` | Rust uses parameter-level attributes instead of type annotations |
 
@@ -581,9 +566,9 @@ Tool Message back into conversation
 | `Tool` / `RuntimeAwareTool` traits | `crates/synaptic-core/src/lib.rs` |
 | `ToolDefinition`, `ToolCall` types | `crates/synaptic-core/src/lib.rs` |
 | `ToolNode` (dispatches calls) | `crates/synaptic-graph/src/tool_node.rs` |
-| OpenAI adapter | `crates/synaptic-openai/src/lib.rs` |
-| Anthropic adapter | `crates/synaptic-anthropic/src/lib.rs` |
-| Gemini adapter | `crates/synaptic-gemini/src/lib.rs` |
+| OpenAI adapter | `crates/synaptic-models/src/openai.rs` |
+| Anthropic adapter | `crates/synaptic-models/src/anthropic.rs` |
+| Gemini adapter | `crates/synaptic-models/src/gemini.rs` |
 
 ## Testing Macro-Generated Code
 

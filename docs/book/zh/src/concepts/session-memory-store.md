@@ -1,12 +1,12 @@
 # Session、Memory 与 Store
 
-Synaptic 有三个与"记忆"相关的 crate：`synaptic-store`、`synaptic-memory` 和 `synaptic-session`。它们工作在不同的抽象层级，服务于不同目的。核心设计原则是**三层共享同一个 `Store` 后端**——一个存储引擎，多种视图。本页解释每一层的定位、三者的关系以及何时使用哪个。
+Synaptic 有三个与"记忆"相关的模块：`synaptic-store`、`synaptic-memory` 和 session 模块（位于 `synaptic-integrations`）。它们工作在不同的抽象层级，服务于不同目的。核心设计原则是**三层共享同一个 `Store` 后端**——一个存储引擎，多种视图。本页解释每一层的定位、三者的关系以及何时使用哪个。
 
 ## 三层架构
 
 ```text
 ┌─────────────────────────────────────────────────────┐
-│  synaptic-session            (会话生命周期)           │
+│  session (synaptic-integrations) (会话生命周期)       │
 │  SessionManager · .memory() · .checkpointer()       │
 │  "哪次对话？能恢复吗？"                               │
 ├─────────────────────────────────────────────────────┤
@@ -132,7 +132,7 @@ let context = memory.load("session_1").await?;
 
 ## 第三层：Session（会话生命周期）
 
-**Crate：** `synaptic-session`
+**模块：** `synaptic-integrations`（session 模块）
 
 Session 管理整个对话的生命周期——创建、列举、恢复和删除会话。它作为协调者，分发 `ChatMessageHistory` 和 `StoreCheckpointer` 实例，且都由同一个 store 支撑。
 
@@ -261,7 +261,7 @@ loop {
 
 ## 相关概念
 
-- **Condenser**（`synaptic-condenser`）— 工作在 Memory 层，提供额外的上下文压缩策略（滚动、token 预算、LLM 摘要、流水线）。可以理解为"增强版的 Memory 策略"，通过中间件组合使用。
+- **Condenser**（位于 `synaptic-integrations`）— 工作在 Memory 层，提供额外的上下文压缩策略（滚动、token 预算、LLM 摘要、流水线）。可以理解为"增强版的 Memory 策略"，通过中间件组合使用。
 
 - **Graph Checkpointing**（`synaptic-graph::StoreCheckpointer`）— 持久化 Graph 执行状态（最后执行到哪个节点、完整的状态快照）到共享 store 的命名空间 `["checkpoints", "{thread_id}"]` 下。
 

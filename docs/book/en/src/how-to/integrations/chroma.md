@@ -8,7 +8,7 @@ Add the `chroma` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai", "chroma"] }
+synaptic = { version = "0.4", features = ["openai", "chroma"] }
 ```
 
 Start a Chroma server (e.g. via Docker):

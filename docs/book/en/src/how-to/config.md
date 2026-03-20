@@ -25,7 +25,7 @@ sandbox_root = "/tmp/sandbox"
 [paths]
 sessions_dir = ".sessions"
 memory_file = "AGENTS.md"
-skills_dir = ".skills"
+skills_dirs = [".skills"]
 
 [[mcp]]
 name = "filesystem"
@@ -181,7 +181,7 @@ let api_key = config.resolve_api_key()?;
 |--------------|----------|----------------|
 | `sessions_dir`| `String` | `".sessions"`  |
 | `memory_file` | `String` | `"AGENTS.md"`  |
-| `skills_dir`  | `String` | `".skills"`    |
+| `skills_dirs` | `Vec<String>` | `[".skills"]`  |
 
 ### McpServerConfig
 

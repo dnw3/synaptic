@@ -6,10 +6,10 @@ Synaptic provides four persistent checkpointer backends:
 
 | Backend | Crate | Best For |
 |---------|-------|----------|
-| Redis | `synaptic-redis` | Low-latency, optional TTL expiry |
-| PostgreSQL | `synaptic-postgres` | Relational workloads, ACID guarantees |
-| SQLite | `synaptic-sqlite` | Single-machine, no external service |
-| MongoDB | `synaptic-mongodb` | Distributed, document-oriented |
+| Redis | `synaptic-store` (feature `redis`) | Low-latency, optional TTL expiry |
+| PostgreSQL | `synaptic-store` (feature `postgres`) | Relational workloads, ACID guarantees |
+| SQLite | `synaptic-store` (feature `sqlite`) | Single-machine, no external service |
+| MongoDB | `synaptic-store` (feature `mongodb`) | Distributed, document-oriented |
 
 ## Setup
 
@@ -18,20 +18,16 @@ Add the relevant crate to `Cargo.toml`:
 ```toml
 # Redis checkpointer
 [dependencies]
-synaptic = { version = "0.2", features = ["agent", "redis"] }
-synaptic-redis = { version = "0.2" }
+synaptic = { version = "0.4", features = ["agent", "redis"] }
 
 # PostgreSQL checkpointer
-synaptic = { version = "0.2", features = ["agent", "postgres"] }
-synaptic-postgres = { version = "0.2" }
+synaptic = { version = "0.4", features = ["agent", "postgres"] }
 
 # SQLite checkpointer (no external service required)
-synaptic = { version = "0.2", features = ["agent", "sqlite"] }
-synaptic-sqlite = { version = "0.2" }
+synaptic = { version = "0.4", features = ["agent", "sqlite"] }
 
 # MongoDB checkpointer
-synaptic = { version = "0.2", features = ["agent", "mongodb"] }
-synaptic-mongodb = { version = "0.2" }
+synaptic = { version = "0.4", features = ["agent", "mongodb"] }
 ```
 
 ## Redis Checkpointer
@@ -39,7 +35,7 @@ synaptic-mongodb = { version = "0.2" }
 ### Quick start
 
 ```rust,ignore
-use synaptic_redis::{RedisCheckpointer, RedisCheckpointerConfig};
+use synaptic::store::redis::{RedisCheckpointer, RedisCheckpointerConfig};
 use synaptic::graph::{create_react_agent, MessageState};
 use std::sync::Arc;
 
@@ -59,7 +55,7 @@ let result = graph.invoke_with_config(state, config).await?;
 ### Configuration
 
 ```rust,ignore
-use synaptic_redis::RedisCheckpointerConfig;
+use synaptic::store::redis::RedisCheckpointerConfig;
 
 let config = RedisCheckpointerConfig::new("redis://127.0.0.1/")
     .with_ttl(86400)          // Expire checkpoints after 24 hours
@@ -89,7 +85,7 @@ Redis stores checkpoints using the following keys:
 
 ```rust,ignore
 use sqlx::postgres::PgPoolOptions;
-use synaptic_postgres::PgCheckpointer;
+use synaptic::store::postgres::PgCheckpointer;
 use synaptic::graph::{create_react_agent, MessageState};
 use std::sync::Arc;
 
@@ -140,7 +136,7 @@ The `SqliteCheckpointer` stores checkpoints in a local SQLite database. It requi
 ### Quick start
 
 ```rust,ignore
-use synaptic_sqlite::SqliteCheckpointer;
+use synaptic::store::sqlite::SqliteCheckpointer;
 use synaptic::graph::{create_react_agent, MessageState};
 use std::sync::Arc;
 
@@ -159,7 +155,7 @@ let result = graph.invoke_with_config(state, config).await?;
 ### In-memory mode (for testing)
 
 ```rust,ignore
-use synaptic_sqlite::SqliteCheckpointer;
+use synaptic::store::sqlite::SqliteCheckpointer;
 
 let checkpointer = SqliteCheckpointer::in_memory()?;
 ```
@@ -200,7 +196,7 @@ The `MongoCheckpointer` stores checkpoints in MongoDB, suitable for distributed 
 ### Quick start
 
 ```rust,ignore
-use synaptic_mongodb::MongoCheckpointer;
+use synaptic::store::mongodb::MongoCheckpointer;
 use synaptic::graph::{create_react_agent, MessageState};
 use std::sync::Arc;
 
@@ -247,7 +243,7 @@ Persistent checkpointers enable stateful human-in-the-loop workflows:
 
 ```rust,ignore
 use synaptic::graph::{StateGraph, MessageState, StreamMode};
-use synaptic_sqlite::SqliteCheckpointer;
+use synaptic::store::sqlite::SqliteCheckpointer;
 use std::sync::Arc;
 
 let checkpointer = Arc::new(SqliteCheckpointer::new("/var/lib/myapp/checkpoints.db")?);
@@ -271,7 +267,7 @@ let final_result = graph.invoke_with_config(updated, config).await?;
 Retrieve any historical checkpoint by ID for debugging or replaying:
 
 ```rust,ignore
-use synaptic_graph::{CheckpointConfig, Checkpointer};
+use synaptic::graph::{CheckpointConfig, Checkpointer};
 
 let config = CheckpointConfig::with_checkpoint_id("thread-123", "specific-checkpoint-id");
 if let Some(checkpoint) = checkpointer.get(&config).await? {

@@ -2,13 +2,13 @@
 
 [Together AI](https://www.together.ai/) 通过 OpenAI 兼容 API 提供领先的开源模型访问（Llama、DeepSeek、Qwen、Mixtral）。其 Serverless 推理定价具有竞争力，适合需要前沿开源模型的生产工作负载。
 
-Together AI 作为 `synaptic-openai` 内的兼容子模块提供，无需单独的 crate。
+Together AI 作为 `synaptic-models` 内的兼容子模块提供，无需单独的 crate。
 
 ## 安装
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 在 [api.together.xyz](https://api.together.xyz/) 注册以获取 API 密钥。

@@ -8,7 +8,7 @@ Add the `scheduler` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["scheduler"] }
+synaptic = { version = "0.4", features = ["scheduler"] }
 ```
 
 ## SchedulerTask Trait

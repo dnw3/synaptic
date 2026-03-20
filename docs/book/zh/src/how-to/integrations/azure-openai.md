@@ -8,10 +8,10 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
-Azure OpenAI 使用 `synaptic-openai` crate 中的 Azure 专用模块，因此只需启用 `openai` feature。
+Azure OpenAI 使用 `synaptic-models` crate 中的 Azure 专用模块（feature `openai`），因此只需启用 `openai` feature。
 
 你需要在 Azure 门户中创建一个 Azure OpenAI 资源，并部署一个模型。你将需要以下信息：
 

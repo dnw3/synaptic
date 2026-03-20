@@ -11,7 +11,7 @@ Add the feature flag to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["lancedb"] }
+synaptic = { version = "0.4", features = ["lancedb"] }
 ```
 
 No Docker container or external service is required.
@@ -19,7 +19,7 @@ No Docker container or external service is required.
 ## Dependency Note
 
 The `lancedb` crate (>= 0.20) has transitive dependencies that require
-Rust >= 1.91. The current `synaptic-lancedb` crate ships a pure-Rust
+Rust >= 1.91. The current `synaptic-rag` crate (with feature `lancedb`) ships a pure-Rust
 in-memory backend with the full `VectorStore` interface so that your
 application compiles and tests run today at MSRV 1.88. Once the toolchain
 requirement aligns, the implementation will be upgraded to use native

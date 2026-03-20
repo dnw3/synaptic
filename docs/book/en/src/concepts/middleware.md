@@ -2,19 +2,46 @@
 
 Middleware intercepts and transforms agent behavior at well-defined lifecycle points. Rather than modifying agent logic directly, middleware wraps around model calls and tool calls, adding cross-cutting concerns like rate limiting, human approval, summarization, and context management. This page explains the middleware abstraction, the lifecycle hooks, and the available middleware classes.
 
-## The AgentMiddleware Trait
+## The Interceptor Trait
 
-All middleware implements a single trait with six hooks:
+All middleware implements the `Interceptor` trait, which provides four hooks with no-op defaults:
 
 ```rust
 #[async_trait]
-pub trait AgentMiddleware: Send + Sync {
-    async fn before_agent(&self, state: &MessageState) -> Result<(), SynapticError> { Ok(()) }
-    async fn after_agent(&self, state: &MessageState) -> Result<(), SynapticError> { Ok(()) }
-    async fn before_model(&self, messages: &mut Vec<Message>) -> Result<(), SynapticError> { Ok(()) }
-    async fn after_model(&self, response: &mut ChatResponse) -> Result<(), SynapticError> { Ok(()) }
-    async fn wrap_model_call(&self, messages: Vec<Message>, next: ModelCallFn) -> Result<ChatResponse, SynapticError>;
-    async fn wrap_tool_call(&self, name: &str, args: &Value, next: ToolCallFn) -> Result<Value, SynapticError>;
+pub trait Interceptor: Send + Sync {
+    /// Called before each model invocation. Can modify the request.
+    /// Runs in forward order (first added -> first called).
+    async fn before_model(&self, _req: &mut ModelRequest) -> Result<(), SynapticError> {
+        Ok(())
+    }
+
+    /// Called after each model invocation. Can modify the response.
+    /// Runs in reverse order (last added -> first called).
+    async fn after_model(
+        &self,
+        _req: &ModelRequest,
+        _resp: &mut ModelResponse,
+    ) -> Result<(), SynapticError> {
+        Ok(())
+    }
+
+    /// Wrap a model call. Override to intercept or modify the request/response.
+    async fn wrap_model_call(
+        &self,
+        request: ModelRequest,
+        next: &dyn ModelCaller,
+    ) -> Result<ModelResponse, SynapticError> {
+        next.call(request).await
+    }
+
+    /// Wrap a tool call. Override to intercept or modify tool execution.
+    async fn wrap_tool_call(
+        &self,
+        request: ToolCallRequest,
+        next: &dyn ToolCaller,
+    ) -> Result<Value, SynapticError> {
+        next.call(request).await
+    }
 }
 ```
 
@@ -24,30 +51,43 @@ Each hook has a default implementation that passes through unchanged. Middleware
 
 A single agent turn follows this sequence:
 
+```text
+loop {
+  before_model (forward)  ->  wrap_model_call (onion)  ->  after_model (reverse)
+  for each tool_call { wrap_tool_call (onion) }
+}
 ```
-before_agent → before_model → wrap_model_call → after_model → wrap_tool_call (per tool) → after_agent
-```
 
-1. **`before_agent`** -- called once at the start of each agent turn. Use for setup, logging, or state inspection.
-2. **`before_model`** -- called before the LLM request. Can modify messages (e.g., inject context, trim history).
-3. **`wrap_model_call`** -- wraps the actual model invocation. Can retry, add fallbacks, or replace the call entirely.
-4. **`after_model`** -- called after the LLM responds. Can modify the response (e.g., fix tool calls, add metadata).
-5. **`wrap_tool_call`** -- wraps each tool invocation. Can approve/reject, add logging, or modify arguments.
-6. **`after_agent`** -- called once at the end of each agent turn. Use for cleanup or state persistence.
+1. **`before_model`** -- called before each LLM request. Can modify the `ModelRequest` (e.g., inject context, tweak system prompt, trim history). Runs in **forward** order (MW1, MW2, MW3).
+2. **`wrap_model_call`** -- wraps the actual model invocation in an onion pattern (MW1 wraps MW2 wraps MW3 wraps LLM). Can retry, add fallbacks, cache, or replace the call entirely.
+3. **`after_model`** -- called after the LLM responds. Can modify the `ModelResponse` (e.g., log usage, fix tool calls). Runs in **reverse** order (MW3, MW2, MW1).
+4. **`wrap_tool_call`** -- wraps each tool invocation in the same onion pattern. Can approve/reject, add logging, or modify arguments.
 
-## MiddlewareChain
+## InterceptorChain
 
-Multiple middleware instances are composed into a `MiddlewareChain`. The chain applies middleware in order for "before" hooks and in reverse order for "after" hooks (onion model):
+Multiple interceptors are composed into an `InterceptorChain`. The chain applies interceptors in the correct lifecycle order automatically:
 
 ```rust
-use synaptic::middleware::MiddlewareChain;
+use synaptic::middleware::InterceptorChain;
 
-let chain = MiddlewareChain::new(vec![
+let chain = InterceptorChain::new(vec![
     Arc::new(ToolCallLimitMiddleware::new(10)),
     Arc::new(HumanInTheLoopMiddleware::new(callback)),
     Arc::new(SummarizationMiddleware::new(model, 4000)),
 ]);
 ```
+
+### Execution Order
+
+Given three interceptors (MW1, MW2, MW3) registered in order:
+
+```text
+MW1.before_model -> MW2.before_model -> MW3.before_model   (forward)
+  MW1.wrap wraps MW2 wraps MW3 wraps LLM                   (onion)
+MW3.after_model -> MW2.after_model -> MW1.after_model       (reverse)
+```
+
+This ensures `before_model` hooks see the request in registration order, the onion wrapping gives the outermost interceptor first/last control, and `after_model` hooks see the response in reverse order.
 
 ## Available Middleware
 
@@ -57,6 +97,12 @@ Limits the total number of tool calls per agent session. When the limit is reach
 
 - **Use case**: Preventing runaway agents that call tools in an infinite loop.
 - **Configuration**: `ToolCallLimitMiddleware::new(max_calls)`
+
+### ModelCallLimitMiddleware
+
+Limits model invocations per run, preventing unbounded LLM calls.
+
+- **Configuration**: `ModelCallLimitMiddleware::new(max_calls)`
 
 ### HumanInTheLoopMiddleware
 
@@ -79,13 +125,31 @@ Transforms the message history before each model call using a configurable strat
 - **`ContextStrategy::LastN(n)`** -- keep only the last N messages (preserving leading system messages).
 - **`ContextStrategy::StripToolCalls`** -- remove tool call/result messages, keeping only human and AI content messages.
 
-### ModelRetryMiddleware
+### ToolRetryMiddleware
 
-Wraps the model call with retry logic, attempting the call multiple times on transient failures.
+Retries failed tool calls with exponential backoff.
+
+- **Configuration**: `ToolRetryMiddleware::new(max_retries)`
 
 ### ModelFallbackMiddleware
 
 Provides fallback models when the primary model fails. Tries alternatives in order until one succeeds.
+
+### SecurityMiddleware
+
+Risk-based tool execution gating with configurable confirmation policies.
+
+### SsrfGuardMiddleware
+
+Blocks SSRF attacks by denying requests to private IPs and cloud metadata endpoints.
+
+### CircuitBreakerMiddleware
+
+Prevents cascading failures using the circuit breaker pattern. Tracks failures and opens the circuit when a threshold is reached.
+
+### TodoListMiddleware
+
+Injects a task list into the agent context before each model call.
 
 ## Middleware vs. Graph Features
 

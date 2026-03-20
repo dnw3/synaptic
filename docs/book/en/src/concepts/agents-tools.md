@@ -36,7 +36,7 @@ pub struct ToolDefinition {
 
 The `parameters` field is a JSON Schema that describes the tool's expected arguments. LLM providers use this schema to generate valid tool calls. The `ToolDefinition` is metadata about the tool -- it never executes anything.
 
-The optional `extras` field carries provider-specific parameters (e.g., Anthropic's `cache_control`). Provider adapters in `synaptic-models` forward these to the API when present.
+The optional `extras` field carries provider-specific parameters (e.g., Anthropic's `cache_control`). Provider adapters in `synaptic-models` (e.g., the `openai` and `anthropic` modules) forward these to the API when present.
 
 ## ToolCall and ToolChoice
 

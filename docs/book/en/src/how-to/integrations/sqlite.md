@@ -8,7 +8,7 @@ Add the `sqlite` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai", "sqlite"] }
+synaptic = { version = "0.4", features = ["openai", "sqlite"] }
 ```
 
 ## SqliteCache -- LLM Response Cache

@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai", "chroma"] }
+synaptic = { version = "0.4", features = ["openai", "chroma"] }
 ```
 
 启动 Chroma 实例（例如通过 Docker）：

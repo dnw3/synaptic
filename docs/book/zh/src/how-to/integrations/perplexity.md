@@ -2,13 +2,13 @@
 
 [Perplexity AI](https://www.perplexity.ai/) 通过 Sonar 模型系列提供联网搜索增强的语言模型服务。与传统 LLM 不同，Sonar 模型能够访问实时网络信息并返回引用来源，非常适合事实性查询和研究任务。
 
-Perplexity AI 作为 `synaptic-openai` 内的兼容子模块提供，无需单独的 crate。
+Perplexity AI 作为 `synaptic-models` 内的兼容子模块提供，无需单独的 crate。
 
 ## 安装
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 在 [perplexity.ai](https://www.perplexity.ai/) 注册以获取 API 密钥（以 `pplx-` 开头）。

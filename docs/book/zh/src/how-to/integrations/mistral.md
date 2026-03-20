@@ -2,13 +2,13 @@
 
 [Mistral AI](https://mistral.ai/) 提供最先进的开源和商业语言模型，具备出色的多语言支持和强大的函数调用能力。Mistral API 与 OpenAI API 格式完全兼容。
 
-Mistral AI 作为 `synaptic-openai` 内的兼容子模块提供，无需单独的 crate。该子模块还提供 `embeddings` 辅助函数用于访问 Mistral 嵌入向量 API。
+Mistral AI 作为 `synaptic-models` 内的兼容子模块提供，无需单独的 crate。该子模块还提供 `embeddings` 辅助函数用于访问 Mistral 嵌入向量 API。
 
 ## 设置
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 前往 [console.mistral.ai](https://console.mistral.ai/) 获取 API 密钥。

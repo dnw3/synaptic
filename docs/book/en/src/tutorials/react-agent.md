@@ -19,7 +19,7 @@ Add the required crates to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["agent", "macros"] }
+synaptic = { version = "0.4", features = ["agent", "macros"] }
 async-trait = "0.1"
 serde_json = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

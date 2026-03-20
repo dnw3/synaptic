@@ -8,7 +8,7 @@ Add the `pinecone` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai", "pinecone"] }
+synaptic = { version = "0.4", features = ["openai", "pinecone"] }
 ```
 
 Set your Pinecone API key:

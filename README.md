@@ -23,55 +23,88 @@ A Rust agent framework with LangChain-compatible architecture and Rust-native as
 - **Evaluation** — ExactMatch, JsonValidity, Regex, EmbeddingDistance, LLMJudge evaluators
 - **Structured Output** — `StructuredOutputChatModel<T>` with JSON schema enforcement
 - **Observability** — `TracingCallback` (structured spans), `CompositeCallback`, `StdOutCallback`
+- **Events** — `EventSubscriber` trait for agent lifecycle events (agent start/stop, model calls, tool calls)
 - **MCP** — `MultiServerMcpClient` with Stdio/SSE/HTTP transport adapters
 - **Macros** — `#[tool]`, `#[chain]`, `#[entrypoint]`, `#[task]`, `#[traceable]` proc-macros
 - **Deep Agent** — Filesystem-aware deep research agent harness (`create_deep_agent`)
-- **Middleware** — `AgentMiddleware` trait: Retry, PII redaction, Prompt Caching, Summarization
+- **Interceptors** — `Interceptor` trait with 4 hooks: `before_model`, `after_model`, `wrap_model_call`, `wrap_tool_call`
 
 ## Installation
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["agent"] }
+synaptic = { version = "0.4", features = ["agent"] }
 ```
 
 ### Feature flags
 
 | Feature | Contents |
 |---------|----------|
-| `default` | runnables + prompts + parsers + tools + callbacks |
+| `default` | runnables + prompts + parsers + tools |
 | `openai` | OpenAI ChatModel + Embeddings + 10 OpenAI-compatible providers via `compat::` |
 | `anthropic` | Anthropic Claude ChatModel |
 | `gemini` | Google Gemini ChatModel |
 | `ollama` | Ollama ChatModel + Embeddings |
 | `bedrock` | AWS Bedrock ChatModel |
+| `cohere` | Cohere reranker + embeddings |
 | `models` | All chat model provider crates (openai + anthropic + gemini + ollama + bedrock + cohere) |
 | `qdrant` | Qdrant vector store |
 | `postgres` | PostgreSQL store, cache, vector store, graph checkpointer |
 | `redis` | Redis store + LLM cache + graph checkpointer |
-| `weaviate` | Weaviate vector store |
+| `sqlite` | SQLite store |
+| `mongodb` | MongoDB store |
 | `pinecone` | Pinecone vector store |
 | `chroma` | Chroma vector store |
-| `mongodb` | MongoDB Atlas vector search |
+| `weaviate` | Weaviate vector store |
 | `elasticsearch` | Elasticsearch vector store |
-| `sqlite` | SQLite LLM cache |
+| `opensearch` | OpenSearch vector store |
+| `milvus` | Milvus vector store |
+| `lancedb` | LanceDB vector store |
 | `huggingface` | HuggingFace Inference API embeddings |
-| `cohere` | Cohere reranker + embeddings |
+| `voyage` | Voyage AI embeddings |
+| `nomic` | Nomic embeddings |
+| `jina` | Jina embeddings |
+| `flashrank` | FlashRank reranker |
 | `tavily` | Tavily search tool |
 | `sqltoolkit` | SQL database toolkit (ListTables, DescribeTable, ExecuteQuery) |
 | `pdf` | PDF document loader |
+| `e2b` | E2B code sandbox |
+| `browser` | Browser automation tool |
+| `sandbox` | Docker sandbox tool |
 | `graph` | LangGraph-style StateGraph |
 | `memory` | Conversation memory strategies |
+| `middleware` | `Interceptor` trait + `InterceptorChain` |
+| `events` | `EventSubscriber` for agent lifecycle events |
+| `store` | Key-value store (`InMemoryStore`, `FileStore`) |
+| `config` | Agent configuration loading |
+| `logging` | Structured logging utilities |
 | `retrieval` | Retriever types (BM25, Ensemble, etc.) |
 | `cache` | LLM response caching |
 | `eval` | Evaluators |
 | `mcp` | MCP server client |
 | `macros` | Proc-macros |
 | `deep` | Deep Agent harness |
-| `agent` | default + graph + memory + middleware + store (provider-agnostic) |
+| `condenser` | Context condensation (summarization) middleware |
+| `secrets` | Secrets masking middleware |
+| `session` | Session persistence (graph + memory + store + config) |
+| `plugin` | Plugin system (events + config) |
+| `otel` | OpenTelemetry integration |
+| `langfuse` | Langfuse integration |
+| `viking` | Viking memory provider |
+| `voice` | Voice integration |
+| `scheduler` | Task scheduler |
+| `confluence` | Confluence integration |
+| `slack` | Slack integration |
+| `lark` | Lark (Feishu) integration |
+| `lark-bot` | Lark bot framework |
+| `agent` | default + graph + memory + middleware + events + plugin + store + condenser + secrets + config + session + logging |
 | `agent-openai` | agent + openai |
-| `rag` | default + embeddings + retrieval + loaders + splitters + vectorstores (provider-agnostic) |
+| `agent-anthropic` | agent + anthropic |
+| `agent-ollama` | agent + ollama |
+| `rag` | default + embeddings + retrieval + loaders + splitters + vectorstores |
 | `rag-openai` | rag + openai |
+| `rag-anthropic` | rag + anthropic |
+| `rag-ollama` | rag + ollama |
 | `full` | Everything |
 
 ## Quick Start
@@ -93,82 +126,98 @@ let result = graph.invoke(state).await?;
 
 ## Workspace Layout
 
-38+ library crates in `crates/`, examples in `examples/`:
+17 crates in `crates/`, examples in `examples/`:
 
-### Core
-
-| Crate | Description |
-|-------|-------------|
-| `synaptic-core` | Shared traits and types: `ChatModel`, `Message`, `ToolChoice`, `SynapticError` |
-| `synaptic-models` | `ProviderBackend` + `HttpBackend` + `FakeBackend`, wrappers (Retry, RateLimit, StructuredOutput) |
-| `synaptic-runnables` | LCEL: `Runnable`, `BoxRunnable`, pipe, Lambda, Parallel, Branch, Assign, Pick, Fallbacks |
-| `synaptic-prompts` | `ChatPromptTemplate`, `FewShotChatMessagePromptTemplate` |
-| `synaptic-parsers` | Str, JSON, Structured, List, Boolean, Enum, XML output parsers |
-| `synaptic-tools` | `ToolRegistry`, `SerialToolExecutor`, `ParallelToolExecutor`, DuckDuckGo, Wikipedia |
-| `synaptic-memory` | Buffer, Window, Summary, SummaryBuffer, TokenBuffer, `RunnableWithMessageHistory` |
-| `synaptic-callbacks` | `RecordingCallback`, `TracingCallback`, `CompositeCallback` |
-| `synaptic-graph` | `StateGraph`, `CompiledGraph`, `ToolNode`, `create_react_agent`, `MemorySaver` |
-| `synaptic-retrieval` | BM25, MultiQuery, Ensemble, Compression, SelfQuery, ParentDocument retrievers |
-| `synaptic-loaders` | Text, JSON, CSV, Markdown, Directory, Web, PDF document loaders |
-| `synaptic-splitters` | Character, Recursive, Markdown, Token, HTML text splitters |
-| `synaptic-embeddings` | `Embeddings` trait, `FakeEmbeddings`, `CacheBackedEmbeddings` |
-| `synaptic-vectorstores` | `VectorStore` trait, `InMemoryVectorStore`, `VectorStoreRetriever` |
-| `synaptic-cache` | InMemory + Semantic LLM caches, `CachedChatModel` |
-| `synaptic-eval` | `Evaluator` trait, 5 evaluators, `Dataset`, batch `evaluate()` |
-| `synaptic-store` | `InMemoryStore` with semantic search |
-| `synaptic-middleware` | `AgentMiddleware` trait, PII, Retry, Prompt Caching, Summarization |
-| `synaptic-mcp` | `MultiServerMcpClient`, Stdio/SSE/HTTP transports |
-| `synaptic-macros` | Proc-macros: `#[tool]`, `#[chain]`, `#[entrypoint]`, `#[task]`, `#[traceable]` |
-| `synaptic-deep` | Deep Agent harness with filesystem tools + `create_deep_agent()` |
-| `synaptic` | Unified facade with feature-gated re-exports |
+| Crate | Purpose |
+|-------|---------|
+| `synaptic` | Facade — re-exports all crates with feature gates |
+| `synaptic-core` | Core traits, types, errors (`Message`, `ChatModel`, `Tool`, `Store`, `Runnable`, `Embeddings`) |
+| `synaptic-models` | Chat model providers: OpenAI, Anthropic, Gemini, Ollama, Bedrock, Cohere + OpenAI-compatible |
+| `synaptic-rag` | RAG pipeline: prompts, parsers, loaders, splitters, embeddings, vectorstores, retrieval, eval |
+| `synaptic-store` | Storage backends: PostgreSQL, Redis, SQLite, MongoDB |
+| `synaptic-graph` | Graph orchestration: `StateGraph`, `CompiledGraph`, `InterceptorChain` |
+| `synaptic-middleware` | `Interceptor` trait + 12 built-in interceptors + condenser strategies |
+| `synaptic-deep` | Deep Agent harness: `create_deep_agent`, ACP protocol, 7 built-in tools |
+| `synaptic-events` | `EventBus` + 29 event kinds + 5 dispatch modes + observer metrics |
+| `synaptic-logging` | Structured logging: `LogBuffer`, LogID generation, `MemoryLogLayer` |
+| `synaptic-config` | Agent config, secrets masking, session persistence, cache, plugin system |
+| `synaptic-memory` | Memory strategies: buffer, window, summary, token buffer |
+| `synaptic-tools` | Built-in tools: PDF, SQL, E2B, browser, sandbox |
+| `synaptic-integrations` | Third-party services: Tavily, Confluence, Slack, voice, scheduler, Langfuse |
+| `synaptic-mcp` | Model Context Protocol client (stdio/SSE/HTTP) |
+| `synaptic-lark` | Lark/Feishu bot framework + 15 API modules |
+| `synaptic-macros` | Proc macros: `#[tool]`, `#[chain]`, `#[entrypoint]`, Interceptor macros |
 
 ### Chat Model Providers
 
-| Crate | Provider |
-|-------|----------|
-| `synaptic-openai` | OpenAI (GPT-4o, o1, o3...) + Azure OpenAI + 10 OpenAI-compatible APIs via `compat::` submodules (Groq, DeepSeek, Mistral, Fireworks, Together, xAI, Perplexity, HuggingFace, Cohere, OpenRouter) |
-| `synaptic-anthropic` | Anthropic (Claude 4.6, Claude Haiku...) |
-| `synaptic-gemini` | Google Gemini (1.5 Pro, 2.0 Flash...) |
-| `synaptic-ollama` | Ollama (local models) |
-| `synaptic-bedrock` | AWS Bedrock (Titan, Claude, Llama via Bedrock) |
+All providers live in `synaptic-models`. Enable via feature flags on the `synaptic` facade:
+
+| Feature | Provider |
+|---------|----------|
+| `openai` | OpenAI (GPT-4o, o1, o3) + compatible: Groq, DeepSeek, Mistral, Together, Fireworks, xAI, Perplexity |
+| `anthropic` | Anthropic (Claude 4.6, Haiku) |
+| `gemini` | Google Gemini |
+| `ollama` | Ollama (local models) |
+| `bedrock` | AWS Bedrock |
+| `cohere` | Cohere |
 
 ### Embeddings
 
-| Crate | Provider |
-|-------|----------|
-| `synaptic-openai` | OpenAI `text-embedding-3-small/large` |
-| `synaptic-ollama` | Ollama local embedding models |
-| `synaptic-cohere` | Cohere `embed-english-v3.0`, `embed-multilingual-v3.0` |
-| `synaptic-huggingface` | HuggingFace Inference API (BAAI/bge, sentence-transformers…) |
+Embedding providers live in `synaptic-rag`. Enable via feature flags:
+
+| Feature | Provider |
+|---------|----------|
+| `openai` | OpenAI `text-embedding-3-small/large` |
+| `ollama` | Ollama local embedding models |
+| `cohere` | Cohere `embed-english-v3.0`, `embed-multilingual-v3.0` |
+| `huggingface` | HuggingFace Inference API (BAAI/bge, sentence-transformers...) |
+| `voyage` | Voyage AI embeddings |
+| `nomic` | Nomic embeddings |
+| `jina` | Jina embeddings |
 
 ### Vector Stores
 
-| Crate | Backend |
-|-------|---------|
-| `synaptic-vectorstores` | In-memory (cosine similarity) |
-| `synaptic-qdrant` | Qdrant |
-| `synaptic-postgres` | PostgreSQL |
-| `synaptic-pinecone` | Pinecone |
-| `synaptic-chroma` | Chroma |
-| `synaptic-mongodb` | MongoDB Atlas Vector Search |
-| `synaptic-elasticsearch` | Elasticsearch |
-| `synaptic-weaviate` | Weaviate |
+Vector store backends live in `synaptic-rag`. Enable via feature flags:
+
+| Feature | Backend |
+|---------|---------|
+| (default) | In-memory (cosine similarity) |
+| `qdrant` | Qdrant |
+| `postgres` | PostgreSQL (pgvector) |
+| `pinecone` | Pinecone |
+| `chroma` | Chroma |
+| `mongodb` | MongoDB Atlas Vector Search |
+| `elasticsearch` | Elasticsearch |
+| `opensearch` | OpenSearch |
+| `milvus` | Milvus |
+| `lancedb` | LanceDB |
 
 ### Store, Cache & Graph Persistence
 
-| Crate | Backend |
-|-------|---------|
-| `synaptic-redis` | Redis Store + LLM Cache + Graph Checkpointer |
-| `synaptic-postgres` | PostgreSQL (Store + Cache + VectorStore + Graph Checkpointer) |
-| `synaptic-sqlite` | SQLite LLM Cache |
+Storage backends live in `synaptic-store`. Enable via feature flags:
 
-### Tools
+| Feature | Backend |
+|---------|---------|
+| `postgres` | PostgreSQL (Store + Cache + VectorStore + Graph Checkpointer) |
+| `redis` | Redis Store + LLM Cache + Graph Checkpointer |
+| `sqlite` | SQLite Store + LLM Cache |
+| `mongodb` | MongoDB Store |
 
-| Crate | Tools |
-|-------|-------|
-| `synaptic-tavily` | Tavily AI search (API key required) |
-| `synaptic-tools` | DuckDuckGo search, Wikipedia (no API key required) |
-| `synaptic-sqltoolkit` | ListTables, DescribeTable, ExecuteQuery (read-only SQL) |
+### Tools & Integrations
+
+Built-in tools live in `synaptic-tools`; third-party integrations in `synaptic-integrations`. Enable via feature flags:
+
+| Feature | Description |
+|---------|-------------|
+| `tavily` | Tavily AI search (in `synaptic-integrations`) |
+| `sqltoolkit` | ListTables, DescribeTable, ExecuteQuery (in `synaptic-tools`) |
+| `pdf` | PDF document loader (in `synaptic-tools`) |
+| `e2b` | E2B code sandbox (in `synaptic-tools`) |
+| `browser` | Browser automation tool (in `synaptic-tools`) |
+| `sandbox` | Docker sandbox tool (in `synaptic-tools`) |
+| `confluence` | Confluence integration (in `synaptic-integrations`) |
+| `slack` | Slack integration (in `synaptic-integrations`) |
+| `langfuse` | Langfuse observability (in `synaptic-integrations`) |
 
 ## Examples
 

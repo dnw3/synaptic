@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["voyage"] }
+synaptic = { version = "0.4", features = ["voyage"] }
 ```
 
 在 [dash.voyageai.com](https://dash.voyageai.com/) 获取 API 密钥。

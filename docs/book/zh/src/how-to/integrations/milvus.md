@@ -1,6 +1,6 @@
 # Milvus
 
-[Milvus](https://milvus.io/) 是专为十亿规模近似最近邻搜索（ANNS）构建的向量数据库。`synaptic-milvus` crate 通过 Milvus REST API v2 实现 `VectorStore` trait。
+[Milvus](https://milvus.io/) 是专为十亿规模近似最近邻搜索（ANNS）构建的向量数据库。`synaptic-rag` crate（feature `milvus`） 通过 Milvus REST API v2 实现 `VectorStore` trait。
 
 ## 安装
 
@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["milvus"] }
+synaptic = { version = "0.4", features = ["milvus"] }
 ```
 
 使用 Docker 本地运行 Milvus：

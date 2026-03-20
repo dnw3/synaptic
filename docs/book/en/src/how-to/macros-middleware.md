@@ -1,39 +1,19 @@
 # Middleware Macros
 
-Synaptic provides seven macros for defining agent middleware. Each one generates:
+Synaptic provides five macros for defining interceptor middleware. Each one generates:
 
 * A struct named `{PascalCase}Middleware` (e.g. `log_response` becomes
   `LogResponseMiddleware`).
-* An `impl AgentMiddleware for {PascalCase}Middleware` with the corresponding
+* An `impl Interceptor for {PascalCase}Middleware` with the corresponding
   hook method overridden.
 * A factory function with the original name that returns
-  `Arc<dyn AgentMiddleware>`.
+  `Arc<dyn Interceptor>`.
 
 None of the middleware macros accept attribute arguments. However, all middleware
 macros support `#[field]` parameters for building **stateful middleware** (see
 [Stateful Middleware with `#[field]`](#stateful-middleware-with-field) below).
 
 ---
-
-## `#[before_agent]`
-
-Runs before the agent loop starts. The function receives a mutable reference to
-the message list.
-
-**Signature:** `async fn(messages: &mut Vec<Message>) -> Result<(), SynapticError>`
-
-```rust,ignore
-use synaptic::macros::before_agent;
-use synaptic::core::{Message, SynapticError};
-
-#[before_agent]
-async fn inject_system(messages: &mut Vec<Message>) -> Result<(), SynapticError> {
-    println!("Starting agent with {} messages", messages.len());
-    Ok(())
-}
-
-let mw = inject_system(); // Arc<dyn AgentMiddleware>
-```
 
 ## `#[before_model]`
 
@@ -53,7 +33,7 @@ async fn set_temperature(request: &mut ModelRequest) -> Result<(), SynapticError
     Ok(())
 }
 
-let mw = set_temperature(); // Arc<dyn AgentMiddleware>
+let mw = set_temperature(); // Arc<dyn Interceptor>
 ```
 
 ## `#[after_model]`
@@ -75,26 +55,7 @@ async fn log_usage(request: &ModelRequest, response: &mut ModelResponse) -> Resu
     Ok(())
 }
 
-let mw = log_usage(); // Arc<dyn AgentMiddleware>
-```
-
-## `#[after_agent]`
-
-Runs after the agent loop finishes. Receives the final message list.
-
-**Signature:** `async fn(messages: &mut Vec<Message>) -> Result<(), SynapticError>`
-
-```rust,ignore
-use synaptic::macros::after_agent;
-use synaptic::core::{Message, SynapticError};
-
-#[after_agent]
-async fn summarize(messages: &mut Vec<Message>) -> Result<(), SynapticError> {
-    println!("Agent finished with {} messages", messages.len());
-    Ok(())
-}
-
-let mw = summarize(); // Arc<dyn AgentMiddleware>
+let mw = log_usage(); // Arc<dyn Interceptor>
 ```
 
 ## `#[wrap_model_call]`
@@ -121,7 +82,7 @@ async fn retry_once(
     }
 }
 
-let mw = retry_once(); // Arc<dyn AgentMiddleware>
+let mw = retry_once(); // Arc<dyn Interceptor>
 ```
 
 ## `#[wrap_tool_call]`
@@ -148,26 +109,26 @@ async fn log_tool(
     Ok(result)
 }
 
-let mw = log_tool(); // Arc<dyn AgentMiddleware>
+let mw = log_tool(); // Arc<dyn Interceptor>
 ```
 
-## `#[dynamic_prompt]`
+## `#[system_prompt]`
 
 Generates a system prompt dynamically based on the current conversation. Unlike
 the other middleware macros, the decorated function is **synchronous** (not
 async). It reads the message history and returns a `String` that is set as the
 system prompt before each model call.
 
-Under the hood, the macro generates a middleware whose `before_model` hook sets
+Under the hood, the macro generates an interceptor whose `before_model` hook sets
 `request.system_prompt` to the return value of your function.
 
 **Signature:** `fn(messages: &[Message]) -> String`
 
 ```rust,ignore
-use synaptic::macros::dynamic_prompt;
+use synaptic::macros::system_prompt;
 use synaptic::core::Message;
 
-#[dynamic_prompt]
+#[system_prompt]
 fn context_aware_prompt(messages: &[Message]) -> String {
     if messages.len() > 10 {
         "Be concise. The conversation is getting long.".into()
@@ -176,12 +137,12 @@ fn context_aware_prompt(messages: &[Message]) -> String {
     }
 }
 
-let mw = context_aware_prompt(); // Arc<dyn AgentMiddleware>
+let mw = context_aware_prompt(); // Arc<dyn Interceptor>
 ```
 
-> **Why is `#[dynamic_prompt]` synchronous?**
+> **Why is `#[system_prompt]` synchronous?**
 >
-> Unlike the other middleware macros, `#[dynamic_prompt]` takes a plain `fn`
+> Unlike the other middleware macros, `#[system_prompt]` takes a plain `fn`
 > instead of `async fn`. This is a deliberate design choice:
 >
 > 1. **Pure computation** — Dynamic prompt generation typically involves
@@ -195,7 +156,7 @@ let mw = context_aware_prompt(); // Arc<dyn AgentMiddleware>
 >
 > 3. **Internal async wrapping** — The macro generates a `before_model` hook
 >    that calls your sync function inside an async context. The hook itself
->    is async (as required by `AgentMiddleware`), but your function doesn't
+>    is async (as required by `Interceptor`), but your function doesn't
 >    need to be.
 >
 > If you need async operations in your prompt generation (e.g., fetching
@@ -292,10 +253,10 @@ let mw = model_fallback(vec![backup_model]);
 **Example: Dynamic prompt with branding**
 
 ```rust,ignore
-use synaptic::macros::dynamic_prompt;
+use synaptic::macros::system_prompt;
 use synaptic::core::Message;
 
-#[dynamic_prompt]
+#[system_prompt]
 fn branded_prompt(#[field] brand: String, messages: &[Message]) -> String {
     format!("[{}] You have {} messages", brand, messages.len())
 }

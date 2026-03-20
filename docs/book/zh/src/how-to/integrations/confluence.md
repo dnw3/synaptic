@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["confluence"] }
+synaptic = { version = "0.4", features = ["confluence"] }
 ```
 
 在 [id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens) 创建 API 令牌。

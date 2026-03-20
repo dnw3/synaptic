@@ -6,7 +6,7 @@ BAAI's BGE reranker models are state-of-the-art cross-encoder rerankers availabl
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["huggingface"] }
+synaptic = { version = "0.4", features = ["huggingface"] }
 ```
 
 Sign up at [huggingface.co](https://huggingface.co/) and create an access token under Settings → Access Tokens.

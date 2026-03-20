@@ -6,7 +6,7 @@ BAAI 的 BGE 重排序器模型是最先进的交叉编码器重排序器，可�
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["huggingface"] }
+synaptic = { version = "0.4", features = ["huggingface"] }
 ```
 
 在 [huggingface.co](https://huggingface.co/) 注册并在「设置 → 访问令牌」中创建访问令牌。

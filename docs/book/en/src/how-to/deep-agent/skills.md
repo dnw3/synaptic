@@ -40,11 +40,11 @@ my-project/
     main.rs
 ```
 
-Each skill lives in its own subdirectory. The `SkillsMiddleware` discovers them by listing directories under the configured `skills_dir` and reading `{skills_dir}/{dir}/SKILL.md` from each.
+Each skill lives in its own subdirectory. The `SkillsMiddleware` discovers them by listing directories under each configured path in `skills_dirs` and reading `{dir}/SKILL.md` from each.
 
 ## How Discovery Works
 
-The `SkillsMiddleware` implements the `AgentMiddleware` trait. On each call to `before_model()`, it:
+The `SkillsMiddleware` implements the `Interceptor` trait. On each call to `before_model()`, it:
 
 1. Lists entries in the skills directory via the backend's `ls()` method.
 2. For each directory entry, reads the first 50 lines of `{dir}/SKILL.md`.
@@ -71,12 +71,12 @@ use std::sync::Arc;
 use synaptic::deep::{create_deep_agent, DeepAgentOptions};
 
 let mut options = DeepAgentOptions::new(backend);
-options.skills_dir = Some(".skills".to_string());  // default
+options.skills_dirs = vec![".skills".to_string()];  // default
 options.enable_skills = true;                       // default
 let agent = create_deep_agent(model, options)?;
 ```
 
-To disable skills entirely, set `enable_skills = false`. To change the skills directory, set `skills_dir` to a different path within the backend.
+To disable skills entirely, set `enable_skills = false`. To change the skills directories, set `skills_dirs` to different paths within the backend.
 
 ## Example: Adding a Rust Refactoring Skill
 

@@ -25,7 +25,7 @@ Add dependencies to `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["deep", "openai"] }
+synaptic = { version = "0.4", features = ["deep", "openai"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -151,7 +151,7 @@ The agent uses `write_file` and `edit_file` to make the changes.
 
 ## Step 4: Add Skills
 
-Skills are domain-specific instructions stored as `SKILL.md` files in the backend. The `SkillsMiddleware` scans `{skills_dir}/*/SKILL.md` on each model call, parses YAML frontmatter for `name` and `description`, and injects a skill index into the system prompt. The agent can then `read_file` any skill for full details.
+Skills are domain-specific instructions stored as `SKILL.md` files in the backend. The `SkillsMiddleware` scans `{skills_dirs}/*/SKILL.md` on each model call, parses YAML frontmatter for `name` and `description`, and injects a skill index into the system prompt. The agent can then `read_file` any skill for full details.
 
 Write a skill file directly to the backend:
 
@@ -286,12 +286,12 @@ options.enable_skills = true;             // default
 options.enable_memory = true;             // default
 
 // Paths in the backend
-options.skills_dir = Some(".skills".to_string());    // default
+options.skills_dirs = vec![".skills".to_string()];    // default
 options.memory_file = Some("AGENTS.md".to_string()); // default
 
-// Extensibility: add your own tools, middleware, checkpointer, or store
+// Extensibility: add your own tools, interceptors, checkpointer, or store
 options.tools = vec![];
-options.middleware = vec![];
+options.interceptors = vec![];
 options.checkpointer = None;
 options.store = None;
 options.subagents = vec![];
@@ -369,10 +369,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 1. **DeepMemoryMiddleware** -- reads `AGENTS.md` and appends it to the system prompt.
 2. **SkillsMiddleware** -- scans `.skills/*/SKILL.md` and injects a skill index into the system prompt.
 3. **FilesystemMiddleware** -- registers filesystem tools. Evicts results larger than `eviction_threshold` tokens to `.evicted/` files with a preview.
-4. **SubAgentMiddleware** -- provides the `task` tool for spawning child agents.
+4. **SubAgentMiddleware** -- provides the `task` tool for spawning child agents (implements `Interceptor`).
 5. **DeepSummarizationMiddleware** -- summarizes older messages when token count exceeds the threshold, saving full history to `.context/history_N.md`.
 6. **PatchToolCallsMiddleware** -- fixes malformed tool calls (strips code fences, deduplicates IDs, removes empty names).
-7. **User middleware** -- anything in `options.middleware` runs last.
+7. **User interceptors** -- anything in `options.interceptors` runs last.
 
 ## Using a Real Filesystem Backend
 
@@ -380,8 +380,8 @@ For production use, enable the `filesystem` feature to work with real files:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["deep", "openai"] }
-synaptic-deep = { version = "0.2", features = ["filesystem"] }
+synaptic = { version = "0.4", features = ["deep", "openai"] }
+synaptic-deep = { version = "0.4", features = ["filesystem"] }
 ```
 
 > **Note:** The `filesystem` feature is on the `synaptic-deep` crate directly because the `synaptic` facade does not forward it. Add `synaptic-deep` as an explicit dependency when you need `FilesystemBackend`.

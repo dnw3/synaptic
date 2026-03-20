@@ -8,7 +8,7 @@ Add the `browser` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["browser"] }
+synaptic = { version = "0.4", features = ["browser"] }
 ```
 
 You need a running Chrome or Chromium instance with the DevTools Protocol enabled:

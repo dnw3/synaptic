@@ -1,12 +1,12 @@
 # Weaviate
 
-[Weaviate](https://weaviate.io/) is a cloud-native, open-source vector database with built-in support for hybrid search and multi-tenancy. `synaptic-weaviate` implements the [`VectorStore`] trait using the Weaviate v1 REST API.
+[Weaviate](https://weaviate.io/) is a cloud-native, open-source vector database with built-in support for hybrid search and multi-tenancy. `synaptic-rag` (with feature `weaviate`) implements the [`VectorStore`] trait using the Weaviate v1 REST API.
 
 ## Setup
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["weaviate"] }
+synaptic = { version = "0.4", features = ["weaviate"] }
 ```
 
 Run a local Weaviate instance with Docker:

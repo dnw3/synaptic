@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["mcp"] }
+synaptic = { version = "0.4", features = ["mcp"] }
 ```
 
 ## 配置

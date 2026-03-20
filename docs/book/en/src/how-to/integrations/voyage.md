@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["voyage"] }
+synaptic = { version = "0.4", features = ["voyage"] }
 ```
 
 Get an API key from [dash.voyageai.com](https://dash.voyageai.com/).

@@ -1,6 +1,6 @@
 # PostgreSQL Integration
 
-This guide shows how to use PostgreSQL as a backend for vector storage, key-value storage, LLM response caching, and graph checkpointing in Synaptic. The `synaptic-postgres` crate provides four components that share a single `sqlx::PgPool` connection pool.
+This guide shows how to use PostgreSQL as a backend for vector storage, key-value storage, LLM response caching, and graph checkpointing in Synaptic. The `synaptic-store` crate (with feature `postgres`) provides four components that share a single `sqlx::PgPool` connection pool.
 
 ## Prerequisites
 
@@ -20,7 +20,7 @@ Add the `postgres` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai", "postgres"] }
+synaptic = { version = "0.4", features = ["openai", "postgres"] }
 sqlx = { version = "0.8", features = ["runtime-tokio", "postgres"] }
 ```
 

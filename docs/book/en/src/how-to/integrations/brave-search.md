@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["tools"] }
+synaptic = { version = "0.4", features = ["tools"] }
 ```
 
 Get an API key from [brave.com/search/api](https://brave.com/search/api/).

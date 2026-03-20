@@ -61,7 +61,7 @@ Synaptic 通过可选的 feature flag 提供与外部服务和数据源的集成
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["qdrant", "pinecone", "redis", "tavily"] }
+synaptic = { version = "0.4", features = ["qdrant", "pinecone", "redis", "tavily"] }
 ```
 
 你可以只启用需要的集成，无需全部引入。每个集成只会引入它自身所需的依赖。

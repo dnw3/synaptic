@@ -70,7 +70,7 @@ Bot 功能需要开启 `bot` feature。
 
 ```toml
 [dependencies]
-synaptic-lark = { version = "0.2", features = ["bot"] }
+synaptic-lark = { version = "0.4", features = ["bot"] }
 ```
 
 ### LarkBotClient

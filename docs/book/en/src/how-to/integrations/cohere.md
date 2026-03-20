@@ -10,7 +10,7 @@ Add the `cohere` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["cohere"] }
+synaptic = { version = "0.4", features = ["cohere"] }
 ```
 
 Set your Cohere API key:
@@ -71,7 +71,7 @@ When the `retrieval` feature is also enabled, `CohereReranker` implements the `D
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["openai", "cohere", "retrieval", "vectorstores", "embeddings"] }
+synaptic = { version = "0.4", features = ["openai", "cohere", "retrieval", "vectorstores", "embeddings"] }
 ```
 
 ```rust,ignore

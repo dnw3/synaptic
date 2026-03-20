@@ -8,7 +8,7 @@ Add the `ollama` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["ollama"] }
+synaptic = { version = "0.4", features = ["ollama"] }
 ```
 
 ### Installing Ollama

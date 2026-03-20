@@ -122,7 +122,7 @@ This single-store approach eliminates the need for separate directory configurat
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["store-filesystem", "graph"] }
+synaptic = { version = "0.4", features = ["store-filesystem", "graph"] }
 ```
 
 ## Migrating from FileSaver

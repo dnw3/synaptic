@@ -1,12 +1,12 @@
 # Session, Memory & Store
 
-Synaptic has three crates that deal with "remembering things": `synaptic-store`, `synaptic-memory`, and `synaptic-session`. They operate at different abstraction layers and serve different purposes. The key design principle is that **all three layers share a single `Store` backend** -- one storage engine, many views. This page explains each layer, how they relate, and when to use which.
+Synaptic has three modules that deal with "remembering things": `synaptic-store`, `synaptic-memory`, and the session module (in `synaptic-integrations`). They operate at different abstraction layers and serve different purposes. The key design principle is that **all three layers share a single `Store` backend** -- one storage engine, many views. This page explains each layer, how they relate, and when to use which.
 
 ## Three-Layer Architecture
 
 ```text
 ┌─────────────────────────────────────────────────────┐
-│  synaptic-session            (Session lifecycle)     │
+│  session (synaptic-integrations) (Session lifecycle)  │
 │  SessionManager · .memory() · .checkpointer()       │
 │  "Which conversation? Can I resume it?"              │
 ├─────────────────────────────────────────────────────┤
@@ -132,7 +132,7 @@ let context = memory.load("session_1").await?;
 
 ## Layer 3: Session (Conversation Lifecycle)
 
-**Crate:** `synaptic-session`
+**Module:** `synaptic-integrations` (session module)
 
 Session manages the lifecycle of entire conversations -- creating, listing, resuming, and deleting sessions. It acts as a coordinator that hands out `ChatMessageHistory` and `StoreCheckpointer` instances all backed by the same store.
 
@@ -261,7 +261,7 @@ Because memory and session share the same store, there is no data duplication. T
 
 ## Related Concepts
 
-- **Condenser** (`synaptic-condenser`) -- operates at the memory layer, providing additional context compression strategies (rolling, token budget, LLM summarization, pipeline). Think of condensers as "memory strategies on steroids" that can be composed via middleware.
+- **Condenser** (in `synaptic-integrations`) -- operates at the memory layer, providing additional context compression strategies (rolling, token budget, LLM summarization, pipeline). Think of condensers as "memory strategies on steroids" that can be composed via middleware.
 
 - **Graph Checkpointing** (`synaptic-graph::StoreCheckpointer`) -- persists graph execution state (which node was last executed, the full state snapshot) into the shared store under namespace `["checkpoints", "{thread_id}"]`.
 

@@ -8,7 +8,7 @@ Add the `anthropic` feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["anthropic"] }
+synaptic = { version = "0.4", features = ["anthropic"] }
 ```
 
 ### API key

@@ -2,13 +2,13 @@
 
 [xAI](https://x.ai/) 开发了 Grok 系列大语言模型，以实时推理能力和 X（Twitter）数据集成著称。Grok API 与 OpenAI API 兼容。
 
-xAI 作为 `synaptic-openai` 内的兼容子模块提供，无需单独的 crate。
+xAI 作为 `synaptic-models` 内的兼容子模块提供，无需单独的 crate。
 
 ## 安装
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 在 [x.ai](https://x.ai/) 注册以获取 API 密钥。

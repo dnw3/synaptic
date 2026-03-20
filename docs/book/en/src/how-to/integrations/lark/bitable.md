@@ -104,7 +104,7 @@ Persist graph state checkpoints in a Feishu Bitable table, allowing long-running
 
 ```toml
 [dependencies]
-synaptic-lark = { version = "0.2", features = ["checkpointer"] }
+synaptic-lark = { version = "0.4", features = ["checkpointer"] }
 ```
 
 ```rust,ignore

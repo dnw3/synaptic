@@ -6,7 +6,7 @@ Voyage AI 的重排序模型是高质量的交叉编码器，可显著提升检�
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["voyage"] }
+synaptic = { version = "0.4", features = ["voyage"] }
 ```
 
 在 [voyageai.com](https://www.voyageai.com/) 注册并创建 API 密钥。

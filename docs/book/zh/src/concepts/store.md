@@ -4,7 +4,7 @@
 
 ## Store Trait
 
-`Store` trait 在 `synaptic-core` 中定义，在 `synaptic-store` 中实现：
+`Store` trait 在 `synaptic-core` 中定义，在 `synaptic-store` crate 中实现：
 
 ```rust
 #[async_trait]

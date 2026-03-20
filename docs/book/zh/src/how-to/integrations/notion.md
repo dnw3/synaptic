@@ -6,7 +6,7 @@
 
 ```toml
 [dependencies]
-synaptic = { version = "0.2", features = ["loaders"] }
+synaptic = { version = "0.4", features = ["loaders"] }
 ```
 
 在 [notion.so/my-integrations](https://www.notion.so/my-integrations) 创建集成并获取内部集成令牌，然后将页面共享给该集成。

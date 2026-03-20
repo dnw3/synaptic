@@ -2,13 +2,13 @@
 
 [DeepSeek](https://deepseek.com/) 以极低的成本提供强大的语言和推理模型。DeepSeek 模型的价格通常比同类商业模型（如 GPT-4o）低 90% 以上，同时在许多基准测试中表现相当甚至更优。
 
-DeepSeek API 与 OpenAI API 格式完全兼容。DeepSeek 作为 `synaptic-openai` 内的兼容子模块提供，无需单独的 crate。
+DeepSeek API 与 OpenAI API 格式完全兼容。DeepSeek 作为 `synaptic-models` 内的兼容子模块提供，无需单独的 crate。
 
 ## 设置
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 前往 [platform.deepseek.com](https://platform.deepseek.com/) 获取 API 密钥。密钥以 `sk-` 开头。

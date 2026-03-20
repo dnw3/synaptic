@@ -68,8 +68,8 @@ let agent = create_deep_agent(model, options)?;
 > **Feature 门控：** `FilesystemBackend` 需要启用 `filesystem` Cargo feature：
 >
 > ```toml
-> synaptic = { version = "0.2", features = ["deep"] }
-synaptic-deep = { version = "0.2", features = ["filesystem"] }
+> synaptic = { version = "0.4", features = ["deep"] }
+synaptic = { version = "0.4", features = ["deep"] }
 > ```
 
 **适用场景：** 本地 CLI 工具、编程助手，以及任何 agent 需要与真实文件交互的场景。

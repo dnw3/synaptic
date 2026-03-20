@@ -2,13 +2,13 @@
 
 [DeepSeek](https://deepseek.com/) offers powerful language and reasoning models at exceptionally low cost. DeepSeek models are often 90% or more cheaper than comparable proprietary models like GPT-4o, while matching or exceeding their performance on many benchmarks.
 
-The DeepSeek API is fully compatible with the OpenAI API format. DeepSeek is available as a compatibility submodule inside `synaptic-openai`. No separate crate is needed.
+The DeepSeek API is fully compatible with the OpenAI API format. DeepSeek is available as a compatibility submodule inside `synaptic-models`. No separate crate is needed.
 
 ## Setup
 
 ```toml
 [dependencies]
-synaptic = { version = "0.3", features = ["openai"] }
+synaptic = { version = "0.4", features = ["openai"] }
 ```
 
 Obtain an API key from [platform.deepseek.com](https://platform.deepseek.com/). Keys are prefixed with `sk-`.

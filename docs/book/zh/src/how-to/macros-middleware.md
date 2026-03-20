@@ -1,27 +1,10 @@
 # 中间件宏
 
-Synaptic 提供了 7 个中间件宏，分别对应 Agent 执行生命周期中的不同钩子点。每个宏的生成模式一致：
+Synaptic 提供了 5 个中间件宏，分别对应 `Interceptor` trait 中的不同钩子点。每个宏的生成模式一致：
 
 1. 生成一个名为 `{PascalCase}Middleware` 的结构体（例如 `setup` -> `SetupMiddleware`）。
-2. 为该结构体实现 `synaptic::middleware::AgentMiddleware` trait，仅重写对应的钩子方法。
-3. 生成与函数同名的工厂函数，返回 `Arc<dyn AgentMiddleware>`。
-
-## `#[before_agent]`
-
-在 Agent 循环**开始前**执行。函数签名：`async fn(messages: &mut Vec<Message>) -> Result<(), SynapticError>`
-
-```rust
-use synaptic::before_agent;
-use synaptic::core::{Message, SynapticError};
-
-#[before_agent]
-async fn setup(messages: &mut Vec<Message>) -> Result<(), SynapticError> {
-    println!("Agent 即将启动，当前有 {} 条消息", messages.len());
-    Ok(())
-}
-
-let mw = setup(); // Arc<dyn AgentMiddleware>
-```
+2. 为该结构体实现 `synaptic::middleware::Interceptor` trait，仅重写对应的钩子方法。
+3. 生成与函数同名的工厂函数，返回 `Arc<dyn Interceptor>`。
 
 ## `#[before_model]`
 
@@ -38,7 +21,7 @@ async fn add_context(request: &mut ModelRequest) -> Result<(), SynapticError> {
     Ok(())
 }
 
-let mw = add_context(); // Arc<dyn AgentMiddleware>
+let mw = add_context(); // Arc<dyn Interceptor>
 ```
 
 ## `#[after_model]`
@@ -61,24 +44,7 @@ async fn log_response(
     Ok(())
 }
 
-let mw = log_response(); // Arc<dyn AgentMiddleware>
-```
-
-## `#[after_agent]`
-
-在 Agent 循环**结束后**执行。函数签名与 `#[before_agent]` 相同：`async fn(messages: &mut Vec<Message>) -> Result<(), SynapticError>`
-
-```rust
-use synaptic::after_agent;
-use synaptic::core::{Message, SynapticError};
-
-#[after_agent]
-async fn cleanup(messages: &mut Vec<Message>) -> Result<(), SynapticError> {
-    println!("Agent 执行完毕，共产生 {} 条消息", messages.len());
-    Ok(())
-}
-
-let mw = cleanup(); // Arc<dyn AgentMiddleware>
+let mw = log_response(); // Arc<dyn Interceptor>
 ```
 
 ## `#[wrap_model_call]`
@@ -106,7 +72,7 @@ async fn retry_on_failure(
     }
 }
 
-let mw = retry_on_failure(); // Arc<dyn AgentMiddleware>
+let mw = retry_on_failure(); // Arc<dyn Interceptor>
 ```
 
 ## `#[wrap_tool_call]`
@@ -130,22 +96,22 @@ async fn log_tool(
     Ok(result)
 }
 
-let mw = log_tool(); // Arc<dyn AgentMiddleware>
+let mw = log_tool(); // Arc<dyn Interceptor>
 ```
 
-## `#[dynamic_prompt]`
+## `#[system_prompt]`
 
 根据当前消息上下文**动态生成系统提示词**。与其他中间件不同，此宏要求函数是**非异步的** (`fn` 而非 `async fn`)。
 
 函数签名：`fn(messages: &[Message]) -> String`
 
-生成的中间件会在 `before_model` 钩子中将返回的字符串设置为 `request.system_prompt`。
+生成的拦截器会在 `before_model` 钩子中将返回的字符串设置为 `request.system_prompt`。
 
 ```rust
-use synaptic::dynamic_prompt;
+use synaptic::system_prompt;
 use synaptic::core::Message;
 
-#[dynamic_prompt]
+#[system_prompt]
 fn context_aware_prompt(messages: &[Message]) -> String {
     if messages.len() > 10 {
         "请简洁回答，对话已经很长了。".into()
@@ -154,12 +120,12 @@ fn context_aware_prompt(messages: &[Message]) -> String {
     }
 }
 
-let mw = context_aware_prompt(); // Arc<dyn AgentMiddleware>
+let mw = context_aware_prompt(); // Arc<dyn Interceptor>
 ```
 
-> **为什么 `#[dynamic_prompt]` 是同步的？**
+> **为什么 `#[system_prompt]` 是同步的？**
 >
-> 与其他中间件宏不同，`#[dynamic_prompt]` 要求使用普通的 `fn` 而非 `async fn`。
+> 与其他中间件宏不同，`#[system_prompt]` 要求使用普通的 `fn` 而非 `async fn`。
 > 这是一个刻意的设计选择：
 >
 > 1. **纯计算操作** — 动态提示词生成通常只涉及检查消息列表和拼接字符串，属于
@@ -170,7 +136,7 @@ let mw = context_aware_prompt(); // Arc<dyn AgentMiddleware>
 >    Send/Sync 约束。
 >
 > 3. **内部异步包装** — 宏在生成代码时会将你的同步函数包装在一个 `before_model`
->    异步钩子中调用。钩子本身是 async 的（这是 `AgentMiddleware` trait 的要求），
+>    异步钩子中调用。钩子本身是 async 的（这是 `Interceptor` trait 的要求），
 >    但你的函数不需要是 async 的。
 >
 > 如果你需要在提示词生成过程中执行异步操作（如从数据库获取上下文或调用外部 API），
@@ -263,10 +229,10 @@ let mw = model_fallback(vec![backup_model]);
 **示例：带品牌标识的动态提示词**
 
 ```rust,ignore
-use synaptic::macros::dynamic_prompt;
+use synaptic::macros::system_prompt;
 use synaptic::core::Message;
 
-#[dynamic_prompt]
+#[system_prompt]
 fn branded_prompt(#[field] brand: String, messages: &[Message]) -> String {
     format!("[{}] 你有 {} 条消息", brand, messages.len())
 }
