@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use synaptic_core::SynapticError;
+use synaptic_core::{RunContext, SynapticError};
 use synaptic_middleware::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
 /// Channel capability information.
@@ -176,6 +176,7 @@ impl Interceptor for EnvironmentMiddleware {
     async fn wrap_model_call(
         &self,
         mut request: ModelRequest,
+        ctx: &RunContext,
         next: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
         let section = self.format_section();
@@ -196,6 +197,6 @@ impl Interceptor for EnvironmentMiddleware {
             has_self_section = self.self_section.is_some(),
             "EnvironmentMiddleware injected"
         );
-        next.call(request).await
+        next.call(request, ctx).await
     }
 }

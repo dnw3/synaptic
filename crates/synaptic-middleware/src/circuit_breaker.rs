@@ -7,6 +7,8 @@ use serde_json::Value;
 use synaptic_core::SynapticError;
 use tokio::sync::RwLock;
 
+use synaptic_core::RunContext;
+
 use crate::{Interceptor, ModelCaller, ModelRequest, ModelResponse, ToolCallRequest, ToolCaller};
 
 /// Circuit breaker state machine states.
@@ -149,6 +151,7 @@ impl Interceptor for CircuitBreakerMiddleware {
     async fn wrap_model_call(
         &self,
         request: ModelRequest,
+        ctx: &RunContext,
         next: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
         let state = self.state_for("__model__").await;
@@ -157,7 +160,7 @@ impl Interceptor for CircuitBreakerMiddleware {
             CircuitState::Open => Err(SynapticError::Model(
                 "circuit breaker open for model — too many consecutive failures".to_string(),
             )),
-            CircuitState::HalfOpen | CircuitState::Closed => match next.call(request).await {
+            CircuitState::HalfOpen | CircuitState::Closed => match next.call(request, ctx).await {
                 Ok(result) => {
                     self.record_success("__model__").await;
                     Ok(result)

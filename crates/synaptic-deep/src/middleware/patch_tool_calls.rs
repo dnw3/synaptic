@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use serde_json::Value;
 use std::collections::HashSet;
-use synaptic_core::{Message, SynapticError};
+use synaptic_core::{Message, RunContext, SynapticError};
 use synaptic_middleware::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
 /// Middleware that fixes malformed tool calls in model responses.
@@ -22,12 +22,13 @@ impl Interceptor for PatchToolCallsMiddleware {
     async fn wrap_model_call(
         &self,
         mut request: ModelRequest,
+        ctx: &RunContext,
         next: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
         // Before model: prune repeated tool errors
         prune_repeated_tool_errors(&mut request.messages);
 
-        let mut response = next.call(request).await?;
+        let mut response = next.call(request, ctx).await?;
 
         // After model: fix malformed tool calls
         let tool_calls = response.message.tool_calls().to_vec();

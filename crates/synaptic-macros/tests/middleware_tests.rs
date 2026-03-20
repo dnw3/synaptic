@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use synaptic_core::{Message, SynapticError};
+use synaptic_core::{Message, RunContext, SynapticError};
 use synaptic_macros::{after_model, before_model, dynamic_prompt, wrap_model_call};
 use synaptic_middleware::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
@@ -106,9 +106,10 @@ async fn test_interceptor_names() {
 #[wrap_model_call]
 async fn passthrough_model(
     request: ModelRequest,
+    ctx: &RunContext,
     next: &dyn ModelCaller,
 ) -> Result<ModelResponse, SynapticError> {
-    next.call(request).await
+    next.call(request, ctx).await
 }
 
 #[tokio::test]
@@ -213,11 +214,12 @@ async fn test_dynamic_prompt_with_field() {
 async fn retry_model(
     #[field] max_retries: usize,
     request: ModelRequest,
+    ctx: &RunContext,
     next: &dyn ModelCaller,
 ) -> Result<ModelResponse, SynapticError> {
     let mut last_err = None;
     for attempt in 0..=max_retries {
-        match next.call(request.clone()).await {
+        match next.call(request.clone(), ctx).await {
             Ok(val) => return Ok(val),
             Err(e) => {
                 last_err = Some(e);

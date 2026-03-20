@@ -6,7 +6,9 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde_json::Value;
-use synaptic_core::{ChatModel, ChatRequest, Message, SynapticError, Tool, ToolDefinition};
+use synaptic_core::{
+    ChatModel, ChatRequest, Message, RunContext, SynapticError, Tool, ToolDefinition,
+};
 use synaptic_events::{EmitResult, Event, EventBus, EventKind};
 use synaptic_macros::traceable;
 use synaptic_middleware::{BaseChatModelCaller, Interceptor, InterceptorChain, ModelRequest};
@@ -150,7 +152,11 @@ impl Node<MessageState> for ChatModelNode {
 
         // Call model through interceptor chain
         let base_caller = BaseChatModelCaller::new(self.model.clone());
-        let response = match self.interceptors.call_model(request, &base_caller).await {
+        let response = match self
+            .interceptors
+            .call_model(request, &RunContext::default(), &base_caller)
+            .await
+        {
             Ok(resp) => {
                 // Emit LlmOutput (fire-and-forget)
                 let content_preview: String = resp.message.content().chars().take(500).collect();

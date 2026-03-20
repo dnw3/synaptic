@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use async_trait::async_trait;
 use serde_json::{json, Value};
-use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, SynapticError};
+use synaptic_core::{ChatModel, ChatRequest, ChatResponse, Message, RunContext, SynapticError};
 use synaptic_macros::{wrap_model_call, wrap_tool_call};
 use synaptic_middleware::{
     BaseChatModelCaller, Interceptor, InterceptorChain, ModelCaller, ModelRequest, ModelResponse,
@@ -50,14 +50,15 @@ async fn tool_retry(
 async fn model_fallback(
     #[field] fallbacks: Vec<Arc<dyn ChatModel>>,
     request: ModelRequest,
+    ctx: &RunContext,
     next: &dyn ModelCaller,
 ) -> Result<ModelResponse, SynapticError> {
-    match next.call(request.clone()).await {
+    match next.call(request.clone(), ctx).await {
         Ok(resp) => Ok(resp),
         Err(primary_err) => {
             for fallback in &fallbacks {
                 let caller = BaseChatModelCaller::new(fallback.clone());
-                match caller.call(request.clone()).await {
+                match caller.call(request.clone(), ctx).await {
                     Ok(resp) => return Ok(resp),
                     Err(_) => continue,
                 }
@@ -218,7 +219,10 @@ async fn test_model_fallback_uses_fallback_on_failure() {
         thinking: None,
     };
 
-    let resp = chain.call_model(req, &base).await.unwrap();
+    let resp = chain
+        .call_model(req, &RunContext::default(), &base)
+        .await
+        .unwrap();
     assert_eq!(resp.message.content(), "from fallback");
 }
 
@@ -239,7 +243,7 @@ async fn test_model_fallback_all_fail() {
         thinking: None,
     };
 
-    let result = chain.call_model(req, &base).await;
+    let result = chain.call_model(req, &RunContext::default(), &base).await;
     assert!(result.is_err());
     assert!(result.unwrap_err().to_string().contains("primary down"));
 }
@@ -261,6 +265,9 @@ async fn test_model_fallback_primary_succeeds() {
         thinking: None,
     };
 
-    let resp = chain.call_model(req, &base).await.unwrap();
+    let resp = chain
+        .call_model(req, &RunContext::default(), &base)
+        .await
+        .unwrap();
     assert_eq!(resp.message.content(), "from primary");
 }

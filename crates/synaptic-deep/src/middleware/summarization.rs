@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
-use synaptic_core::{ChatModel, ChatRequest, Message, SynapticError};
+use synaptic_core::{ChatModel, ChatRequest, Message, RunContext, SynapticError};
 use synaptic_middleware::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
 use crate::backend::Backend;
@@ -46,6 +46,7 @@ impl Interceptor for DeepSummarizationMiddleware {
     async fn wrap_model_call(
         &self,
         mut request: ModelRequest,
+        ctx: &RunContext,
         next: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
         let threshold = (self.max_input_tokens as f64 * self.threshold_fraction) as usize;
@@ -93,6 +94,6 @@ impl Interceptor for DeepSummarizationMiddleware {
             }
         }
 
-        next.call(request).await
+        next.call(request, ctx).await
     }
 }

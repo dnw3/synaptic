@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use std::sync::Arc;
-use synaptic_core::{Message, SynapticError};
+use synaptic_core::{Message, RunContext, SynapticError};
 use synaptic_deep::backend::{Backend, StateBackend};
 use synaptic_deep::middleware::memory::DeepMemoryMiddleware;
 use synaptic_middleware::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
@@ -10,7 +10,11 @@ struct CapturingCaller;
 
 #[async_trait]
 impl ModelCaller for CapturingCaller {
-    async fn call(&self, request: ModelRequest) -> Result<ModelResponse, SynapticError> {
+    async fn call(
+        &self,
+        request: ModelRequest,
+        _ctx: &RunContext,
+    ) -> Result<ModelResponse, SynapticError> {
         let content = request.system_prompt.unwrap_or_default();
         Ok(ModelResponse {
             message: Message::ai(content),
@@ -40,7 +44,10 @@ async fn loads_memory_file() {
     let mw = DeepMemoryMiddleware::new(backend, "AGENTS.md".to_string());
     let caller = CapturingCaller;
     let request = empty_request();
-    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    let response = mw
+        .wrap_model_call(request, &RunContext::default(), &caller)
+        .await
+        .unwrap();
 
     let prompt = response.message.content().to_string();
     assert!(prompt.contains("<agent_memory>"));
@@ -54,7 +61,10 @@ async fn missing_memory_file_no_error() {
     let mw = DeepMemoryMiddleware::new(backend, "AGENTS.md".to_string());
     let caller = CapturingCaller;
     let request = empty_request();
-    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    let response = mw
+        .wrap_model_call(request, &RunContext::default(), &caller)
+        .await
+        .unwrap();
     assert!(response.message.content().is_empty());
 }
 
@@ -70,7 +80,10 @@ async fn appends_to_existing_prompt() {
     let caller = CapturingCaller;
     let mut request = empty_request();
     request.system_prompt = Some("You are helpful.".to_string());
-    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    let response = mw
+        .wrap_model_call(request, &RunContext::default(), &caller)
+        .await
+        .unwrap();
 
     let prompt = response.message.content().to_string();
     assert!(prompt.starts_with("You are helpful."));
@@ -85,6 +98,9 @@ async fn empty_memory_file_no_injection() {
     let mw = DeepMemoryMiddleware::new(backend, "AGENTS.md".to_string());
     let caller = CapturingCaller;
     let request = empty_request();
-    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    let response = mw
+        .wrap_model_call(request, &RunContext::default(), &caller)
+        .await
+        .unwrap();
     assert!(response.message.content().is_empty());
 }

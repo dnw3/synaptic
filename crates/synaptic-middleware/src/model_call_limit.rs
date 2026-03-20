@@ -3,6 +3,8 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use async_trait::async_trait;
 use synaptic_core::SynapticError;
 
+use synaptic_core::RunContext;
+
 use crate::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
 /// Limits the number of model invocations during a single agent run.
@@ -36,6 +38,7 @@ impl Interceptor for ModelCallLimitMiddleware {
     async fn wrap_model_call(
         &self,
         request: ModelRequest,
+        ctx: &RunContext,
         next: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
         let current = self.count.fetch_add(1, Ordering::SeqCst);
@@ -44,7 +47,7 @@ impl Interceptor for ModelCallLimitMiddleware {
                 max_steps: self.max_calls,
             });
         }
-        next.call(request).await
+        next.call(request, ctx).await
     }
 }
 

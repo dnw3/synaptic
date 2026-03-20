@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use serde_json::json;
-use synaptic_core::{Message, SynapticError, ToolCall};
+use synaptic_core::{Message, RunContext, SynapticError, ToolCall};
 use synaptic_deep::middleware::patch_tool_calls::PatchToolCallsMiddleware;
 use synaptic_middleware::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
@@ -21,7 +21,11 @@ struct MockCaller {
 
 #[async_trait]
 impl ModelCaller for MockCaller {
-    async fn call(&self, _request: ModelRequest) -> Result<ModelResponse, SynapticError> {
+    async fn call(
+        &self,
+        _request: ModelRequest,
+        _ctx: &RunContext,
+    ) -> Result<ModelResponse, SynapticError> {
         Ok(self.response.clone())
     }
 }
@@ -44,7 +48,10 @@ async fn fixes_string_arguments_to_json_object() {
         },
     };
 
-    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    let response = mw
+        .wrap_model_call(request, &RunContext::default(), &caller)
+        .await
+        .unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 1);
@@ -72,7 +79,10 @@ async fn noop_on_valid_object_args() {
         },
     };
 
-    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    let response = mw
+        .wrap_model_call(request, &RunContext::default(), &caller)
+        .await
+        .unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 1);
@@ -90,7 +100,10 @@ async fn empty_tool_calls_noop() {
         },
     };
 
-    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    let response = mw
+        .wrap_model_call(request, &RunContext::default(), &caller)
+        .await
+        .unwrap();
     assert!(response.message.tool_calls().is_empty());
     assert_eq!(response.message.content(), "no tools here");
 }
@@ -120,7 +133,10 @@ async fn removes_empty_name_tool_calls() {
         },
     };
 
-    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    let response = mw
+        .wrap_model_call(request, &RunContext::default(), &caller)
+        .await
+        .unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 1);
@@ -145,7 +161,10 @@ async fn strips_markdown_code_fences_and_parses() {
         },
     };
 
-    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    let response = mw
+        .wrap_model_call(request, &RunContext::default(), &caller)
+        .await
+        .unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 1);
@@ -179,7 +198,10 @@ async fn multiple_tool_calls_all_processed() {
         },
     };
 
-    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    let response = mw
+        .wrap_model_call(request, &RunContext::default(), &caller)
+        .await
+        .unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 2);
@@ -215,7 +237,10 @@ async fn deduplicates_identical_tool_call_ids() {
         },
     };
 
-    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    let response = mw
+        .wrap_model_call(request, &RunContext::default(), &caller)
+        .await
+        .unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 2);
@@ -241,7 +266,10 @@ async fn patches_empty_id() {
         },
     };
 
-    let response = mw.wrap_model_call(request, &caller).await.unwrap();
+    let response = mw
+        .wrap_model_call(request, &RunContext::default(), &caller)
+        .await
+        .unwrap();
 
     let calls = response.message.tool_calls();
     assert_eq!(calls.len(), 1);

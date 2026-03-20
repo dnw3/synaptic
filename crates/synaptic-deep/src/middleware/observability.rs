@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use serde_json::Value;
-use synaptic_core::SynapticError;
+use synaptic_core::{RunContext, SynapticError};
 use synaptic_middleware::{
     Interceptor, ModelCaller, ModelRequest, ModelResponse, ToolCallRequest, ToolCaller,
 };
@@ -26,6 +26,7 @@ impl Interceptor for AgentTracingMiddleware {
     async fn wrap_model_call(
         &self,
         request: ModelRequest,
+        ctx: &RunContext,
         next: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
         let message_count = request.messages.len();
@@ -53,7 +54,7 @@ impl Interceptor for AgentTracingMiddleware {
         );
 
         let start = std::time::Instant::now();
-        let result = next.call(request).await;
+        let result = next.call(request, ctx).await;
         let duration_ms = start.elapsed().as_millis() as u64;
 
         match &result {

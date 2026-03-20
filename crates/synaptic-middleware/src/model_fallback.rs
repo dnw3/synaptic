@@ -5,6 +5,8 @@ use async_trait::async_trait;
 use synaptic_core::{ChatModel, SynapticError};
 use tokio::sync::Mutex;
 
+use synaptic_core::RunContext;
+
 use crate::{BaseChatModelCaller, Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
 /// Error classification for failover decisions.
@@ -107,13 +109,14 @@ impl Interceptor for ModelFallbackMiddleware {
     async fn wrap_model_call(
         &self,
         request: ModelRequest,
+        ctx: &RunContext,
         next: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
         // Try primary (index 0)
         let primary_in_cooldown = self.states.lock().await[0].is_in_cooldown();
 
         if !primary_in_cooldown {
-            match next.call(request.clone()).await {
+            match next.call(request.clone(), ctx).await {
                 Ok(resp) => {
                     self.states.lock().await[0].record_success();
                     return Ok(resp);
@@ -145,7 +148,7 @@ impl Interceptor for ModelFallbackMiddleware {
 
         for i in indices {
             let caller = BaseChatModelCaller::new(self.fallbacks[i].clone());
-            match caller.call(request.clone()).await {
+            match caller.call(request.clone(), ctx).await {
                 Ok(resp) => {
                     self.states.lock().await[i + 1].record_success();
                     return Ok(resp);
@@ -164,7 +167,7 @@ impl Interceptor for ModelFallbackMiddleware {
                 continue; // already tried
             }
             let caller = BaseChatModelCaller::new(fallback.clone());
-            match caller.call(request.clone()).await {
+            match caller.call(request.clone(), ctx).await {
                 Ok(resp) => {
                     self.states.lock().await[i + 1].record_success();
                     return Ok(resp);

@@ -294,10 +294,11 @@ pub fn expand_wrap_model_call(attr: TokenStream, item: TokenStream) -> syn::Resu
             async fn wrap_model_call(
                 &self,
                 request: #mw_crate::ModelRequest,
+                ctx: &#core_crate::RunContext,
                 next: &dyn #mw_crate::ModelCaller,
             ) -> Result<#mw_crate::ModelResponse, #core_crate::SynapticError> {
                 #(#field_clones)*
-                #impl_fn_name(#(#fidents,)* request, next).await
+                #impl_fn_name(#(#fidents,)* request, ctx, next).await
             }
         }
 

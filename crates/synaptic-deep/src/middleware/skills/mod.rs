@@ -20,7 +20,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use synaptic_core::{SynapticError, Tool};
+use synaptic_core::{RunContext, SynapticError, Tool};
 use synaptic_middleware::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
 use tokio::sync::RwLock;
 
@@ -287,6 +287,7 @@ impl Interceptor for SkillsMiddleware {
     async fn wrap_model_call(
         &self,
         mut request: ModelRequest,
+        ctx: &RunContext,
         next: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
         let skills = self.discover_skills().await;
@@ -343,6 +344,6 @@ impl Interceptor for SkillsMiddleware {
             }
         }
 
-        next.call(request).await
+        next.call(request, ctx).await
     }
 }

@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use std::sync::Arc;
-use synaptic_core::SynapticError;
+use synaptic_core::{RunContext, SynapticError};
 use synaptic_middleware::{Interceptor, ModelCaller, ModelRequest, ModelResponse};
 
 use crate::backend::Backend;
@@ -28,6 +28,7 @@ impl Interceptor for DeepMemoryMiddleware {
     async fn wrap_model_call(
         &self,
         mut request: ModelRequest,
+        ctx: &RunContext,
         next: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
         match self.backend.read_file(&self.memory_file, 0, 10000).await {
@@ -41,6 +42,6 @@ impl Interceptor for DeepMemoryMiddleware {
             }
             _ => {} // File not found or empty — silently skip
         }
-        next.call(request).await
+        next.call(request, ctx).await
     }
 }
