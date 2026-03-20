@@ -52,7 +52,7 @@ pub use message::{
 // Chat model types
 pub use chat_model::{
     ChatModel, ChatRequest, ChatResponse, ChatStream, InputTokenDetails, ModelProfile,
-    OutputTokenDetails, ThinkingConfig, TokenUsage,
+    OutputTokenDetails, ThinkingLevel, TokenUsage,
 };
 
 // Tool types

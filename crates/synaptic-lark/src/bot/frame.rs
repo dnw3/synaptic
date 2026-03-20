@@ -91,10 +91,14 @@ impl Frame {
     /// fields (seq_id, log_id, service, headers) — matching the official Go SDK
     /// behaviour where the original frame is modified in-place before sending back.
     ///
+    /// `status_code` uses HTTP status codes (200 = OK, 500 = error) to match
+    /// the Go SDK `Response` struct: `{"code":200,"headers":null,"data":null}`.
+    ///
     /// `biz_rt_ms` is the business processing time in milliseconds; it is
     /// appended as the `biz_rt` header so the server can track handler latency.
-    pub fn into_response(mut self, code: i32, biz_rt_ms: i64) -> Self {
-        let payload = serde_json::json!({ "code": code });
+    pub fn into_response(mut self, status_code: i32, biz_rt_ms: i64) -> Self {
+        // Match Go SDK Response struct: {"code":200,"headers":null,"data":null}
+        let payload = serde_json::json!({ "code": status_code, "headers": null, "data": null });
         // Append biz_rt header (processing duration in ms)
         self.headers
             .push(Header::new(HEADER_BIZ_RT, &biz_rt_ms.to_string()));
@@ -103,8 +107,12 @@ impl Frame {
     }
 
     /// Create a response/ack frame for data messages with custom headers.
-    pub fn response_with_headers(service: i32, code: i32, headers: Vec<Header>) -> Self {
-        let payload = serde_json::json!({ "code": code });
+    ///
+    /// **Prefer [`into_response`] for data frame ACKs** — it preserves the
+    /// original frame's seq_id/log_id which Lark requires for matching.
+    /// This method is kept for cases where a standalone frame is needed.
+    pub fn response_with_headers(service: i32, status_code: i32, headers: Vec<Header>) -> Self {
+        let payload = serde_json::json!({ "code": status_code, "headers": null, "data": null });
         Self {
             seq_id: 0,
             log_id: 0,
@@ -119,8 +127,11 @@ impl Frame {
     }
 
     /// Create a response/ack frame for data messages.
-    pub fn response(service: i32, code: i32) -> Self {
-        let payload = serde_json::json!({ "code": code });
+    ///
+    /// **Prefer [`into_response`] for data frame ACKs** — it preserves the
+    /// original frame's seq_id/log_id which Lark requires for matching.
+    pub fn response(service: i32, status_code: i32) -> Self {
+        let payload = serde_json::json!({ "code": status_code, "headers": null, "data": null });
         Self {
             seq_id: 0,
             log_id: 0,
@@ -159,6 +170,8 @@ mod tests {
         let payload_str = String::from_utf8(decoded.payload.unwrap()).unwrap();
         let v: serde_json::Value = serde_json::from_str(&payload_str).unwrap();
         assert_eq!(v["code"], 200);
+        assert!(v["headers"].is_null());
+        assert!(v["data"].is_null());
     }
 
     #[test]
@@ -177,6 +190,34 @@ mod tests {
         let payload_str = String::from_utf8(decoded.payload.unwrap()).unwrap();
         let v: serde_json::Value = serde_json::from_str(&payload_str).unwrap();
         assert_eq!(v["code"], 200);
+        assert!(v["headers"].is_null());
+        assert!(v["data"].is_null());
+    }
+
+    #[test]
+    fn into_response_preserves_identity() {
+        let frame = Frame {
+            seq_id: 42,
+            log_id: 123,
+            service: 7,
+            method: FRAME_DATA,
+            headers: vec![Header::new(HEADER_TRACE_ID, "t-1")],
+            payload_encoding: None,
+            payload_type: None,
+            payload: Some(b"original".to_vec()),
+            log_id_new: None,
+        };
+        let resp = frame.into_response(200, 15);
+        assert_eq!(resp.seq_id, 42, "seq_id must be preserved");
+        assert_eq!(resp.log_id, 123, "log_id must be preserved");
+        assert_eq!(resp.service, 7);
+        assert_eq!(resp.get_header(HEADER_TRACE_ID), Some("t-1"));
+        assert_eq!(resp.get_header(HEADER_BIZ_RT), Some("15"));
+        let payload_str = String::from_utf8(resp.payload.unwrap()).unwrap();
+        let v: serde_json::Value = serde_json::from_str(&payload_str).unwrap();
+        assert_eq!(v["code"], 200);
+        assert!(v["headers"].is_null());
+        assert!(v["data"].is_null());
     }
 
     #[test]

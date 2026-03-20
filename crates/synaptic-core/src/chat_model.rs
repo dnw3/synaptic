@@ -42,22 +42,21 @@ pub struct OutputTokenDetails {
 }
 
 // ---------------------------------------------------------------------------
-// ThinkingConfig
+// ThinkingLevel
 // ---------------------------------------------------------------------------
 
-/// Configuration for extended thinking / reasoning mode.
+/// Controls extended thinking / reasoning mode for models that support it.
 ///
-/// When enabled, models that support it (e.g. Anthropic Claude) will produce
-/// detailed reasoning before their final response. The `budget_tokens` field
-/// controls how many tokens the model may use for reasoning.
+/// Provider adapters translate each level into the appropriate API-specific
+/// parameters (e.g. `reasoning_effort` for OpenAI, `thinking.budget_tokens`
+/// for Anthropic, `thinking_config.thinking_budget` for Gemini).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct ThinkingConfig {
-    /// Whether extended thinking is enabled.
-    pub enabled: bool,
-    /// Maximum number of tokens the model may use for reasoning.
-    /// If None, the provider's default budget is used.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub budget_tokens: Option<u32>,
+pub enum ThinkingLevel {
+    Off,
+    Low,
+    Medium,
+    High,
+    Budget(u32),
 }
 
 // ---------------------------------------------------------------------------
@@ -73,7 +72,7 @@ pub struct ChatRequest {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tool_choice: Option<crate::tool::ToolChoice>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub thinking: Option<ThinkingConfig>,
+    pub thinking: Option<ThinkingLevel>,
 }
 
 impl ChatRequest {
@@ -96,8 +95,8 @@ impl ChatRequest {
         self
     }
 
-    pub fn with_thinking(mut self, config: ThinkingConfig) -> Self {
-        self.thinking = Some(config);
+    pub fn with_thinking(mut self, level: ThinkingLevel) -> Self {
+        self.thinking = Some(level);
         self
     }
 }
