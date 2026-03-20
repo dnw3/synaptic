@@ -109,6 +109,11 @@ impl AzureOpenAiChatModel {
             "stream": stream,
         });
 
+        // Request usage stats in the final streaming chunk (OpenAI-compatible).
+        if stream {
+            body["stream_options"] = json!({"include_usage": true});
+        }
+
         if let Some(max_tokens) = self.config.max_tokens {
             body["max_tokens"] = json!(max_tokens);
         }

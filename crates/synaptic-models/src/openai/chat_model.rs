@@ -18,6 +18,10 @@ pub struct OpenAiConfig {
     pub top_p: Option<f64>,
     pub stop: Option<Vec<String>>,
     pub seed: Option<u64>,
+    /// Disable streaming for this model. When true, `stream_chat()` falls back
+    /// to a single `chat()` call and emits the full response as one chunk.
+    /// Useful for providers that don't support streaming reliably.
+    pub disable_streaming: bool,
 }
 
 impl OpenAiConfig {
@@ -31,6 +35,7 @@ impl OpenAiConfig {
             top_p: None,
             stop: None,
             seed: None,
+            disable_streaming: false,
         }
     }
 
@@ -83,6 +88,11 @@ impl OpenAiChatModel {
             "messages": messages,
             "stream": stream,
         });
+
+        // Request usage stats in the final streaming chunk (OpenAI-compatible).
+        if stream {
+            body["stream_options"] = json!({"include_usage": true});
+        }
 
         if let Some(max_tokens) = self.config.max_tokens {
             body["max_tokens"] = json!(max_tokens);
@@ -331,6 +341,28 @@ impl ChatModel for OpenAiChatModel {
 
     fn stream_chat(&self, request: ChatRequest) -> ChatStream<'_> {
         Box::pin(async_stream::stream! {
+            // Fall back to non-streaming when disabled for this model.
+            if self.config.disable_streaming {
+                tracing::debug!("streaming disabled for model, falling back to chat()");
+                let provider_req = self.build_request(&request, false);
+                let resp = self.backend.send(provider_req).await;
+                match resp {
+                    Ok(resp) => match parse_response(&resp) {
+                        Ok(chat_resp) => {
+                            let chunk = AIMessageChunk {
+                                content: chat_resp.message.content().to_string(),
+                                usage: chat_resp.usage,
+                                ..Default::default()
+                            };
+                            yield Ok(chunk);
+                        }
+                        Err(e) => yield Err(e),
+                    },
+                    Err(e) => yield Err(e),
+                }
+                return;
+            }
+
             let provider_req = self.build_request(&request, true);
             let byte_stream = self.backend.send_stream(provider_req).await;
 
