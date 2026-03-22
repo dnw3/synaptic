@@ -1,4 +1,4 @@
-use super::{PluginManifest, PluginRegistry};
+use super::{PluginApi, PluginManifest};
 use async_trait::async_trait;
 
 pub struct PluginContext {
@@ -8,10 +8,7 @@ pub struct PluginContext {
 #[async_trait]
 pub trait Plugin: Send + Sync + 'static {
     fn manifest(&self) -> PluginManifest;
-    async fn register(
-        &self,
-        registry: &mut PluginRegistry,
-    ) -> Result<(), synaptic_core::SynapticError>;
+    async fn register(&self, api: &mut PluginApi<'_>) -> Result<(), synaptic_core::SynapticError>;
     async fn start(&self, _ctx: PluginContext) -> Result<(), synaptic_core::SynapticError> {
         Ok(())
     }

@@ -3,11 +3,13 @@
 //! Requires the `plugin` feature flag.
 
 mod manifest;
+mod plugin_api;
 mod plugin_trait;
 mod registry;
 mod service;
 
 pub use manifest::*;
+pub use plugin_api::*;
 pub use plugin_trait::*;
 pub use registry::*;
 pub use service::*;
@@ -35,7 +37,7 @@ mod tests {
         }
         async fn register(
             &self,
-            _registry: &mut PluginRegistry,
+            _api: &mut PluginApi<'_>,
         ) -> Result<(), synaptic_core::SynapticError> {
             Ok(())
         }
@@ -47,7 +49,8 @@ mod tests {
         let mut registry = PluginRegistry::new(bus);
         let plugin = TestPlugin;
         let manifest = plugin.manifest();
-        plugin.register(&mut registry).await.unwrap();
+        let mut api = PluginApi::new(&mut registry, &manifest.name);
+        plugin.register(&mut api).await.unwrap();
         registry.record_plugin(manifest);
         assert_eq!(registry.plugins().len(), 1);
         assert_eq!(registry.plugins()[0].name, "test");
@@ -214,6 +217,33 @@ mod tests {
         let taken = registry.take_interceptors();
         assert_eq!(taken.len(), 2);
         assert_eq!(registry.interceptors().len(), 0);
+    }
+
+    #[tokio::test]
+    async fn plugin_api_scoped_registration() {
+        let bus = Arc::new(EventBus::new());
+        let mut registry = PluginRegistry::new(bus);
+        {
+            let mut api = PluginApi::new(&mut registry, "test-plugin");
+            struct FakeTool;
+            #[async_trait::async_trait]
+            impl synaptic_core::Tool for FakeTool {
+                fn name(&self) -> &'static str {
+                    "fake"
+                }
+                fn description(&self) -> &'static str {
+                    "fake"
+                }
+                async fn call(
+                    &self,
+                    _: serde_json::Value,
+                ) -> Result<serde_json::Value, synaptic_core::SynapticError> {
+                    Ok(serde_json::Value::Null)
+                }
+            }
+            api.register_tool(Arc::new(FakeTool));
+        }
+        assert_eq!(registry.tools().len(), 1);
     }
 
     #[tokio::test]
