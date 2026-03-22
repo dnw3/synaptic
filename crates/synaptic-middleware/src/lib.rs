@@ -204,6 +204,12 @@ pub trait ToolCaller: Send + Sync {
 /// ```
 #[async_trait]
 pub trait Interceptor: Send + Sync {
+    /// Human-readable name for diagnostics and UI display.
+    /// Defaults to the fully-qualified type name.
+    fn name(&self) -> &str {
+        std::any::type_name::<Self>()
+    }
+
     /// Called before each model invocation. Can modify the request.
     /// Runs in forward order (first added → first called).
     async fn before_model(&self, _req: &mut ModelRequest) -> Result<(), SynapticError> {

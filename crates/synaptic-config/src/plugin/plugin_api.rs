@@ -57,13 +57,16 @@ impl<'a> PluginApi<'a> {
     }
 
     pub fn register_interceptor(&mut self, interceptor: Arc<dyn Interceptor>) {
-        let idx = self.registry.interceptors().len().to_string();
+        // Extract short name: "synapse::plugins::memory_recall::MemoryRecallInterceptor" → "MemoryRecallInterceptor"
+        let short_name = interceptor
+            .name()
+            .rsplit("::")
+            .next()
+            .unwrap_or_else(|| interceptor.name())
+            .to_owned();
         self.registry.register_interceptor(interceptor);
-        self.registry.record_registration(
-            &self.plugin_id,
-            "interceptor",
-            &format!("interceptor_{idx}"),
-        );
+        self.registry
+            .record_registration(&self.plugin_id, "interceptor", &short_name);
     }
 
     pub fn plugin_id(&self) -> &str {
