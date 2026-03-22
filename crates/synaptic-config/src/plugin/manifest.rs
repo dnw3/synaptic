@@ -1,5 +1,12 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PluginSlot {
+    Memory,
+    ContextEngine,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PluginManifest {
     pub name: String,
@@ -8,6 +15,8 @@ pub struct PluginManifest {
     pub author: Option<String>,
     pub license: Option<String>,
     pub capabilities: Vec<PluginCapability>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub slot: Option<PluginSlot>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -21,4 +30,5 @@ pub enum PluginCapability {
     Commands,
     Services,
     CanvasRenderers,
+    Memory,
 }
