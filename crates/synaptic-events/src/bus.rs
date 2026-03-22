@@ -102,6 +102,29 @@ impl EventBus {
         }
     }
 
+    /// Remove all subscribers whose tag matches the given value.
+    ///
+    /// Used for plugin hot-unload: removes all subscribers registered by a
+    /// specific plugin (tag = `"plugin:{id}"`).
+    pub fn unsubscribe_by_tag(&self, tag: &str) -> usize {
+        let mut removed = 0;
+        {
+            let mut map = self.subscribers.write().unwrap();
+            for list in map.values_mut() {
+                let before = list.len();
+                list.retain(|e| e.tag != tag);
+                removed += before - list.len();
+            }
+        }
+        {
+            let mut globals = self.global_subscribers.write().unwrap();
+            let before = globals.len();
+            globals.retain(|e| e.tag != tag);
+            removed += before - globals.len();
+        }
+        removed
+    }
+
     /// Returns the total number of subscribers registered for a given kind,
     /// including global (`EventFilter::All`) subscribers.
     pub fn subscriber_count(&self, kind: &EventKind) -> usize {

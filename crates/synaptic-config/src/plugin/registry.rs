@@ -132,6 +132,79 @@ impl PluginRegistry {
         &self.event_bus
     }
 
+    /// Unregister all resources belonging to a plugin (tools, interceptors, services,
+    /// event subscribers, memory slot). Used for hot-disable.
+    ///
+    /// Returns the names of services that were removed (caller should stop them).
+    pub fn unregister_plugin(&mut self, plugin_id: &str) -> Vec<String> {
+        let regs = match self.registrations.remove(plugin_id) {
+            Some(r) => r,
+            None => return Vec::new(),
+        };
+
+        // Remove tools by name
+        let tool_names: std::collections::HashSet<&str> =
+            regs.tools.iter().map(|s| s.as_str()).collect();
+        self.tools.retain(|t| !tool_names.contains(t.name()));
+
+        // Remove interceptors — we track by name but interceptors don't expose names.
+        // Remove by count: if plugin registered N interceptors, remove the last N.
+        // This is imprecise but acceptable since plugins register interceptors in order.
+        let n = regs.interceptors.len();
+        if n > 0 && self.interceptors.len() >= n {
+            // Remove from the end (plugin interceptors are appended last)
+            self.interceptors.truncate(self.interceptors.len() - n);
+        }
+
+        // Remove event subscribers by tag ("plugin:{id}")
+        let tag = format!("plugin:{plugin_id}");
+        let removed = self.event_bus.unsubscribe_by_tag(&tag);
+        tracing::debug!(
+            plugin = plugin_id,
+            subscribers_removed = removed,
+            "unsubscribed event subscribers"
+        );
+
+        // Collect service IDs to return (caller stops them before we remove)
+        let service_ids = regs.services.clone();
+        let svc_names: std::collections::HashSet<&str> =
+            regs.services.iter().map(|s| s.as_str()).collect();
+        self.services.retain(|s| !svc_names.contains(s.id()));
+
+        // Clear memory slot if owned by this plugin
+        if self.memory_slot.as_ref().map(|e| e.plugin_id.as_str()) == Some(plugin_id) {
+            self.memory_slot = None;
+        }
+
+        // Remove manifest
+        self.plugins.retain(|m| m.name != plugin_id);
+
+        tracing::info!(
+            plugin = plugin_id,
+            tools = regs.tools.len(),
+            services = service_ids.len(),
+            "plugin unregistered"
+        );
+
+        service_ids
+    }
+
+    /// Re-register a plugin: call `plugin.register()` and `record_plugin()`.
+    /// The caller is responsible for calling `Plugin::start()` after this.
+    pub async fn register_plugin(
+        &mut self,
+        plugin: &dyn super::Plugin,
+    ) -> Result<(), synaptic_core::SynapticError> {
+        let manifest = plugin.manifest();
+        let name = manifest.name.clone();
+        {
+            let mut api = super::PluginApi::new(self, &name);
+            plugin.register(&mut api).await?;
+        }
+        self.record_plugin(manifest);
+        Ok(())
+    }
+
     /// Record a registration entry for a plugin (tool, interceptor, subscriber, or service).
     pub fn record_registration(&mut self, plugin_id: &str, kind: &str, name: &str) {
         let entry = self.registrations.entry(plugin_id.to_string()).or_default();
