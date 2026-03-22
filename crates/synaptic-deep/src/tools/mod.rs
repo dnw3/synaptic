@@ -5,6 +5,8 @@ use synaptic_macros::{tool, traceable};
 
 use crate::backend::{Backend, GrepOutputMode};
 
+pub mod path_guard;
+
 /// Create the built-in filesystem tools backed by the given backend.
 ///
 /// Returns 6 tools (ls, read_file, write_file, edit_file, glob, grep) plus

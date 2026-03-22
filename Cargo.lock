@@ -4428,6 +4428,7 @@ dependencies = [
  "synaptic-models",
  "synaptic-store",
  "synaptic-tools",
+ "tempfile",
  "tokio",
  "toml",
  "tracing",

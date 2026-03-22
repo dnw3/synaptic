@@ -41,5 +41,6 @@ config-builder = ["dep:synaptic-config", "dep:synaptic-models", "dep:synaptic-mc
 
 [dev-dependencies]
 tokio.workspace = true
+tempfile = "3"
 synaptic-models = { version = "0.4", path = "../synaptic-models" }
 synaptic-store = { version = "0.4", path = "../synaptic-store" }
