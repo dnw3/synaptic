@@ -198,13 +198,22 @@ impl Node<MessageState> for ToolNode {
                             executor.execute(&call.name, call.arguments.clone()).await
                         };
 
-                        // Emit AfterToolCall
+                        // Emit AfterToolCall with result/error content
                         if let Some(ref bus) = event_bus {
-                            let after_payload = serde_json::json!({
+                            let mut after_payload = serde_json::json!({
                                 "tool_name": call.name,
                                 "tool_call_id": call.id,
                                 "success": result.is_ok(),
                             });
+                            match &result {
+                                Ok(val) => {
+                                    after_payload["result"] = val.clone();
+                                }
+                                Err(e) => {
+                                    after_payload["error"] =
+                                        serde_json::Value::String(e.to_string());
+                                }
+                            }
                             let mut after_event =
                                 Event::new(EventKind::AfterToolCall, after_payload)
                                     .with_source("graph_tools");
@@ -279,16 +288,24 @@ impl Node<MessageState> for ToolNode {
                         .await
                 };
 
-                // Emit AfterToolCall (fire-and-forget)
-                self.emit_event(
-                    EventKind::AfterToolCall,
-                    serde_json::json!({
+                // Emit AfterToolCall with result/error content (fire-and-forget)
+                {
+                    let mut after_payload = serde_json::json!({
                         "tool_name": call.name,
                         "tool_call_id": call.id,
                         "success": result.is_ok(),
-                    }),
-                )
-                .await;
+                    });
+                    match &result {
+                        Ok(val) => {
+                            after_payload["result"] = val.clone();
+                        }
+                        Err(e) => {
+                            after_payload["error"] = serde_json::Value::String(e.to_string());
+                        }
+                    }
+                    self.emit_event(EventKind::AfterToolCall, after_payload)
+                        .await;
+                }
 
                 let content = match result {
                     Ok(val) => value_to_display_string(val),

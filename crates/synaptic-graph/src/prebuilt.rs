@@ -122,12 +122,37 @@ impl Node<MessageState> for ChatModelNode {
         };
 
         // Emit BeforeModelCall (Intercept mode)
+        // Include system_prompt, user_message, and thinking config for observability.
+        let last_user_msg = request
+            .messages
+            .iter()
+            .rev()
+            .find(|m| m.role() == "human")
+            .map(|m| m.content().to_string())
+            .unwrap_or_default();
+        let sys_prompt = request.system_prompt.as_deref().unwrap_or("").to_string();
+        // Serialize messages for trace observability (role + content summary).
+        let messages_payload: Vec<serde_json::Value> = request
+            .messages
+            .iter()
+            .map(|m| {
+                serde_json::json!({
+                    "role": m.role(),
+                    "content": m.content(),
+                })
+            })
+            .collect();
         if let Some(result) = self
             .emit_intercept_event(
                 EventKind::BeforeModelCall,
                 serde_json::json!({
                     "message_count": request.messages.len(),
                     "tool_count": request.tools.len(),
+                    "system_prompt": sys_prompt,
+                    "system_prompt_len": sys_prompt.len(),
+                    "user_message": last_user_msg,
+                    "has_thinking": request.thinking.is_some(),
+                    "messages": messages_payload,
                 }),
             )
             .await?
@@ -167,11 +192,22 @@ impl Node<MessageState> for ChatModelNode {
         {
             Ok(resp) => {
                 // Emit LlmOutput (fire-and-forget)
-                let content_preview: String = resp.message.content().chars().take(500).collect();
+                let content = resp.message.content().to_string();
+                let content_preview: String = content.chars().take(500).collect();
                 let tool_call_count = resp.message.tool_calls().len();
+                let tools_summary: String = resp
+                    .message
+                    .tool_calls()
+                    .iter()
+                    .map(|tc| tc.name.as_str())
+                    .collect::<Vec<_>>()
+                    .join(", ");
                 let mut output_payload = serde_json::json!({
+                    "content": content,
                     "content_preview": content_preview,
                     "tool_call_count": tool_call_count,
+                    "tool_calls_count": tool_call_count,
+                    "tools_summary": tools_summary,
                 });
                 if let Some(ref u) = resp.usage {
                     output_payload["input_tokens"] = serde_json::json!(u.input_tokens);
