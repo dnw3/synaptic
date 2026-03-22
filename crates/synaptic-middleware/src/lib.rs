@@ -1,6 +1,11 @@
 #[cfg(feature = "condenser")]
 pub mod condenser;
 
+#[cfg(feature = "plugin")]
+mod plugin_hook;
+#[cfg(feature = "plugin")]
+pub use plugin_hook::PluginHookInterceptor;
+
 mod circuit_breaker;
 mod context_editing;
 mod human_in_the_loop;
