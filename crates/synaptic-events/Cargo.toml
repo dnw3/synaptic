@@ -11,7 +11,7 @@ otel = ["dep:opentelemetry"]
 async-trait = "0.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tokio = { version = "1", features = ["sync"] }
+tokio = { version = "1", features = ["sync", "net", "io-util", "rt"] }
 tracing = "0.1"
 thiserror = "2"
 futures = "0.3"
