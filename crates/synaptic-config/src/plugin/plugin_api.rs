@@ -24,16 +24,25 @@ impl<'a> PluginApi<'a> {
     }
 
     pub fn register_tool(&mut self, tool: Arc<dyn Tool>) {
+        self.registry
+            .record_registration(&self.plugin_id, "tool", tool.name());
         self.registry.register_tool(tool);
     }
 
     /// Register event subscriber. Lower priority values execute first.
-    pub fn register_event_subscriber(&self, subscriber: Arc<dyn EventSubscriber>, priority: i32) {
+    pub fn register_event_subscriber(
+        &mut self,
+        subscriber: Arc<dyn EventSubscriber>,
+        priority: i32,
+    ) {
+        let name = subscriber.name().to_string();
         self.registry.register_event_subscriber(
             subscriber,
             priority,
             format!("plugin:{}", self.plugin_id),
         );
+        self.registry
+            .record_registration(&self.plugin_id, "subscriber", &name);
     }
 
     pub fn register_memory(&mut self, provider: Arc<dyn MemoryProvider>) {
@@ -41,11 +50,20 @@ impl<'a> PluginApi<'a> {
     }
 
     pub fn register_service(&mut self, service: Box<dyn Service>) {
+        let id = service.id().to_string();
         self.registry.register_service(service);
+        self.registry
+            .record_registration(&self.plugin_id, "service", &id);
     }
 
     pub fn register_interceptor(&mut self, interceptor: Arc<dyn Interceptor>) {
+        let idx = self.registry.interceptors().len().to_string();
         self.registry.register_interceptor(interceptor);
+        self.registry.record_registration(
+            &self.plugin_id,
+            "interceptor",
+            &format!("interceptor_{idx}"),
+        );
     }
 
     pub fn plugin_id(&self) -> &str {

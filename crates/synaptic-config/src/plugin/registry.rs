@@ -1,9 +1,20 @@
 use super::{PluginManifest, Service};
+use serde::Serialize;
+use std::collections::HashMap;
 use std::sync::Arc;
 use synaptic_core::Tool;
 use synaptic_events::{EventBus, EventSubscriber};
 use synaptic_memory::MemoryProvider;
 use synaptic_middleware::Interceptor;
+
+/// Per-plugin registration tracking for UI introspection.
+#[derive(Debug, Default, Clone, Serialize)]
+pub struct PluginRegistrations {
+    pub tools: Vec<String>,
+    pub interceptors: Vec<String>,
+    pub subscribers: Vec<String>,
+    pub services: Vec<String>,
+}
 
 struct MemorySlotEntry {
     plugin_id: String,
@@ -17,6 +28,7 @@ pub struct PluginRegistry {
     memory_slot: Option<MemorySlotEntry>,
     services: Vec<Box<dyn Service>>,
     interceptors: Vec<Arc<dyn Interceptor>>,
+    registrations: HashMap<String, PluginRegistrations>,
 }
 
 impl PluginRegistry {
@@ -28,6 +40,7 @@ impl PluginRegistry {
             memory_slot: None,
             services: Vec::new(),
             interceptors: Vec::new(),
+            registrations: HashMap::new(),
         }
     }
 
@@ -117,5 +130,27 @@ impl PluginRegistry {
     /// Access the shared event bus.
     pub fn event_bus(&self) -> &Arc<EventBus> {
         &self.event_bus
+    }
+
+    /// Record a registration entry for a plugin (tool, interceptor, subscriber, or service).
+    pub fn record_registration(&mut self, plugin_id: &str, kind: &str, name: &str) {
+        let entry = self.registrations.entry(plugin_id.to_string()).or_default();
+        match kind {
+            "tool" => entry.tools.push(name.to_string()),
+            "interceptor" => entry.interceptors.push(name.to_string()),
+            "subscriber" => entry.subscribers.push(name.to_string()),
+            "service" => entry.services.push(name.to_string()),
+            _ => {}
+        }
+    }
+
+    /// Get registration details for a specific plugin.
+    pub fn plugin_registrations(&self, plugin_id: &str) -> Option<&PluginRegistrations> {
+        self.registrations.get(plugin_id)
+    }
+
+    /// Get all plugin registrations.
+    pub fn all_registrations(&self) -> &HashMap<String, PluginRegistrations> {
+        &self.registrations
     }
 }

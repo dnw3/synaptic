@@ -247,6 +247,40 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn plugin_registrations_tracked() {
+        let bus = Arc::new(EventBus::new());
+        let mut registry = PluginRegistry::new(bus);
+        {
+            let mut api = PluginApi::new(&mut registry, "test-plugin");
+            struct FakeTool;
+            #[async_trait::async_trait]
+            impl synaptic_core::Tool for FakeTool {
+                fn name(&self) -> &'static str {
+                    "fake"
+                }
+                fn description(&self) -> &'static str {
+                    "fake"
+                }
+                async fn call(
+                    &self,
+                    _: serde_json::Value,
+                ) -> Result<serde_json::Value, synaptic_core::SynapticError> {
+                    Ok(serde_json::Value::Null)
+                }
+            }
+            api.register_tool(Arc::new(FakeTool));
+            api.register_service(Box::new(NoopService));
+            api.register_interceptor(Arc::new(NoopInterceptor));
+        }
+        let regs = registry.plugin_registrations("test-plugin").unwrap();
+        assert_eq!(regs.tools, vec!["fake"]);
+        assert_eq!(regs.services, vec!["noop"]);
+        assert_eq!(regs.interceptors, vec!["interceptor_0"]);
+        assert!(regs.subscribers.is_empty());
+        assert!(registry.all_registrations().len() == 1);
+    }
+
+    #[tokio::test]
     async fn registry_services() {
         let bus = Arc::new(EventBus::new());
         let mut registry = PluginRegistry::new(bus);
