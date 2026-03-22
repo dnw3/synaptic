@@ -7,19 +7,27 @@ use crate::backend::{Backend, GrepOutputMode};
 
 pub mod path_guard;
 
+use path_guard::PathGuard;
+
 /// Create the built-in filesystem tools backed by the given backend.
 ///
 /// Returns 6 tools (ls, read_file, write_file, edit_file, glob, grep) plus
 /// an `execute` tool if the backend supports execution.
-#[traceable(skip = "backend")]
-pub fn create_filesystem_tools(backend: Arc<dyn Backend>) -> Vec<Arc<dyn Tool>> {
+///
+/// When `path_guard` is `Some`, all path-based tools validate paths against
+/// the guard before accessing the backend. `execute` is never path-guarded.
+#[traceable(skip = "backend,path_guard")]
+pub fn create_filesystem_tools(
+    backend: Arc<dyn Backend>,
+    path_guard: Option<Arc<PathGuard>>,
+) -> Vec<Arc<dyn Tool>> {
     let mut tools: Vec<Arc<dyn Tool>> = vec![
-        ls(backend.clone()),
-        read_file(backend.clone()),
-        write_file(backend.clone()),
-        edit_file(backend.clone()),
-        glob_files(backend.clone()),
-        grep(backend.clone()),
+        ls(backend.clone(), path_guard.clone()),
+        read_file(backend.clone(), path_guard.clone()),
+        write_file(backend.clone(), path_guard.clone()),
+        edit_file(backend.clone(), path_guard.clone()),
+        glob_files(backend.clone(), path_guard.clone()),
+        grep(backend.clone(), path_guard.clone()),
     ];
     if backend.supports_execution() {
         tools.push(execute(backend));
@@ -31,9 +39,13 @@ pub fn create_filesystem_tools(backend: Arc<dyn Backend>) -> Vec<Arc<dyn Tool>> 
 #[tool]
 async fn ls(
     #[field] backend: Arc<dyn Backend>,
+    #[field] path_guard: Option<Arc<PathGuard>>,
     /// Directory path to list
     path: String,
 ) -> Result<Value, SynapticError> {
+    if let Some(ref guard) = path_guard {
+        guard.validate_read(&path)?;
+    }
     let entries = backend.ls(&path).await?;
     serde_json::to_value(entries).map_err(|e| SynapticError::Tool(format!("serialization: {}", e)))
 }
@@ -42,6 +54,7 @@ async fn ls(
 #[tool]
 async fn read_file(
     #[field] backend: Arc<dyn Backend>,
+    #[field] path_guard: Option<Arc<PathGuard>>,
     /// File path to read
     path: String,
     /// Starting line number (0-based, default 0)
@@ -51,6 +64,9 @@ async fn read_file(
     #[default = 2000]
     limit: usize,
 ) -> Result<Value, SynapticError> {
+    if let Some(ref guard) = path_guard {
+        guard.validate_read(&path)?;
+    }
     let content = backend.read_file(&path, offset, limit).await?;
     Ok(Value::String(content))
 }
@@ -59,11 +75,15 @@ async fn read_file(
 #[tool]
 async fn write_file(
     #[field] backend: Arc<dyn Backend>,
+    #[field] path_guard: Option<Arc<PathGuard>>,
     /// File path to write
     path: String,
     /// Content to write
     content: String,
 ) -> Result<Value, SynapticError> {
+    if let Some(ref guard) = path_guard {
+        guard.validate_write(&path)?;
+    }
     backend.write_file(&path, &content).await?;
     Ok(Value::String(format!("wrote {}", path)))
 }
@@ -72,6 +92,7 @@ async fn write_file(
 #[tool]
 async fn edit_file(
     #[field] backend: Arc<dyn Backend>,
+    #[field] path_guard: Option<Arc<PathGuard>>,
     /// File path to edit
     path: String,
     /// Text to find
@@ -82,6 +103,9 @@ async fn edit_file(
     #[default = false]
     replace_all: bool,
 ) -> Result<Value, SynapticError> {
+    if let Some(ref guard) = path_guard {
+        guard.validate_write(&path)?;
+    }
     backend
         .edit_file(&path, &old_string, &new_string, replace_all)
         .await?;
@@ -92,12 +116,16 @@ async fn edit_file(
 #[tool(name = "glob")]
 async fn glob_files(
     #[field] backend: Arc<dyn Backend>,
+    #[field] path_guard: Option<Arc<PathGuard>>,
     /// Glob pattern (e.g. **/*.rs)
     pattern: String,
     /// Base directory (default .)
     #[default = ".".to_string()]
     path: String,
 ) -> Result<Value, SynapticError> {
+    if let Some(ref guard) = path_guard {
+        guard.validate_read(&path)?;
+    }
     let matches = backend.glob(&pattern, &path).await?;
     Ok(Value::String(matches.join("\n")))
 }
@@ -106,6 +134,7 @@ async fn glob_files(
 #[tool]
 async fn grep(
     #[field] backend: Arc<dyn Backend>,
+    #[field] path_guard: Option<Arc<PathGuard>>,
     /// Regex pattern to search for
     pattern: String,
     /// Directory or file to search in
@@ -115,6 +144,11 @@ async fn grep(
     /// Output format: files_with_matches (default), content, count
     output_mode: Option<String>,
 ) -> Result<Value, SynapticError> {
+    if let Some(ref p) = path {
+        if let Some(ref guard) = path_guard {
+            guard.validate_read(p)?;
+        }
+    }
     let mode = match output_mode.as_deref() {
         Some("content") => GrepOutputMode::Content,
         Some("count") => GrepOutputMode::Count,

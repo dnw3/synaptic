@@ -6,7 +6,8 @@ use synaptic_deep::tools::create_filesystem_tools;
 
 fn setup() -> (Arc<StateBackend>, Vec<Arc<dyn Tool>>) {
     let backend = Arc::new(StateBackend::new());
-    let tools = create_filesystem_tools(backend.clone());
+    // No PathGuard for in-memory backend tests (paths are virtual, not on real FS).
+    let tools = create_filesystem_tools(backend.clone(), None);
     (backend, tools)
 }
 

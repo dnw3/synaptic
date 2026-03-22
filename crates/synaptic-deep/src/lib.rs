@@ -143,6 +143,8 @@ pub struct DeepAgentOptions {
     pub channel: Option<String>,
     /// Optional agent ID for context injection into events.
     pub agent_id: Option<String>,
+    /// PathGuard for filesystem tool sandbox. If None, a default guard is created from cwd.
+    pub path_guard: Option<Arc<crate::tools::path_guard::PathGuard>>,
 }
 
 impl DeepAgentOptions {
@@ -186,6 +188,7 @@ impl DeepAgentOptions {
             provider_name: None,
             channel: None,
             agent_id: None,
+            path_guard: None,
         }
     }
 }
@@ -267,7 +270,12 @@ pub fn create_deep_agent(
 
     // 3. Filesystem middleware + tools
     if options.enable_filesystem {
-        let fs_tools = tools::create_filesystem_tools(options.backend.clone());
+        let path_guard = options.path_guard.clone().or_else(|| {
+            Some(Arc::new(tools::path_guard::PathGuard::new(
+                std::env::current_dir().unwrap_or_default(),
+            )))
+        });
+        let fs_tools = tools::create_filesystem_tools(options.backend.clone(), path_guard);
         all_tools.extend(fs_tools);
         all_interceptors.push(Arc::new(middleware::filesystem::FilesystemMiddleware::new(
             options.backend.clone(),
