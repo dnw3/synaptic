@@ -21,11 +21,17 @@ impl FilesystemBackend {
     }
 
     fn resolve(&self, path: &str) -> Result<PathBuf, SynapticError> {
-        let normalized = path.trim_start_matches('/');
-        if normalized.contains("..") {
+        let p = std::path::Path::new(path);
+        if p.components()
+            .any(|c| matches!(c, std::path::Component::ParentDir))
+        {
             return Err(SynapticError::Tool("path traversal rejected".into()));
         }
-        Ok(self.root.join(normalized))
+        if p.is_absolute() {
+            Ok(p.to_path_buf())
+        } else {
+            Ok(self.root.join(path))
+        }
     }
 }
 
@@ -288,5 +294,41 @@ impl Backend for FilesystemBackend {
 
     fn supports_execution(&self) -> bool {
         true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolve_relative_path() {
+        let backend = FilesystemBackend::new("/home/user/project");
+        let resolved = backend.resolve("src/main.rs").unwrap();
+        assert_eq!(resolved, PathBuf::from("/home/user/project/src/main.rs"));
+    }
+
+    #[test]
+    fn resolve_absolute_path() {
+        let backend = FilesystemBackend::new("/home/user/project");
+        let resolved = backend.resolve("/etc/config.toml").unwrap();
+        assert_eq!(resolved, PathBuf::from("/etc/config.toml"));
+    }
+
+    #[test]
+    fn resolve_rejects_parent_traversal() {
+        let backend = FilesystemBackend::new("/home/user/project");
+        assert!(backend.resolve("../etc/passwd").is_err());
+        assert!(backend.resolve("/foo/../etc/passwd").is_err());
+    }
+
+    #[test]
+    fn resolve_allows_dotdot_in_filename() {
+        let backend = FilesystemBackend::new("/home/user/project");
+        let resolved = backend.resolve("my..config.toml").unwrap();
+        assert_eq!(
+            resolved,
+            PathBuf::from("/home/user/project/my..config.toml")
+        );
     }
 }
