@@ -81,4 +81,155 @@ mod tests {
         assert!(manifest.slot.is_none());
         assert_eq!(manifest.name, "my-plugin");
     }
+
+    // -----------------------------------------------------------------------
+    // MemoryProvider mock
+    // -----------------------------------------------------------------------
+
+    struct NoopMemoryProvider;
+
+    #[async_trait::async_trait]
+    impl synaptic_memory::MemoryProvider for NoopMemoryProvider {
+        async fn add_message(
+            &self,
+            _session_key: &str,
+            _role: &str,
+            _content: &str,
+        ) -> Result<(), synaptic_core::SynapticError> {
+            Ok(())
+        }
+
+        async fn record_usage(
+            &self,
+            _session_key: &str,
+            _context_uris: &[String],
+            _skill_uris: &[String],
+        ) -> Result<(), synaptic_core::SynapticError> {
+            Ok(())
+        }
+
+        async fn recall(
+            &self,
+            _query: &str,
+            _limit: usize,
+        ) -> Result<Vec<synaptic_memory::MemoryResult>, synaptic_core::SynapticError> {
+            Ok(vec![])
+        }
+
+        async fn search(
+            &self,
+            _query: &str,
+            _session_key: Option<&str>,
+            _limit: usize,
+        ) -> Result<Vec<synaptic_memory::MemoryResult>, synaptic_core::SynapticError> {
+            Ok(vec![])
+        }
+
+        async fn commit(
+            &self,
+            _session_key: &str,
+        ) -> Result<synaptic_memory::CommitResult, synaptic_core::SynapticError> {
+            Ok(synaptic_memory::CommitResult::default())
+        }
+
+        async fn add_resource(&self, _uri: &str) -> Result<(), synaptic_core::SynapticError> {
+            Ok(())
+        }
+
+        async fn get_profile(
+            &self,
+            _user_id: &str,
+        ) -> Result<Option<String>, synaptic_core::SynapticError> {
+            Ok(None)
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Interceptor mock
+    // -----------------------------------------------------------------------
+
+    struct NoopInterceptor;
+
+    #[async_trait::async_trait]
+    impl synaptic_middleware::Interceptor for NoopInterceptor {}
+
+    // -----------------------------------------------------------------------
+    // Service mock
+    // -----------------------------------------------------------------------
+
+    struct NoopService;
+
+    #[async_trait::async_trait]
+    impl Service for NoopService {
+        fn id(&self) -> &str {
+            "noop"
+        }
+
+        async fn start(&self) -> Result<(), synaptic_core::SynapticError> {
+            Ok(())
+        }
+
+        async fn health_check(&self) -> bool {
+            true
+        }
+
+        async fn stop(&self) {}
+    }
+
+    #[tokio::test]
+    async fn registry_memory_slot_exclusive() {
+        let bus = Arc::new(EventBus::new());
+        let mut registry = PluginRegistry::new(bus);
+
+        // Initially empty
+        assert!(registry.memory_slot().is_none());
+        assert!(registry.memory_slot_owner().is_none());
+
+        // Set for the first plugin
+        let provider: Arc<dyn synaptic_memory::MemoryProvider> = Arc::new(NoopMemoryProvider);
+        registry.set_memory_slot("plugin-a", provider);
+
+        assert!(registry.memory_slot().is_some());
+        assert_eq!(registry.memory_slot_owner(), Some("plugin-a"));
+
+        // Replace with a second plugin (warning logged, but slot replaced)
+        let provider2: Arc<dyn synaptic_memory::MemoryProvider> = Arc::new(NoopMemoryProvider);
+        registry.set_memory_slot("plugin-b", provider2);
+
+        assert_eq!(registry.memory_slot_owner(), Some("plugin-b"));
+    }
+
+    #[tokio::test]
+    async fn registry_interceptors() {
+        let bus = Arc::new(EventBus::new());
+        let mut registry = PluginRegistry::new(bus);
+
+        assert_eq!(registry.interceptors().len(), 0);
+
+        registry.register_interceptor(Arc::new(NoopInterceptor));
+        registry.register_interceptor(Arc::new(NoopInterceptor));
+
+        assert_eq!(registry.interceptors().len(), 2);
+
+        let taken = registry.take_interceptors();
+        assert_eq!(taken.len(), 2);
+        assert_eq!(registry.interceptors().len(), 0);
+    }
+
+    #[tokio::test]
+    async fn registry_services() {
+        let bus = Arc::new(EventBus::new());
+        let mut registry = PluginRegistry::new(bus);
+
+        assert_eq!(registry.services().len(), 0);
+
+        registry.register_service(Box::new(NoopService));
+        registry.register_service(Box::new(NoopService));
+
+        assert_eq!(registry.services().len(), 2);
+
+        let taken = registry.take_services();
+        assert_eq!(taken.len(), 2);
+        assert_eq!(registry.services().len(), 0);
+    }
 }

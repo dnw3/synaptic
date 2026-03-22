@@ -33,7 +33,7 @@ synaptic-events = { version = "0.4", path = "../synaptic-events", optional = tru
 default = []
 session = ["dep:async-trait", "dep:tokio", "dep:uuid", "dep:synaptic-graph", "dep:synaptic-memory"]
 secrets = ["dep:async-trait", "dep:regex", "dep:synaptic-middleware"]
-plugin = ["dep:async-trait", "dep:tracing", "dep:synaptic-events"]
+plugin = ["dep:async-trait", "dep:tracing", "dep:synaptic-events", "dep:synaptic-middleware", "dep:synaptic-memory"]
 cache = ["dep:async-trait", "dep:tokio"]
 
 [dev-dependencies]
