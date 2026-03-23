@@ -29,6 +29,7 @@ synaptic-tools = { version = "0.4", path = "../synaptic-tools" }
 synaptic-config = { version = "0.4", path = "../synaptic-config", optional = true }
 synaptic-models = { version = "0.4", path = "../synaptic-models", optional = true }
 synaptic-mcp = { version = "0.4", path = "../synaptic-mcp", optional = true }
+chrono = { workspace = true, features = ["serde"], optional = true }
 
 [features]
 filesystem = []
@@ -38,7 +39,7 @@ gemini-provider = ["dep:synaptic-models", "synaptic-models/gemini"]
 ollama-provider = ["dep:synaptic-models", "synaptic-models/ollama"]
 all-providers = ["openai-provider", "anthropic-provider", "gemini-provider", "ollama-provider"]
 config-builder = ["dep:synaptic-config", "dep:synaptic-models", "dep:synaptic-mcp", "openai-provider"]
-sandbox = []
+sandbox = ["dep:chrono"]
 sandbox-docker = ["sandbox"]
 sandbox-ssh = ["sandbox"]
 

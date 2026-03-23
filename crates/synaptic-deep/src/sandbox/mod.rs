@@ -3,6 +3,10 @@
 //! Provides pluggable sandbox backends (Docker, SSH, plugins) that wrap
 //! the `Backend` trait with process-level isolation.
 
+pub mod provider;
 pub mod types;
+pub mod validate;
 
+pub use provider::*;
 pub use types::*;
+pub use validate::validate_sandbox_security;
