@@ -275,7 +275,7 @@ mod tests {
         let regs = registry.plugin_registrations("test-plugin").unwrap();
         assert_eq!(regs.tools, vec!["fake"]);
         assert_eq!(regs.services, vec!["noop"]);
-        assert_eq!(regs.interceptors, vec!["interceptor_0"]);
+        assert_eq!(regs.interceptors, vec!["NoopInterceptor"]);
         assert!(regs.subscribers.is_empty());
         assert!(registry.all_registrations().len() == 1);
     }
