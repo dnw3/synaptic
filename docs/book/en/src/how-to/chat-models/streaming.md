@@ -125,3 +125,76 @@ async fn stream_with_tools(model: &dyn ChatModel) -> Result<(), Box<dyn std::err
 ## Default streaming behavior
 
 If a provider adapter does not implement native streaming, the default `stream_chat()` implementation wraps the `chat()` result as a single-chunk stream. This means you can always use `stream_chat()` regardless of provider -- you just may not get incremental token delivery from providers that do not support it natively.
+
+## Reasoning / Extended Thinking
+
+Many modern LLMs support a "thinking" or "reasoning" mode where the model performs chain-of-thought before producing its final answer. Synaptic exposes this through the `ThinkingLevel` enum and the `.with_thinking()` builder on `ChatRequest`.
+
+### ThinkingLevel
+
+```rust
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ThinkingLevel {
+    Off,
+    Low,
+    Medium,
+    High,
+    Budget(u32),  // Token budget for thinking
+}
+```
+
+### Enabling reasoning on a request
+
+```rust,ignore
+use synaptic::core::{ChatRequest, Message, ThinkingLevel};
+
+let request = ChatRequest::new(vec![Message::human("Solve this step by step")])
+    .with_thinking(ThinkingLevel::High);
+
+// Or with a specific token budget:
+let request = ChatRequest::new(vec![Message::human("Complex problem")])
+    .with_thinking(ThinkingLevel::Budget(4096));
+```
+
+### Provider-specific mapping
+
+Each provider translates `ThinkingLevel` into its native API parameter:
+
+| Provider | ThinkingLevel mapping |
+|----------|----------------------|
+| OpenAI | `reasoning_effort`: low/medium/high |
+| Anthropic | `thinking.budget_tokens` |
+| Gemini | `thinking_config.thinking_budget` |
+
+### Streaming reasoning content
+
+During streaming, reasoning tokens arrive via the `AIMessageChunk.reasoning` field. You can also use the `StreamingOutput::on_reasoning()` callback to handle reasoning tokens as they arrive:
+
+```rust,ignore
+use futures::StreamExt;
+use synaptic::core::{ChatModel, ChatRequest, Message, ThinkingLevel};
+
+async fn stream_with_reasoning(model: &dyn ChatModel) -> Result<(), Box<dyn std::error::Error>> {
+    let request = ChatRequest::new(vec![
+        Message::human("Explain why the sky is blue, step by step"),
+    ])
+    .with_thinking(ThinkingLevel::High);
+
+    let mut stream = model.stream_chat(request);
+
+    while let Some(chunk) = stream.next().await {
+        let chunk = chunk?;
+        if !chunk.reasoning.is_empty() {
+            eprint!("[thinking] {}", chunk.reasoning);
+        }
+        if !chunk.content.is_empty() {
+            print!("{}", chunk.content);
+        }
+    }
+    println!();
+
+    Ok(())
+}
+```
+
+When using `ThinkingLevel::Off` (the default), no reasoning tokens are produced and the `reasoning` field remains empty.

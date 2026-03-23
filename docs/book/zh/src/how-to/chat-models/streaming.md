@@ -125,3 +125,76 @@ async fn stream_with_tools(model: &dyn ChatModel) -> Result<(), Box<dyn std::err
 ## 默认流式行为
 
 如果提供商适配器未实现原生流式传输，默认的 `stream_chat()` 实现会将 `chat()` 的结果包装为单个 chunk 的流。这意味着无论提供商是否支持，您都可以使用 `stream_chat()`——只是对于不原生支持流式传输的提供商，您不会获得逐 token 的增量传输。
+
+## 推理 / 扩展思考
+
+许多现代 LLM 支持"思考"或"推理"模式，模型在生成最终答案之前先进行思维链推理。Synaptic 通过 `ThinkingLevel` 枚举和 `ChatRequest` 上的 `.with_thinking()` 构建器来暴露此功能。
+
+### ThinkingLevel
+
+```rust
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ThinkingLevel {
+    Off,
+    Low,
+    Medium,
+    High,
+    Budget(u32),  // 思考的 token 预算
+}
+```
+
+### 在请求中启用推理
+
+```rust,ignore
+use synaptic::core::{ChatRequest, Message, ThinkingLevel};
+
+let request = ChatRequest::new(vec![Message::human("Solve this step by step")])
+    .with_thinking(ThinkingLevel::High);
+
+// 或指定具体的 token 预算：
+let request = ChatRequest::new(vec![Message::human("Complex problem")])
+    .with_thinking(ThinkingLevel::Budget(4096));
+```
+
+### 提供商映射
+
+每个提供商将 `ThinkingLevel` 转换为其原生 API 参数：
+
+| 提供商 | ThinkingLevel 映射 |
+|--------|-------------------|
+| OpenAI | `reasoning_effort`: low/medium/high |
+| Anthropic | `thinking.budget_tokens` |
+| Gemini | `thinking_config.thinking_budget` |
+
+### 流式推理内容
+
+在流式传输期间，推理 token 通过 `AIMessageChunk.reasoning` 字段到达。你也可以使用 `StreamingOutput::on_reasoning()` 回调在推理 token 到达时进行处理：
+
+```rust,ignore
+use futures::StreamExt;
+use synaptic::core::{ChatModel, ChatRequest, Message, ThinkingLevel};
+
+async fn stream_with_reasoning(model: &dyn ChatModel) -> Result<(), Box<dyn std::error::Error>> {
+    let request = ChatRequest::new(vec![
+        Message::human("Explain why the sky is blue, step by step"),
+    ])
+    .with_thinking(ThinkingLevel::High);
+
+    let mut stream = model.stream_chat(request);
+
+    while let Some(chunk) = stream.next().await {
+        let chunk = chunk?;
+        if !chunk.reasoning.is_empty() {
+            eprint!("[thinking] {}", chunk.reasoning);
+        }
+        if !chunk.content.is_empty() {
+            print!("{}", chunk.content);
+        }
+    }
+    println!();
+
+    Ok(())
+}
+```
+
+使用 `ThinkingLevel::Off`（默认值）时，不会产生推理 token，`reasoning` 字段保持为空。

@@ -4,11 +4,17 @@
 
 ## Interceptor Trait
 
-所有中间件实现 `Interceptor` trait，提供四个带有默认空实现的钩子：
+所有中间件实现 `Interceptor` trait，提供四个带有默认空实现的钩子和一个用于诊断的 `name()` 方法：
 
 ```rust
 #[async_trait]
 pub trait Interceptor: Send + Sync {
+    /// 返回拦截器名称，用于诊断和 UI 显示。
+    /// 默认返回类型名称。
+    fn name(&self) -> &str {
+        std::any::type_name::<Self>()
+    }
+
     /// 在每次模型调用前执行。可以修改请求。
     /// 按正序执行（先注册先调用）。
     async fn before_model(&self, _req: &mut ModelRequest) -> Result<(), SynapticError> {
@@ -29,9 +35,10 @@ pub trait Interceptor: Send + Sync {
     async fn wrap_model_call(
         &self,
         request: ModelRequest,
+        ctx: &RunContext,
         next: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
-        next.call(request).await
+        next.call(request, ctx).await
     }
 
     /// 包裹工具调用。重写以拦截或修改工具执行。
@@ -63,6 +70,55 @@ loop {
 3. **`after_model`** -- 在 LLM 响应之后调用。可以修改 `ModelResponse`（如记录用量、修复工具调用）。按**逆序**执行（MW3, MW2, MW1）。
 4. **`wrap_tool_call`** -- 以相同的洋葱模式包裹每个工具调用。可以审批/拒绝、添加日志，或修改参数。
 
+## ModelCaller Trait
+
+`ModelCaller` trait 表示中间件链中的下一步（或最内层的实际模型）：
+
+```rust
+#[async_trait]
+pub trait ModelCaller: Send + Sync {
+    async fn call(&self, request: ModelRequest, ctx: &RunContext) -> Result<ModelResponse, SynapticError>;
+}
+```
+
+## ModelRequest
+
+`ModelRequest` 携带模型调用的完整上下文：
+
+```rust
+pub struct ModelRequest {
+    pub messages: Vec<Message>,
+    pub tools: Vec<ToolDefinition>,
+    pub tool_choice: Option<ToolChoice>,
+    pub system_prompt: Option<String>,
+    pub thinking: Option<ThinkingLevel>,
+}
+```
+
+`thinking` 字段控制支持扩展思考/思维链的模型的行为。
+
+## RunContext
+
+`RunContext` 是贯穿整个中间件链的每次运行执行上下文：
+
+```rust
+#[derive(Default, Clone)]
+pub struct RunContext {
+    pub cancel_token: Option<tokio::sync::watch::Receiver<bool>>,
+    pub streaming_output: Option<Arc<dyn Any + Send + Sync>>,
+}
+
+impl RunContext {
+    pub fn with_streaming_output<T: Send + Sync + 'static>(mut self, output: Arc<T>) -> Self
+    pub fn streaming_output<T: Send + Sync + 'static>(&self) -> Option<Arc<T>>
+}
+```
+
+- **`cancel_token`** -- 携带取消信号，使中间件和模型可以检查是否需要提前终止。
+- **`streaming_output`** -- 不透明的 `Any` 句柄，通常持有来自 `synaptic-graph` 的 `Arc<dyn StreamingOutput>`，允许中间件将流式 token 转发给调用者。
+
+每个 `wrap_model_call` 实现都会接收 `RunContext`，并必须将其传递给 `next.call()`。
+
 ## InterceptorChain
 
 多个拦截器组合成一个 `InterceptorChain`。链会自动按正确的生命周期顺序执行拦截器：
@@ -75,6 +131,17 @@ let chain = InterceptorChain::new(vec![
     Arc::new(HumanInTheLoopMiddleware::new(callback)),
     Arc::new(SummarizationMiddleware::new(model, 4000)),
 ]);
+```
+
+链的 `call_model` 方法接受 `RunContext` 并将其贯穿所有拦截器：
+
+```rust
+pub async fn call_model(
+    &self,
+    request: ModelRequest,
+    ctx: &RunContext,
+    base: &dyn ModelCaller,
+) -> Result<ModelResponse, SynapticError>
 ```
 
 ### 执行顺序

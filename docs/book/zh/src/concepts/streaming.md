@@ -143,6 +143,117 @@ pub struct GraphEvent<S> {
 
 每个事件告诉你哪个节点刚刚执行完毕以及状态是什么样的。对于 ReAct Agent，你会看到交替出现的 "agent" 和 "tools" 事件，消息在状态中不断累积。
 
+## 流式输出 (Streaming Output)
+
+模型级和 LCEL 流式传输提供的是原始 chunk，但许多应用需要针对 token、Tool 调用、错误和完成元数据的结构化回调。`StreamingOutput` trait 提供了这种更高层级的接口。
+
+### ToolDisplayMeta
+
+附加在 Tool 调用上的富显示元数据，适用于在 CLI 或 UI 中渲染 Tool 调用：
+
+```rust
+use synaptic::core::ToolDisplayMeta;
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ToolDisplayMeta {
+    pub emoji: String,    // 例如 "⚡" "📖" "✏️"
+    pub label: String,    // 例如 "Execute" "Read File"
+    pub verb: String,     // 例如 "executing" "reading"
+    pub detail: String,   // 例如 "ls -la ~/..." "src/main.rs"
+}
+```
+
+### ToolCallInfo
+
+正在进行的 Tool 调用的信息。`display` 字段携带可选的富显示元数据：
+
+```rust
+use synaptic::core::ToolCallInfo;
+
+pub struct ToolCallInfo {
+    pub name: String,
+    pub id: String,
+    pub args: String,
+    pub display: Option<ToolDisplayMeta>,
+}
+```
+
+### CompletionMeta
+
+已完成的 LLM 请求的元数据，与完整响应文本一起传递：
+
+```rust
+use synaptic::core::CompletionMeta;
+
+pub struct CompletionMeta {
+    pub input_tokens: u32,
+    pub output_tokens: u32,
+    pub duration_ms: u64,
+    pub request_id: Option<String>,
+}
+```
+
+### StreamingOutput Trait
+
+该 trait 定义了七个生命周期方法。前四个是主要接口；后三个有默认的空实现，可选使用：
+
+```rust
+use synaptic::core::StreamingOutput;
+
+#[async_trait]
+pub trait StreamingOutput: Send + Sync {
+    /// 每个文本 token 到达时调用。
+    async fn on_token(&self, token: &str);
+
+    /// 模型发起 Tool 调用时调用。
+    async fn on_tool_call(&self, info: &ToolCallInfo);
+
+    /// 完整响应生成完毕时调用。
+    async fn on_complete(&self, full_response: &str, meta: Option<&CompletionMeta>);
+
+    /// 流式传输过程中发生错误时调用。
+    async fn on_error(&self, error: &str);
+
+    /// 模型输出扩展思考/推理内容时调用。
+    async fn on_reasoning(&self, _content: &str) {}
+
+    /// Tool 执行完成并返回结果时调用。
+    async fn on_tool_result(&self, _name: &str, _content: &str) {}
+
+    /// 长时间运行请求（>15 秒）的周期性心跳。
+    async fn on_heartbeat(&self) {}
+}
+```
+
+| 方法 | 触发时机 | 典型用途 |
+|------|---------|---------|
+| `on_token` | 每个文本 token 到达时 | 打印到终端、更新 UI |
+| `on_tool_call` | 模型发起 Tool 调用时 | 显示加载动画、记录 Tool 名称 |
+| `on_complete` | 完整响应组装完成时 | 记录使用量、停止加载动画 |
+| `on_error` | 流式传输错误发生时 | 显示错误、重试逻辑 |
+| `on_reasoning` | 扩展思考内容输出时 | 展示思维链 |
+| `on_tool_result` | Tool 执行完成时 | 显示 Tool 输出 |
+| `on_heartbeat` | 长时间调用期间每 ~15 秒 | 保持连接活跃、更新 UI |
+
+### RunContext 集成
+
+`StreamingOutput` 通过 `RunContext` 以 `Arc<dyn Any>` 的形式传递，使中间件和内部组件无需紧耦合即可访问：
+
+```rust
+use std::sync::Arc;
+use synaptic::core::{RunContext, StreamingOutput};
+
+let ctx = RunContext::default()
+    .with_streaming_output(Arc::new(my_streaming_impl));
+
+// 在中间件或节点内部恢复：
+if let Some(output) = ctx.streaming_output::<Arc<dyn StreamingOutput>>() {
+    output.on_token("hello").await;
+}
+```
+
+这种模式使 `StreamingOutput` 与核心请求/响应路径解耦——不需要流式传输的中间件可以直接忽略它，而需要的组件可以检索并调用它。
+
 ## 何时使用流式传输
 
 **使用模型级流式传输**：当你需要逐 token 输出用于聊天 UI，或者想在生成时向用户展示部分结果。

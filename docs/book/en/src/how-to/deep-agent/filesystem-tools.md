@@ -116,3 +116,51 @@ Runs a shell command in the backend's working directory. This tool is only regis
 | `timeout` | integer | no | Timeout in seconds |
 
 Returns a JSON object with `stdout`, `stderr`, and `exit_code` fields. Commands are executed via `sh -c` in the backend's root directory.
+
+## Path Security (PathGuard)
+
+All filesystem tools (except `execute`) are protected by `PathGuard`, which validates that every file path stays within a set of allowed root directories. This prevents path-traversal attacks and accidental access to files outside the workspace.
+
+### API
+
+```rust
+pub struct PathGuard {
+    allowed_roots: Vec<PathBuf>,
+}
+
+impl PathGuard {
+    pub fn new(cwd: PathBuf) -> Self           // Canonicalizes path
+    pub fn new_raw(roots: Vec<PathBuf>) -> Self // No canonicalization (for containers)
+    pub fn with_extra_roots(self, roots: Vec<PathBuf>) -> Self
+    pub fn validate_read(&self, path: &str) -> Result<PathBuf, SynapticError>
+    pub fn validate_write(&self, path: &str) -> Result<PathBuf, SynapticError>
+}
+```
+
+### Features
+
+- **Rejects path traversal** -- any path containing `..` components is rejected.
+- **Symlink-aware** -- uses `canonicalize` to resolve symlinks before checking boundaries.
+- **Write validation** -- verifies that the parent directory exists before allowing a write.
+- **Multiple allowed roots** -- supports adding extra roots beyond the primary working directory.
+- **Injected into all filesystem tools** -- `ls`, `read_file`, `write_file`, `edit_file`, `glob`, and `grep` all validate paths through the guard.
+- **Execute is never path-guarded** -- the `execute` tool runs arbitrary shell commands and is not subject to path validation.
+
+### Usage
+
+```rust,ignore
+use std::path::PathBuf;
+use synaptic::deep::tools::PathGuard;
+
+let guard = PathGuard::new(PathBuf::from("/workspace/project"))
+    .with_extra_roots(vec![PathBuf::from("/shared/data")]);
+
+guard.validate_read("src/main.rs")?;     // OK -- inside root
+guard.validate_read("../etc/passwd")?;    // Error -- path traversal
+guard.validate_write("output/result.txt")?; // OK if parent exists
+```
+
+### Constructor variants
+
+- `PathGuard::new(cwd)` -- canonicalizes `cwd` to resolve symlinks. Use this for local filesystem backends.
+- `PathGuard::new_raw(roots)` -- stores roots as-is without canonicalization. Use this inside containers or sandboxes where the filesystem may not be fully available at construction time.

@@ -116,3 +116,51 @@ let tools = create_filesystem_tools(backend);
 | `timeout` | integer | 否 | 超时时间（秒） |
 
 返回一个包含 `stdout`、`stderr` 和 `exit_code` 字段的 JSON 对象。命令通过 `sh -c` 在 `backend` 的根目录中执行。
+
+## 路径安全（PathGuard）
+
+所有文件系统工具（`execute` 除外）都受 `PathGuard` 保护，它会验证每个文件路径是否在允许的根目录集合内。这可以防止路径遍历攻击和意外访问工作空间之外的文件。
+
+### API
+
+```rust
+pub struct PathGuard {
+    allowed_roots: Vec<PathBuf>,
+}
+
+impl PathGuard {
+    pub fn new(cwd: PathBuf) -> Self           // 规范化路径
+    pub fn new_raw(roots: Vec<PathBuf>) -> Self // 不规范化（用于容器环境）
+    pub fn with_extra_roots(self, roots: Vec<PathBuf>) -> Self
+    pub fn validate_read(&self, path: &str) -> Result<PathBuf, SynapticError>
+    pub fn validate_write(&self, path: &str) -> Result<PathBuf, SynapticError>
+}
+```
+
+### 功能特性
+
+- **拒绝路径遍历** -- 任何包含 `..` 组件的路径都会被拒绝。
+- **符号链接感知** -- 使用 `canonicalize` 解析符号链接后再检查边界。
+- **写入验证** -- 在允许写入前验证父目录是否存在。
+- **多根目录支持** -- 支持在主工作目录之外添加额外的允许根目录。
+- **注入到所有文件系统工具** -- `ls`、`read_file`、`write_file`、`edit_file`、`glob` 和 `grep` 都通过 guard 验证路径。
+- **Execute 不受路径保护** -- `execute` 工具运行任意 shell 命令，不受路径验证限制。
+
+### 用法
+
+```rust,ignore
+use std::path::PathBuf;
+use synaptic::deep::tools::PathGuard;
+
+let guard = PathGuard::new(PathBuf::from("/workspace/project"))
+    .with_extra_roots(vec![PathBuf::from("/shared/data")]);
+
+guard.validate_read("src/main.rs")?;     // OK -- 在根目录内
+guard.validate_read("../etc/passwd")?;    // 错误 -- 路径遍历
+guard.validate_write("output/result.txt")?; // 如果父目录存在则 OK
+```
+
+### 构造函数变体
+
+- `PathGuard::new(cwd)` -- 规范化 `cwd` 以解析符号链接。用于本地文件系统后端。
+- `PathGuard::new_raw(roots)` -- 按原样存储根目录，不进行规范化。用于容器或沙箱环境中，在构造时文件系统可能尚未完全可用的场景。

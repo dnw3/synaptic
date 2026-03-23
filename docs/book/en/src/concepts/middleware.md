@@ -4,11 +4,17 @@ Middleware intercepts and transforms agent behavior at well-defined lifecycle po
 
 ## The Interceptor Trait
 
-All middleware implements the `Interceptor` trait, which provides four hooks with no-op defaults:
+All middleware implements the `Interceptor` trait, which provides four hooks with no-op defaults and a `name()` method for diagnostics:
 
 ```rust
 #[async_trait]
 pub trait Interceptor: Send + Sync {
+    /// Returns the interceptor name, used for diagnostics and UI display.
+    /// Defaults to the type name.
+    fn name(&self) -> &str {
+        std::any::type_name::<Self>()
+    }
+
     /// Called before each model invocation. Can modify the request.
     /// Runs in forward order (first added -> first called).
     async fn before_model(&self, _req: &mut ModelRequest) -> Result<(), SynapticError> {
@@ -29,9 +35,10 @@ pub trait Interceptor: Send + Sync {
     async fn wrap_model_call(
         &self,
         request: ModelRequest,
+        ctx: &RunContext,
         next: &dyn ModelCaller,
     ) -> Result<ModelResponse, SynapticError> {
-        next.call(request).await
+        next.call(request, ctx).await
     }
 
     /// Wrap a tool call. Override to intercept or modify tool execution.
@@ -63,6 +70,55 @@ loop {
 3. **`after_model`** -- called after the LLM responds. Can modify the `ModelResponse` (e.g., log usage, fix tool calls). Runs in **reverse** order (MW3, MW2, MW1).
 4. **`wrap_tool_call`** -- wraps each tool invocation in the same onion pattern. Can approve/reject, add logging, or modify arguments.
 
+## ModelCaller Trait
+
+The `ModelCaller` trait represents the next step in the middleware chain (or the actual model at the innermost layer):
+
+```rust
+#[async_trait]
+pub trait ModelCaller: Send + Sync {
+    async fn call(&self, request: ModelRequest, ctx: &RunContext) -> Result<ModelResponse, SynapticError>;
+}
+```
+
+## ModelRequest
+
+`ModelRequest` carries the full context for a model invocation:
+
+```rust
+pub struct ModelRequest {
+    pub messages: Vec<Message>,
+    pub tools: Vec<ToolDefinition>,
+    pub tool_choice: Option<ToolChoice>,
+    pub system_prompt: Option<String>,
+    pub thinking: Option<ThinkingLevel>,
+}
+```
+
+The `thinking` field controls extended thinking / chain-of-thought behavior for models that support it.
+
+## RunContext
+
+`RunContext` is a per-run execution context that flows through the entire middleware chain:
+
+```rust
+#[derive(Default, Clone)]
+pub struct RunContext {
+    pub cancel_token: Option<tokio::sync::watch::Receiver<bool>>,
+    pub streaming_output: Option<Arc<dyn Any + Send + Sync>>,
+}
+
+impl RunContext {
+    pub fn with_streaming_output<T: Send + Sync + 'static>(mut self, output: Arc<T>) -> Self
+    pub fn streaming_output<T: Send + Sync + 'static>(&self) -> Option<Arc<T>>
+}
+```
+
+- **`cancel_token`** -- carries a cancellation signal so middleware and the model can check for early termination.
+- **`streaming_output`** -- an opaque `Any` handle, typically holding `Arc<dyn StreamingOutput>` from `synaptic-graph`, allowing middleware to forward streaming tokens to the caller.
+
+Every `wrap_model_call` implementation receives the `RunContext` and must pass it to `next.call()`.
+
 ## InterceptorChain
 
 Multiple interceptors are composed into an `InterceptorChain`. The chain applies interceptors in the correct lifecycle order automatically:
@@ -75,6 +131,17 @@ let chain = InterceptorChain::new(vec![
     Arc::new(HumanInTheLoopMiddleware::new(callback)),
     Arc::new(SummarizationMiddleware::new(model, 4000)),
 ]);
+```
+
+The chain's `call_model` method accepts a `RunContext` and threads it through all interceptors:
+
+```rust
+pub async fn call_model(
+    &self,
+    request: ModelRequest,
+    ctx: &RunContext,
+    base: &dyn ModelCaller,
+) -> Result<ModelResponse, SynapticError>
 ```
 
 ### Execution Order

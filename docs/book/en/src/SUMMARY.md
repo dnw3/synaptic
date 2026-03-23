@@ -189,6 +189,7 @@
 - [Tool Filtering](how-to/tool-filter.md)
 - [Configuration](how-to/config.md)
 - [Session Management](how-to/session.md)
+- [Plugin System](how-to/plugins.md)
 - [File Persistence](how-to/persistence.md)
 
 # Concepts

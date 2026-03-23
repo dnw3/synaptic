@@ -189,6 +189,7 @@
 - [工具过滤](how-to/tool-filter.md)
 - [配置](how-to/config.md)
 - [会话管理](how-to/session.md)
+- [插件系统](how-to/plugins.md)
 - [文件持久化](how-to/persistence.md)
 
 # 核心概念

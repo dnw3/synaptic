@@ -143,6 +143,117 @@ pub struct GraphEvent<S> {
 
 Each event tells you which node just executed and what the state looks like. For a ReAct agent, you would see alternating "agent" and "tools" events, with messages accumulating in the state.
 
+## Streaming Output
+
+While model-level and LCEL streaming give you raw chunks, many applications need structured callbacks for tokens, tool calls, errors, and completion metadata. The `StreamingOutput` trait provides this higher-level interface.
+
+### ToolDisplayMeta
+
+Rich display metadata attached to tool calls, useful for rendering tool invocations in a CLI or UI:
+
+```rust
+use synaptic::core::ToolDisplayMeta;
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ToolDisplayMeta {
+    pub emoji: String,    // e.g. "⚡" "📖" "✏️"
+    pub label: String,    // e.g. "Execute" "Read File"
+    pub verb: String,     // e.g. "executing" "reading"
+    pub detail: String,   // e.g. "ls -la ~/..." "src/main.rs"
+}
+```
+
+### ToolCallInfo
+
+Information about a tool call in progress. The `display` field carries optional rich metadata for rendering:
+
+```rust
+use synaptic::core::ToolCallInfo;
+
+pub struct ToolCallInfo {
+    pub name: String,
+    pub id: String,
+    pub args: String,
+    pub display: Option<ToolDisplayMeta>,
+}
+```
+
+### CompletionMeta
+
+Metadata about a completed LLM request, delivered alongside the full response text:
+
+```rust
+use synaptic::core::CompletionMeta;
+
+pub struct CompletionMeta {
+    pub input_tokens: u32,
+    pub output_tokens: u32,
+    pub duration_ms: u64,
+    pub request_id: Option<String>,
+}
+```
+
+### The StreamingOutput Trait
+
+The trait defines seven lifecycle methods. The first four are the primary interface; the last three have default no-op implementations for optional use:
+
+```rust
+use synaptic::core::StreamingOutput;
+
+#[async_trait]
+pub trait StreamingOutput: Send + Sync {
+    /// Called for each text token as it arrives.
+    async fn on_token(&self, token: &str);
+
+    /// Called when the model initiates a tool call.
+    async fn on_tool_call(&self, info: &ToolCallInfo);
+
+    /// Called when the full response is complete.
+    async fn on_complete(&self, full_response: &str, meta: Option<&CompletionMeta>);
+
+    /// Called when an error occurs during streaming.
+    async fn on_error(&self, error: &str);
+
+    /// Called when the model emits extended thinking / reasoning content.
+    async fn on_reasoning(&self, _content: &str) {}
+
+    /// Called when a tool finishes and returns its result.
+    async fn on_tool_result(&self, _name: &str, _content: &str) {}
+
+    /// Periodic heartbeat fired for long-running requests (>15 s).
+    async fn on_heartbeat(&self) {}
+}
+```
+
+| Method | When it fires | Typical use |
+|--------|--------------|-------------|
+| `on_token` | Each text token arrives | Print to terminal, update UI |
+| `on_tool_call` | Model initiates a tool call | Show spinner, log tool name |
+| `on_complete` | Full response assembled | Record usage, stop spinner |
+| `on_error` | Streaming error occurs | Display error, retry logic |
+| `on_reasoning` | Extended thinking content | Show chain-of-thought |
+| `on_tool_result` | Tool execution finishes | Display tool output |
+| `on_heartbeat` | Every ~15 s during long calls | Keep connection alive, update UI |
+
+### RunContext Integration
+
+`StreamingOutput` is passed through `RunContext` as an `Arc<dyn Any>`, making it available to middleware and inner components without tight coupling:
+
+```rust
+use std::sync::Arc;
+use synaptic::core::{RunContext, StreamingOutput};
+
+let ctx = RunContext::default()
+    .with_streaming_output(Arc::new(my_streaming_impl));
+
+// Recover inside middleware or a node:
+if let Some(output) = ctx.streaming_output::<Arc<dyn StreamingOutput>>() {
+    output.on_token("hello").await;
+}
+```
+
+This pattern keeps `StreamingOutput` decoupled from the core request/response path -- middleware that does not need streaming simply ignores it, while components that do can retrieve and call it.
+
 ## When to Use Streaming
 
 **Use model-level streaming** when you need token-by-token output for a chat UI or when you want to show partial results to the user as they are generated.
