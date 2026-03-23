@@ -175,6 +175,12 @@ impl LarkLongConnListener {
             .ok_or_else(|| SynapticError::Tool("ws endpoint: missing URL in response".to_string()))
     }
 
+    fn set_status(&self, patch: synaptic_core::ChannelStatusPatch) {
+        if let Some(h) = &self.status_handle {
+            h.set(patch);
+        }
+    }
+
     /// Start the long-connection event loop. Blocks until an unrecoverable error.
     pub async fn run(self) -> Result<(), SynapticError> {
         use futures::{SinkExt, StreamExt};
@@ -184,11 +190,22 @@ impl LarkLongConnListener {
         let listener = Arc::new(self);
         let mut backoff_secs = 1u64;
 
+        // Mark as running + connecting
+        listener.set_status(synaptic_core::ChannelStatusPatch {
+            running: Some(true),
+            state: Some(synaptic_core::ChannelState::Connecting),
+            ..Default::default()
+        });
+
         loop {
             let ws_url = match listener.get_ws_endpoint().await {
                 Ok(url) => url,
                 Err(e) => {
                     tracing::warn!("LarkLongConnListener: failed to get ws endpoint: {e}");
+                    listener.set_status(synaptic_core::ChannelStatusPatch {
+                        last_error: Some(Some(format!("ws endpoint: {e}"))),
+                        ..Default::default()
+                    });
                     sleep(Duration::from_secs(backoff_secs)).await;
                     backoff_secs = (backoff_secs * 2).min(60);
                     continue;
@@ -196,10 +213,19 @@ impl LarkLongConnListener {
             };
 
             tracing::info!("LarkLongConnListener: connecting to {ws_url}");
+            listener.set_status(synaptic_core::ChannelStatusPatch {
+                state: Some(synaptic_core::ChannelState::Connecting),
+                ..Default::default()
+            });
             let (mut ws_stream, _) = match connect_async(&ws_url).await {
                 Ok(conn) => conn,
                 Err(e) => {
                     tracing::warn!("LarkLongConnListener: connect failed: {e}");
+                    listener.set_status(synaptic_core::ChannelStatusPatch {
+                        state: Some(synaptic_core::ChannelState::Disconnected),
+                        last_error: Some(Some(format!("connect: {e}"))),
+                        ..Default::default()
+                    });
                     sleep(Duration::from_secs(backoff_secs)).await;
                     backoff_secs = (backoff_secs * 2).min(60);
                     continue;
@@ -207,6 +233,13 @@ impl LarkLongConnListener {
             };
             backoff_secs = 1;
             tracing::info!("LarkLongConnListener: connected");
+
+            // Mark connected
+            listener.set_status(synaptic_core::ChannelStatusPatch {
+                state: Some(synaptic_core::ChannelState::Connected),
+                last_error: Some(None),
+                ..Default::default()
+            });
 
             // Extract service_id from WS URL for ping frames
             let service_id = url::Url::parse(&ws_url)
@@ -259,6 +292,10 @@ impl LarkLongConnListener {
                                 }
 
                                 // Data frame: extract JSON payload and dispatch
+                                listener.set_status(synaptic_core::ChannelStatusPatch {
+                                    last_event_at: Some(std::time::SystemTime::now()),
+                                    ..Default::default()
+                                });
                                 if let Some(payload_bytes) = &frame.payload {
                                     let payload_str = String::from_utf8_lossy(payload_bytes);
                                     let payload: Value = match serde_json::from_str(&payload_str) {
@@ -313,14 +350,39 @@ impl LarkLongConnListener {
                                 tracing::info!(
                                     "LarkLongConnListener: server closed connection, reconnecting"
                                 );
+                                listener.set_status(synaptic_core::ChannelStatusPatch {
+                                    state: Some(synaptic_core::ChannelState::Disconnected),
+                                    last_disconnect: Some(Some(synaptic_core::DisconnectInfo {
+                                        at: std::time::SystemTime::now(),
+                                        error: Some("server closed connection".into()),
+                                    })),
+                                    ..Default::default()
+                                });
                                 break;
                             }
                             Some(Err(e)) => {
                                 tracing::warn!("LarkLongConnListener: ws error: {e}");
+                                listener.set_status(synaptic_core::ChannelStatusPatch {
+                                    state: Some(synaptic_core::ChannelState::Disconnected),
+                                    last_error: Some(Some(format!("ws: {e}"))),
+                                    last_disconnect: Some(Some(synaptic_core::DisconnectInfo {
+                                        at: std::time::SystemTime::now(),
+                                        error: Some(e.to_string()),
+                                    })),
+                                    ..Default::default()
+                                });
                                 break;
                             }
                             None => {
                                 tracing::info!("LarkLongConnListener: stream ended, reconnecting");
+                                listener.set_status(synaptic_core::ChannelStatusPatch {
+                                    state: Some(synaptic_core::ChannelState::Disconnected),
+                                    last_disconnect: Some(Some(synaptic_core::DisconnectInfo {
+                                        at: std::time::SystemTime::now(),
+                                        error: None,
+                                    })),
+                                    ..Default::default()
+                                });
                                 break;
                             }
                             _ => {}
