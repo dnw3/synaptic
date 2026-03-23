@@ -105,7 +105,9 @@ pdf = ["tools", "synaptic-tools/pdf"]
 sqltoolkit = ["tools", "synaptic-tools/sql"]
 e2b = ["tools", "synaptic-tools/e2b"]
 browser = ["tools", "synaptic-tools/browser"]
-sandbox = ["tools", "synaptic-tools/sandbox", "synaptic-tools/sandbox-docker"]
+sandbox = ["tools", "synaptic-tools/sandbox", "synaptic-tools/sandbox-docker", "dep:synaptic-deep", "synaptic-deep/sandbox"]
+sandbox-docker = ["sandbox", "synaptic-deep/sandbox-docker"]
+sandbox-ssh = ["sandbox", "synaptic-deep/sandbox-ssh"]
 
 # Integration features
 tavily = ["dep:synaptic-integrations", "synaptic-integrations/tavily"]
@@ -136,7 +138,7 @@ full = ["default", "agent", "rag", "cache", "eval", "mcp", "macros", "deep", "sc
         "milvus", "opensearch", "lancedb", "flashrank", "lark",
         "store-filesystem", "deep-config",
         "voice", "browser", "scheduler",
-        "sandbox", "viking"]
+        "sandbox", "sandbox-docker", "sandbox-ssh", "viking"]
 
 [dev-dependencies]
 tokio.workspace = true
