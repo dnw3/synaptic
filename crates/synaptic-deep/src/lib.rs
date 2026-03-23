@@ -25,6 +25,9 @@ pub mod middleware;
 pub mod skill;
 pub mod tools;
 
+#[cfg(feature = "sandbox")]
+pub mod sandbox;
+
 use std::collections::HashMap;
 use std::sync::Arc;
 

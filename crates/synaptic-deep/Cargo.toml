@@ -38,6 +38,9 @@ gemini-provider = ["dep:synaptic-models", "synaptic-models/gemini"]
 ollama-provider = ["dep:synaptic-models", "synaptic-models/ollama"]
 all-providers = ["openai-provider", "anthropic-provider", "gemini-provider", "ollama-provider"]
 config-builder = ["dep:synaptic-config", "dep:synaptic-models", "dep:synaptic-mcp", "openai-provider"]
+sandbox = []
+sandbox-docker = ["sandbox"]
+sandbox-ssh = ["sandbox"]
 
 [dev-dependencies]
 tokio.workspace = true
