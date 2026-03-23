@@ -21,6 +21,15 @@ impl PathGuard {
         }
     }
 
+    /// Create with pre-defined allowed roots WITHOUT canonicalization.
+    /// Used by FsBridge where roots are container-side paths that
+    /// don't exist on the host filesystem.
+    pub fn new_raw(roots: Vec<PathBuf>) -> Self {
+        Self {
+            allowed_roots: roots,
+        }
+    }
+
     /// Add extra allowed roots. Each is canonicalized.
     pub fn with_extra_roots(mut self, roots: Vec<PathBuf>) -> Self {
         for root in roots {
