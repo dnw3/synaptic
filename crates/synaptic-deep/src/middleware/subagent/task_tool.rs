@@ -297,18 +297,18 @@ impl TaskTool {
                 .find(|a| a.name == at)
                 .or(builtin_def.as_ref());
             let mut options = crate::DeepAgentOptions::new(backend);
-            options.enable_subagents = current_depth.load(Ordering::Relaxed) < max_depth;
-            options.max_subagent_depth = max_depth;
+            options.subagent.enable_subagents = current_depth.load(Ordering::Relaxed) < max_depth;
+            options.subagent.max_subagent_depth = max_depth;
 
             let chosen_model: Arc<dyn ChatModel> = if let Some(om) = model_override {
                 if let Some(def) = custom {
-                    options.system_prompt = Some(def.system_prompt.clone());
+                    options.context.system_prompt = Some(def.system_prompt.clone());
                     options.tools =
                         filter_tools_by_allow_deny(&def.tools, &def.tool_allow, &def.tool_deny);
                 }
                 om
             } else if let Some(def) = custom {
-                options.system_prompt = Some(def.system_prompt.clone());
+                options.context.system_prompt = Some(def.system_prompt.clone());
                 options.tools =
                     filter_tools_by_allow_deny(&def.tools, &def.tool_allow, &def.tool_deny);
                 def.model.clone().unwrap_or_else(|| model.clone())
@@ -318,7 +318,7 @@ impl TaskTool {
 
             if let Some(def) = custom {
                 if let Some(mt) = def.max_turns {
-                    options.max_iterations = Some(mt);
+                    options.condenser.max_iterations = Some(mt);
                 }
             }
 
@@ -422,19 +422,20 @@ impl TaskTool {
         let custom = custom.or(builtin.as_ref());
 
         let mut options = crate::DeepAgentOptions::new(self.backend.clone());
-        options.enable_subagents = self.current_depth.load(Ordering::Relaxed) < self.max_depth;
-        options.max_subagent_depth = self.max_depth;
+        options.subagent.enable_subagents =
+            self.current_depth.load(Ordering::Relaxed) < self.max_depth;
+        options.subagent.max_subagent_depth = self.max_depth;
 
         // Select model: call-arg override > def.model > parent model
         let model: Arc<dyn ChatModel> = if let Some(override_model) = model_override {
             if let Some(def) = custom {
-                options.system_prompt = Some(def.system_prompt.clone());
+                options.context.system_prompt = Some(def.system_prompt.clone());
                 options.tools =
                     filter_tools_by_allow_deny(&def.tools, &def.tool_allow, &def.tool_deny);
             }
             override_model
         } else if let Some(def) = custom {
-            options.system_prompt = Some(def.system_prompt.clone());
+            options.context.system_prompt = Some(def.system_prompt.clone());
             options.tools = filter_tools_by_allow_deny(&def.tools, &def.tool_allow, &def.tool_deny);
             def.model.clone().unwrap_or_else(|| self.model.clone())
         } else {
@@ -444,7 +445,7 @@ impl TaskTool {
         // Apply max_turns if configured
         if let Some(def) = custom {
             if let Some(max_turns) = def.max_turns {
-                options.max_iterations = Some(max_turns);
+                options.condenser.max_iterations = Some(max_turns);
             }
         }
 
@@ -486,8 +487,8 @@ impl TaskTool {
                         // Truncate to first 200 lines like CLAUDE.md convention
                         let truncated: String =
                             content.lines().take(200).collect::<Vec<_>>().join("\n");
-                        let existing = options.system_prompt.take().unwrap_or_default();
-                        options.system_prompt = Some(format!(
+                        let existing = options.context.system_prompt.take().unwrap_or_default();
+                        options.context.system_prompt = Some(format!(
                             "{}\n\n# Agent Memory\n\nPersistent memory from {}:\n\n{}",
                             existing,
                             memory_md.display(),
@@ -578,9 +579,9 @@ impl SubAgentSpawner for TaskToolSpawner {
         _agent_type: &str,
     ) -> Result<String, SynapticError> {
         let mut options = crate::DeepAgentOptions::new(self.backend.clone());
-        options.system_prompt = Some(system_prompt.to_string());
-        options.enable_subagents = false; // forked skills don't get sub-agents
-        options.max_subagent_depth = self.max_depth;
+        options.context.system_prompt = Some(system_prompt.to_string());
+        options.subagent.enable_subagents = false; // forked skills don't get sub-agents
+        options.subagent.max_subagent_depth = self.max_depth;
 
         let agent = crate::create_deep_agent(self.model.clone(), options)?;
         let state = MessageState::with_messages(vec![Message::human(task)]);

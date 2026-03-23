@@ -59,9 +59,9 @@ async fn full_deep_agent_e2e() {
     let model: Arc<dyn ChatModel> = Arc::new(ScriptedDeepModel::new());
 
     let mut options = DeepAgentOptions::new(backend.clone());
-    options.enable_subagents = false; // Don't need subagents for this test
-    options.enable_skills = false;
-    options.enable_memory = false;
+    options.subagent.enable_subagents = false; // Don't need subagents for this test
+    options.skills.enable_skills = false;
+    options.context.enable_memory = false;
 
     let agent = create_deep_agent(model, options).unwrap();
 
@@ -84,10 +84,10 @@ async fn deep_agent_with_custom_system_prompt() {
     let model: Arc<dyn ChatModel> = Arc::new(ScriptedDeepModel::new());
 
     let mut options = DeepAgentOptions::new(backend.clone());
-    options.system_prompt = Some("You are a coding assistant.".to_string());
-    options.enable_subagents = false;
-    options.enable_skills = false;
-    options.enable_memory = false;
+    options.context.system_prompt = Some("You are a coding assistant.".to_string());
+    options.subagent.enable_subagents = false;
+    options.skills.enable_skills = false;
+    options.context.enable_memory = false;
 
     let agent = create_deep_agent(model, options).unwrap();
 
@@ -115,10 +115,10 @@ async fn deep_agent_all_features_disabled() {
     let model: Arc<dyn ChatModel> = Arc::new(SimpleModel);
 
     let mut options = DeepAgentOptions::new(backend);
-    options.enable_subagents = false;
-    options.enable_filesystem = false;
-    options.enable_skills = false;
-    options.enable_memory = false;
+    options.subagent.enable_subagents = false;
+    options.filesystem.enable_filesystem = false;
+    options.skills.enable_skills = false;
+    options.context.enable_memory = false;
 
     let agent = create_deep_agent(model, options).unwrap();
 
@@ -150,9 +150,9 @@ async fn deep_agent_with_memory() {
 
     let model: Arc<dyn ChatModel> = Arc::new(SimpleModel);
     let mut options = DeepAgentOptions::new(backend);
-    options.enable_subagents = false;
-    options.enable_filesystem = false;
-    options.enable_skills = false;
+    options.subagent.enable_subagents = false;
+    options.filesystem.enable_filesystem = false;
+    options.skills.enable_skills = false;
     // enable_memory = true (default)
 
     let agent = create_deep_agent(model, options).unwrap();
@@ -168,12 +168,12 @@ async fn deep_agent_default_options() {
     let backend = Arc::new(StateBackend::new());
     let options = DeepAgentOptions::new(backend);
 
-    assert_eq!(options.max_input_tokens, 128_000);
-    assert!((options.summarization_threshold - 0.85).abs() < 0.01);
-    assert_eq!(options.eviction_threshold, 20_000);
-    assert_eq!(options.max_subagent_depth, 3);
-    assert!(options.enable_subagents);
-    assert!(options.enable_filesystem);
-    assert!(options.enable_skills);
-    assert!(options.enable_memory);
+    assert_eq!(options.condenser.max_input_tokens, 128_000);
+    assert!((options.condenser.summarization_threshold - 0.85).abs() < 0.01);
+    assert_eq!(options.condenser.eviction_threshold, 20_000);
+    assert_eq!(options.subagent.max_subagent_depth, 3);
+    assert!(options.subagent.enable_subagents);
+    assert!(options.filesystem.enable_filesystem);
+    assert!(options.skills.enable_skills);
+    assert!(options.context.enable_memory);
 }

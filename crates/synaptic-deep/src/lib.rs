@@ -68,73 +68,87 @@ pub trait ModelResolver: Send + Sync {
     async fn resolve(&self, name: &str) -> Result<Arc<dyn ChatModel>, SynapticError>;
 }
 
-/// Configuration for [`create_deep_agent`].
-pub struct DeepAgentOptions {
+/// Filesystem and execution environment options.
+#[derive(Default)]
+pub struct FilesystemOptions {
     /// Backend for filesystem operations.
-    pub backend: Arc<dyn Backend>,
+    pub backend: Option<Arc<dyn Backend>>,
+    /// Enable filesystem tools (default true).
+    pub enable_filesystem: bool,
+    /// PathGuard for filesystem tool sandbox. If None, a default guard is created from cwd.
+    pub path_guard: Option<Arc<crate::tools::path_guard::PathGuard>>,
+}
+
+/// Skills middleware configuration.
+#[derive(Default)]
+pub struct SkillsOptions {
+    /// Enable skills middleware (default true).
+    pub enable_skills: bool,
+    /// Skills directories in the backend, ordered by priority (high first).
+    /// Default: `[".claude/skills"]`.
+    pub skills_dirs: Vec<String>,
+    /// Max chars for skill descriptions in the system prompt (default 16000).
+    pub skill_description_budget: usize,
+    /// Per-skill overrides (enabled/env).
+    pub skill_overrides: HashMap<String, SkillOverride>,
+    /// Command executor for resolving !`command` placeholders in skills.
+    pub command_executor: Option<Arc<dyn CommandExecutor>>,
+    /// Hooks executor for skill lifecycle events.
+    pub hooks_executor: Option<Arc<dyn SkillHooksExecutor>>,
+}
+
+/// Sub-agent spawning configuration.
+#[derive(Default)]
+pub struct SubagentOptions {
+    /// Enable subagent spawning via task tool (default true).
+    pub enable_subagents: bool,
+    /// Maximum nested subagent depth (default 3).
+    pub max_subagent_depth: usize,
+    /// Maximum concurrent sub-agents (default 3).
+    pub max_concurrent_subagents: usize,
+    /// Maximum concurrent children per agent type (0 = unlimited, default 0).
+    pub max_children_per_agent: usize,
+    /// Named tool profiles for sub-agents (e.g. "minimal" → ["read_file", "write_file"]).
+    pub tool_profiles: HashMap<String, Vec<String>>,
+    /// Custom subagent definitions for the task tool.
+    pub subagents: Vec<SubAgentDef>,
+    /// Resolver for model name aliases (e.g. "sonnet" → model instance).
+    pub model_resolver: Option<Arc<dyn ModelResolver>>,
+}
+
+/// Context injection and memory options.
+#[derive(Default)]
+pub struct ContextOptions {
     /// Optional system prompt prepended to all model calls.
     pub system_prompt: Option<String>,
-    /// Additional tools beyond the built-in filesystem tools.
-    pub tools: Vec<Arc<dyn Tool>>,
-    /// Interceptors (model + tool call wrappers).
-    pub interceptors: Vec<Arc<dyn Interceptor>>,
-    /// Optional checkpointer for graph state persistence.
-    pub checkpointer: Option<Arc<dyn Checkpointer>>,
-    /// Optional store for runtime tool injection.
-    pub store: Option<Arc<dyn Store>>,
+    /// Runtime environment info for self-awareness injection. None = disabled.
+    pub environment: Option<EnvironmentInfo>,
+    /// Optional product-specific "self" section text.
+    pub self_section: Option<String>,
+    /// Memory file path in the backend (default "AGENTS.md").
+    pub memory_file: Option<String>,
+    /// Enable memory middleware (default true).
+    pub enable_memory: bool,
+    /// Session ID for context variable substitution in skills (e.g. `${CLAUDE_SESSION_ID}`).
+    pub session_id: Option<String>,
+}
+
+/// Token management and summarization thresholds.
+#[derive(Default)]
+pub struct CondenserOptions {
     /// Maximum input tokens before summarization (default 128,000).
     pub max_input_tokens: usize,
     /// Fraction of max_input_tokens that triggers summarization (default 0.85).
     pub summarization_threshold: f64,
     /// Token count above which tool results are evicted to files (default 20,000).
     pub eviction_threshold: usize,
-    /// Maximum nested subagent depth (default 3).
-    pub max_subagent_depth: usize,
-    /// Skills directories in the backend, ordered by priority (high first).
-    /// Default: `[".claude/skills"]`.
-    pub skills_dirs: Vec<String>,
-    /// Memory file path in the backend (default "AGENTS.md").
-    pub memory_file: Option<String>,
-    /// Custom subagent definitions for the task tool.
-    pub subagents: Vec<SubAgentDef>,
-    /// Enable subagent spawning via task tool (default true).
-    pub enable_subagents: bool,
-    /// Enable filesystem tools (default true).
-    pub enable_filesystem: bool,
-    /// Enable skills middleware (default true).
-    pub enable_skills: bool,
-    /// Enable memory middleware (default true).
-    pub enable_memory: bool,
-    /// Enable parallel tool execution in ToolNode (default false).
-    pub parallel_tools: bool,
-    /// Command executor for resolving !`command` placeholders in skills.
-    pub command_executor: Option<Arc<dyn CommandExecutor>>,
-    /// Hooks executor for skill lifecycle events.
-    pub hooks_executor: Option<Arc<dyn SkillHooksExecutor>>,
-    /// Maximum concurrent sub-agents (default 3).
-    pub max_concurrent_subagents: usize,
-    /// Maximum concurrent children per agent type (0 = unlimited, default 0).
-    pub max_children_per_agent: usize,
     /// Maximum agent iterations / turns (None = default 100).
     pub max_iterations: Option<usize>,
-    /// Resolver for model name aliases (e.g. "sonnet" → model instance).
-    pub model_resolver: Option<Arc<dyn ModelResolver>>,
-    /// Max chars for skill descriptions in the system prompt (default 16000).
-    pub skill_description_budget: usize,
-    /// Per-skill overrides (enabled/env).
-    pub skill_overrides: HashMap<String, SkillOverride>,
-    /// Named tool profiles for sub-agents (e.g. "minimal" → ["read_file", "write_file"]).
-    pub tool_profiles: HashMap<String, Vec<String>>,
-    /// Session ID for context variable substitution in skills (e.g. `${CLAUDE_SESSION_ID}`).
-    pub session_id: Option<String>,
-    /// Runtime environment info for self-awareness injection. None = disabled.
-    pub environment: Option<middleware::environment::EnvironmentInfo>,
-    /// Optional product-specific "self" section text.
-    pub self_section: Option<String>,
-    /// Optional lightweight model for post-session reflection. None = disabled.
-    pub reflection_model: Option<Arc<dyn ChatModel>>,
-    /// Reflection configuration. Only used when `reflection_model` is Some.
-    pub reflection_config: Option<ReflectionConfig>,
+}
+
+/// Observability, events, and reflection.
+#[derive(Default)]
+pub struct ObservabilityOptions {
     /// Optional event bus for emitting lifecycle events (model calls, tool
     /// calls, agent end, etc.). Events are emitted natively from graph nodes.
     pub event_bus: Option<Arc<EventBus>>,
@@ -146,52 +160,95 @@ pub struct DeepAgentOptions {
     pub channel: Option<String>,
     /// Optional agent ID for context injection into events.
     pub agent_id: Option<String>,
-    /// PathGuard for filesystem tool sandbox. If None, a default guard is created from cwd.
-    pub path_guard: Option<Arc<crate::tools::path_guard::PathGuard>>,
+    /// Optional lightweight model for post-session reflection. None = disabled.
+    pub reflection_model: Option<Arc<dyn ChatModel>>,
+    /// Reflection configuration. Only used when `reflection_model` is Some.
+    pub reflection_config: Option<ReflectionConfig>,
+}
+
+/// Configuration for [`create_deep_agent`].
+pub struct DeepAgentOptions {
+    // Core (ungroupable)
+    /// Additional tools beyond the built-in filesystem tools.
+    pub tools: Vec<Arc<dyn Tool>>,
+    /// Interceptors (model + tool call wrappers).
+    pub interceptors: Vec<Arc<dyn Interceptor>>,
+    /// Optional checkpointer for graph state persistence.
+    pub checkpointer: Option<Arc<dyn Checkpointer>>,
+    /// Optional store for runtime tool injection.
+    pub store: Option<Arc<dyn Store>>,
+    /// Enable parallel tool execution in ToolNode (default false).
+    pub parallel_tools: bool,
+
+    // Domain groups
+    /// Filesystem and execution environment options.
+    pub filesystem: FilesystemOptions,
+    /// Skills middleware configuration.
+    pub skills: SkillsOptions,
+    /// Sub-agent spawning configuration.
+    pub subagent: SubagentOptions,
+    /// Context injection and memory options.
+    pub context: ContextOptions,
+    /// Token management and summarization thresholds.
+    pub condenser: CondenserOptions,
+    /// Observability, events, and reflection.
+    pub observability: ObservabilityOptions,
 }
 
 impl DeepAgentOptions {
     /// Create options with the given backend and sensible defaults.
     pub fn new(backend: Arc<dyn Backend>) -> Self {
         Self {
-            backend,
-            system_prompt: None,
             tools: Vec::new(),
             interceptors: Vec::new(),
             checkpointer: None,
             store: None,
-            max_input_tokens: 128_000,
-            summarization_threshold: 0.85,
-            eviction_threshold: 20_000,
-            max_subagent_depth: 3,
-            skills_dirs: vec![".claude/skills".to_string()],
-            memory_file: Some("AGENTS.md".to_string()),
-            subagents: Vec::new(),
-            enable_subagents: true,
-            enable_filesystem: true,
-            enable_skills: true,
-            enable_memory: true,
             parallel_tools: false,
-            command_executor: None,
-            hooks_executor: None,
-            max_concurrent_subagents: 3,
-            max_children_per_agent: 0,
-            max_iterations: None,
-            model_resolver: None,
-            skill_description_budget: 16000,
-            skill_overrides: HashMap::new(),
-            tool_profiles: HashMap::new(),
-            session_id: None,
-            environment: None,
-            self_section: None,
-            reflection_model: None,
-            reflection_config: None,
-            event_bus: None,
-            model_name: None,
-            provider_name: None,
-            channel: None,
-            agent_id: None,
-            path_guard: None,
+            filesystem: FilesystemOptions {
+                backend: Some(backend),
+                enable_filesystem: true,
+                path_guard: None,
+            },
+            skills: SkillsOptions {
+                enable_skills: true,
+                skills_dirs: vec![".claude/skills".to_string()],
+                skill_description_budget: 16000,
+                skill_overrides: HashMap::new(),
+                command_executor: None,
+                hooks_executor: None,
+            },
+            subagent: SubagentOptions {
+                enable_subagents: true,
+                max_subagent_depth: 3,
+                max_concurrent_subagents: 3,
+                max_children_per_agent: 0,
+                tool_profiles: HashMap::new(),
+                subagents: Vec::new(),
+                model_resolver: None,
+            },
+            context: ContextOptions {
+                system_prompt: None,
+                environment: None,
+                self_section: None,
+                memory_file: Some("AGENTS.md".to_string()),
+                enable_memory: true,
+                session_id: None,
+            },
+            condenser: CondenserOptions {
+                max_input_tokens: 128_000,
+                summarization_threshold: 0.85,
+                eviction_threshold: 20_000,
+                max_iterations: None,
+            },
+            observability: ObservabilityOptions {
+                event_bus: None,
+                model_name: None,
+                provider_name: None,
+                channel: None,
+                agent_id: None,
+                reflection_model: None,
+                reflection_config: None,
+            },
         }
     }
 }
@@ -215,41 +272,49 @@ pub fn create_deep_agent(
     let mut all_interceptors: Vec<Arc<dyn Interceptor>> = Vec::new();
     let mut all_tools: Vec<Arc<dyn Tool>> = Vec::new();
 
+    // Extract backend early — it's required
+    let backend = options
+        .filesystem
+        .backend
+        .clone()
+        .expect("backend required");
+
     // 0. Environment middleware (highest priority — appears first in system prompt)
-    if let Some(env) = options.environment.take() {
+    if let Some(env) = options.context.environment.take() {
         let mut env_mw = middleware::environment::EnvironmentMiddleware::new(env);
-        if let Some(self_sec) = options.self_section.clone() {
+        if let Some(self_sec) = options.context.self_section.clone() {
             env_mw = env_mw.with_self_section(self_sec);
         }
         all_interceptors.push(Arc::new(env_mw));
     }
 
     // Subagent spawner (created early so SkillTool can reference it)
-    let subagent_spawner: Option<Arc<dyn SubAgentSpawner>> = if options.enable_subagents {
+    let subagent_spawner: Option<Arc<dyn SubAgentSpawner>> = if options.subagent.enable_subagents {
         Some(Arc::new(TaskToolSpawner::new(
-            options.backend.clone(),
+            backend.clone(),
             model.clone(),
-            options.max_subagent_depth,
+            options.subagent.max_subagent_depth,
         )))
     } else {
         None
     };
 
     // 1. Skills middleware + SkillTool (highest priority — loaded first)
-    if options.enable_skills && !options.skills_dirs.is_empty() {
+    if options.skills.enable_skills && !options.skills.skills_dirs.is_empty() {
         let mut skills_mw = middleware::skills::SkillsMiddleware::with_dirs(
-            options.backend.clone(),
-            options.skills_dirs.clone(),
-            options.command_executor.clone(),
+            backend.clone(),
+            options.skills.skills_dirs.clone(),
+            options.skills.command_executor.clone(),
         )
-        .with_description_budget(options.skill_description_budget);
-        if !options.skill_overrides.is_empty() {
-            skills_mw = skills_mw.with_overrides(options.skill_overrides.clone());
+        .with_description_budget(options.skills.skill_description_budget);
+        if !options.skills.skill_overrides.is_empty() {
+            skills_mw = skills_mw.with_overrides(options.skills.skill_overrides.clone());
         }
-        if let Some(ref hooks) = options.hooks_executor {
+        if let Some(ref hooks) = options.skills.hooks_executor {
             skills_mw = skills_mw.with_hooks_executor(hooks.clone());
         }
         let session_id_lock = options
+            .context
             .session_id
             .as_ref()
             .map(|sid| Arc::new(tokio::sync::RwLock::new(sid.clone())));
@@ -260,49 +325,51 @@ pub fn create_deep_agent(
     }
 
     // 2. Memory middleware
-    if options.enable_memory {
+    if options.context.enable_memory {
         let memory_file = options
+            .context
             .memory_file
             .clone()
             .unwrap_or_else(|| "AGENTS.md".to_string());
         all_interceptors.push(Arc::new(middleware::memory::DeepMemoryMiddleware::new(
-            options.backend.clone(),
+            backend.clone(),
             memory_file,
         )));
     }
 
     // 3. Filesystem middleware + tools
-    if options.enable_filesystem {
-        let path_guard = options.path_guard.clone().or_else(|| {
+    if options.filesystem.enable_filesystem {
+        let path_guard = options.filesystem.path_guard.clone().or_else(|| {
             Some(Arc::new(tools::path_guard::PathGuard::new(
                 std::env::current_dir().unwrap_or_default(),
             )))
         });
-        let fs_tools = tools::create_filesystem_tools(options.backend.clone(), path_guard);
+        let fs_tools = tools::create_filesystem_tools(backend.clone(), path_guard);
         all_tools.extend(fs_tools);
         all_interceptors.push(Arc::new(middleware::filesystem::FilesystemMiddleware::new(
-            options.backend.clone(),
-            options.eviction_threshold,
+            backend.clone(),
+            options.condenser.eviction_threshold,
         )));
     }
 
     // 4. Subagent middleware + task tool + TaskOutput tool
-    if options.enable_subagents {
+    if options.subagent.enable_subagents {
         let mut subagent_mw = middleware::subagent::SubAgentMiddleware::with_concurrency(
-            options.backend.clone(),
+            backend.clone(),
             model.clone(),
-            options.max_subagent_depth,
-            options.subagents.clone(),
-            options.max_concurrent_subagents,
+            options.subagent.max_subagent_depth,
+            options.subagent.subagents.clone(),
+            options.subagent.max_concurrent_subagents,
         );
-        if let Some(ref resolver) = options.model_resolver {
+        if let Some(ref resolver) = options.subagent.model_resolver {
             subagent_mw = subagent_mw.with_model_resolver(resolver.clone());
         }
-        if !options.tool_profiles.is_empty() {
-            subagent_mw = subagent_mw.with_tool_profiles(options.tool_profiles.clone());
+        if !options.subagent.tool_profiles.is_empty() {
+            subagent_mw = subagent_mw.with_tool_profiles(options.subagent.tool_profiles.clone());
         }
-        if options.max_children_per_agent > 0 {
-            subagent_mw = subagent_mw.with_max_children_per_agent(options.max_children_per_agent);
+        if options.subagent.max_children_per_agent > 0 {
+            subagent_mw =
+                subagent_mw.with_max_children_per_agent(options.subagent.max_children_per_agent);
         }
         let bg_registry = subagent_mw.background_registry();
         all_tools.push(subagent_mw.create_task_tool());
@@ -312,16 +379,16 @@ pub fn create_deep_agent(
     // LlmTaskTool — always available (single-turn lightweight delegation)
     all_tools.push(Arc::new(LlmTaskTool::new(
         model.clone(),
-        options.model_resolver.clone(),
+        options.subagent.model_resolver.clone(),
     )));
 
     // 5. Summarization middleware
     all_interceptors.push(Arc::new(
         middleware::summarization::DeepSummarizationMiddleware::new(
-            options.backend.clone(),
+            backend.clone(),
             model.clone(),
-            options.max_input_tokens,
-            options.summarization_threshold,
+            options.condenser.max_input_tokens,
+            options.condenser.summarization_threshold,
         ),
     ));
 
@@ -334,12 +401,16 @@ pub fn create_deep_agent(
     all_interceptors.extend(options.interceptors);
 
     // 8. Reflection subscriber (runs on AgentEnd events via EventBus)
-    if let Some(ref reflection_model) = options.reflection_model {
-        if let Some(ref bus) = options.event_bus {
-            let config = options.reflection_config.clone().unwrap_or_default();
+    if let Some(ref reflection_model) = options.observability.reflection_model {
+        if let Some(ref bus) = options.observability.event_bus {
+            let config = options
+                .observability
+                .reflection_config
+                .clone()
+                .unwrap_or_default();
             let reflection = middleware::reflection::ReflectionMiddleware::new(
                 reflection_model.clone(),
-                options.backend.clone(),
+                backend.clone(),
             )
             .with_config(config);
             bus.subscribe(Arc::new(reflection), 100, "reflection");
@@ -358,7 +429,7 @@ pub fn create_deep_agent(
         checkpointer: options.checkpointer,
         interrupt_before: Vec::new(),
         interrupt_after: Vec::new(),
-        system_prompt: options.system_prompt,
+        system_prompt: options.context.system_prompt,
         interceptors: all_interceptors,
         store: options.store,
         name: Some("deep_agent".to_string()),
@@ -366,8 +437,8 @@ pub fn create_deep_agent(
         post_model_hook: None,
         response_format: None,
         parallel_tools: options.parallel_tools,
-        max_iterations: options.max_iterations,
-        event_bus: options.event_bus,
+        max_iterations: options.condenser.max_iterations,
+        event_bus: options.observability.event_bus,
     };
 
     create_agent(model, all_tools, agent_options)

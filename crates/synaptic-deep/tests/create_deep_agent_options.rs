@@ -22,9 +22,9 @@ async fn minimal_offline_agent() {
     let backend = Arc::new(StateBackend::new());
     let model: Arc<dyn ChatModel> = Arc::new(FinalAnswerModel);
     let mut options = DeepAgentOptions::new(backend);
-    options.enable_subagents = false;
-    options.enable_skills = false;
-    options.enable_memory = false;
+    options.subagent.enable_subagents = false;
+    options.skills.enable_skills = false;
+    options.context.enable_memory = false;
 
     let agent = create_deep_agent(model, options).unwrap();
     let state = MessageState::with_messages(vec![Message::human("hello")]);
@@ -40,10 +40,10 @@ async fn filesystem_disabled_still_works() {
     let backend = Arc::new(StateBackend::new());
     let model: Arc<dyn ChatModel> = Arc::new(FinalAnswerModel);
     let mut options = DeepAgentOptions::new(backend);
-    options.enable_filesystem = false;
-    options.enable_subagents = false;
-    options.enable_skills = false;
-    options.enable_memory = false;
+    options.filesystem.enable_filesystem = false;
+    options.subagent.enable_subagents = false;
+    options.skills.enable_skills = false;
+    options.context.enable_memory = false;
 
     let agent = create_deep_agent(model, options).unwrap();
     let state = MessageState::with_messages(vec![Message::human("hello")]);
@@ -57,10 +57,10 @@ async fn custom_system_prompt_accepted() {
     let backend = Arc::new(StateBackend::new());
     let model: Arc<dyn ChatModel> = Arc::new(FinalAnswerModel);
     let mut options = DeepAgentOptions::new(backend);
-    options.system_prompt = Some("You are a test agent.".to_string());
-    options.enable_subagents = false;
-    options.enable_skills = false;
-    options.enable_memory = false;
+    options.context.system_prompt = Some("You are a test agent.".to_string());
+    options.subagent.enable_subagents = false;
+    options.skills.enable_skills = false;
+    options.context.enable_memory = false;
 
     let agent = create_deep_agent(model, options).unwrap();
     let state = MessageState::with_messages(vec![Message::human("hello")]);
@@ -74,20 +74,23 @@ fn options_default_values() {
     let backend = Arc::new(StateBackend::new());
     let options = DeepAgentOptions::new(backend);
 
-    assert!(options.enable_subagents);
-    assert!(options.enable_filesystem);
-    assert!(options.enable_skills);
-    assert!(options.enable_memory);
-    assert!(options.system_prompt.is_none());
+    assert!(options.subagent.enable_subagents);
+    assert!(options.filesystem.enable_filesystem);
+    assert!(options.skills.enable_skills);
+    assert!(options.context.enable_memory);
+    assert!(options.context.system_prompt.is_none());
     assert!(options.tools.is_empty());
     assert!(options.interceptors.is_empty());
-    assert_eq!(options.max_input_tokens, 128_000);
-    assert!((options.summarization_threshold - 0.85).abs() < 0.01);
-    assert_eq!(options.eviction_threshold, 20_000);
-    assert_eq!(options.max_subagent_depth, 3);
-    assert_eq!(options.skills_dirs, vec![".claude/skills".to_string()]);
-    assert_eq!(options.memory_file, Some("AGENTS.md".to_string()));
-    assert!(options.subagents.is_empty());
+    assert_eq!(options.condenser.max_input_tokens, 128_000);
+    assert!((options.condenser.summarization_threshold - 0.85).abs() < 0.01);
+    assert_eq!(options.condenser.eviction_threshold, 20_000);
+    assert_eq!(options.subagent.max_subagent_depth, 3);
+    assert_eq!(
+        options.skills.skills_dirs,
+        vec![".claude/skills".to_string()]
+    );
+    assert_eq!(options.context.memory_file, Some("AGENTS.md".to_string()));
+    assert!(options.subagent.subagents.is_empty());
     assert!(options.checkpointer.is_none());
     assert!(options.store.is_none());
 }
@@ -97,10 +100,10 @@ async fn all_features_disabled_produces_basic_agent() {
     let backend = Arc::new(StateBackend::new());
     let model: Arc<dyn ChatModel> = Arc::new(FinalAnswerModel);
     let mut options = DeepAgentOptions::new(backend);
-    options.enable_filesystem = false;
-    options.enable_subagents = false;
-    options.enable_skills = false;
-    options.enable_memory = false;
+    options.filesystem.enable_filesystem = false;
+    options.subagent.enable_subagents = false;
+    options.skills.enable_skills = false;
+    options.context.enable_memory = false;
 
     let agent = create_deep_agent(model, options).unwrap();
     let state = MessageState::with_messages(vec![Message::human("hello")]);
@@ -127,22 +130,22 @@ async fn custom_options_fields_mutated() {
     let backend = Arc::new(StateBackend::new());
     let mut options = DeepAgentOptions::new(backend.clone());
 
-    options.max_input_tokens = 50_000;
-    options.summarization_threshold = 0.7;
-    options.eviction_threshold = 5_000;
-    options.max_subagent_depth = 1;
-    options.skills_dirs = vec![];
-    options.memory_file = None;
-    options.enable_subagents = false;
-    options.enable_skills = false;
-    options.enable_memory = false;
+    options.condenser.max_input_tokens = 50_000;
+    options.condenser.summarization_threshold = 0.7;
+    options.condenser.eviction_threshold = 5_000;
+    options.subagent.max_subagent_depth = 1;
+    options.skills.skills_dirs = vec![];
+    options.context.memory_file = None;
+    options.subagent.enable_subagents = false;
+    options.skills.enable_skills = false;
+    options.context.enable_memory = false;
 
-    assert_eq!(options.max_input_tokens, 50_000);
-    assert!((options.summarization_threshold - 0.7).abs() < 0.01);
-    assert_eq!(options.eviction_threshold, 5_000);
-    assert_eq!(options.max_subagent_depth, 1);
-    assert!(options.skills_dirs.is_empty());
-    assert!(options.memory_file.is_none());
+    assert_eq!(options.condenser.max_input_tokens, 50_000);
+    assert!((options.condenser.summarization_threshold - 0.7).abs() < 0.01);
+    assert_eq!(options.condenser.eviction_threshold, 5_000);
+    assert_eq!(options.subagent.max_subagent_depth, 1);
+    assert!(options.skills.skills_dirs.is_empty());
+    assert!(options.context.memory_file.is_none());
 
     // Should still compile into a working agent
     let model: Arc<dyn ChatModel> = Arc::new(FinalAnswerModel);

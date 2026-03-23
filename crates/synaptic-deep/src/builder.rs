@@ -25,10 +25,10 @@ pub async fn build_agent_from_config(
     let backend = Arc::new(StateBackend::new());
 
     let mut options = DeepAgentOptions::new(backend);
-    options.system_prompt = config.agent.system_prompt.clone();
-    options.enable_filesystem = config.agent.tools.filesystem;
-    options.memory_file = Some(config.paths.memory_file.clone());
-    options.skills_dirs = vec![config.paths.skills_dir.clone()];
+    options.context.system_prompt = config.agent.system_prompt.clone();
+    options.filesystem.enable_filesystem = config.agent.tools.filesystem;
+    options.context.memory_file = Some(config.paths.memory_file.clone());
+    options.skills.skills_dirs = vec![config.paths.skills_dir.clone()];
 
     create_deep_agent(model, options)
 }
