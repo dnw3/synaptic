@@ -1,12 +1,10 @@
-use std::sync::Arc;
-use synaptic::condenser::{Condenser, PipelineCondenser, RollingCondenser, TokenBudgetCondenser};
-use synaptic::core::{HeuristicTokenCounter, Message};
+use synaptic::condenser::{CondenseContext, Condenser, NoOpCondenser};
+use synaptic::core::Message;
 
 #[tokio::main]
 async fn main() {
     // Build a conversation with many messages
     let messages = vec![
-        Message::system("You are a helpful assistant."),
         Message::human("What is Rust?"),
         Message::ai("Rust is a systems programming language focused on safety and performance."),
         Message::human("How does ownership work?"),
@@ -22,42 +20,32 @@ async fn main() {
     println!("=== Condenser Demo ===\n");
     println!("Original message count: {}\n", messages.len());
 
-    // 1. RollingCondenser: keep last 5 messages, preserve system
-    let rolling = RollingCondenser::new(5);
-    let condensed = rolling.condense(messages.clone()).await.unwrap();
-    println!("--- RollingCondenser (max 5, preserve system) ---");
-    println!("After condensing: {} messages", condensed.len());
-    for msg in &condensed {
-        println!(
-            "  [{}] {}...",
-            msg.role(),
-            &msg.content()[..msg.content().len().min(60)]
-        );
-    }
+    // NoOpCondenser: demonstrates the new CondenseContext API
+    let condenser = NoOpCondenser;
+    let ctx = CondenseContext {
+        messages: messages.clone(),
+        system_prompt: "You are a helpful assistant.".to_string(),
+        tools: vec![],
+        context_window: 128_000,
+        reserved_output_tokens: 4096,
+        has_thinking: false,
+    };
 
-    // 2. TokenBudgetCondenser: fit within 100 tokens
-    let counter = Arc::new(HeuristicTokenCounter);
-    let token_budget = TokenBudgetCondenser::new(100, counter.clone());
-    let condensed = token_budget.condense(messages.clone()).await.unwrap();
-    println!("\n--- TokenBudgetCondenser (100 tokens) ---");
-    println!("After condensing: {} messages", condensed.len());
-    for msg in &condensed {
-        println!(
-            "  [{}] {}...",
-            msg.role(),
-            &msg.content()[..msg.content().len().min(60)]
-        );
-    }
+    println!("Message budget: {} tokens", ctx.message_budget());
+    println!(
+        "Estimated message tokens: {} tokens",
+        ctx.estimate_message_tokens()
+    );
 
-    // 3. PipelineCondenser: rolling then token budget
-    let pipeline = PipelineCondenser::new(vec![
-        Arc::new(RollingCondenser::new(7)),
-        Arc::new(TokenBudgetCondenser::new(150, counter)),
-    ]);
-    let condensed = pipeline.condense(messages.clone()).await.unwrap();
-    println!("\n--- PipelineCondenser (rolling 7 -> token budget 150) ---");
-    println!("After condensing: {} messages", condensed.len());
-    for msg in &condensed {
+    let result = condenser.condense(ctx).await.unwrap();
+    println!(
+        "\n--- NoOpCondenser ---\nAction: {:?}\nMessages: {}\nEstimated tokens: {}",
+        result.action,
+        result.messages.len(),
+        result.estimated_tokens
+    );
+
+    for msg in &result.messages {
         println!(
             "  [{}] {}...",
             msg.role(),

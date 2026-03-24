@@ -20,7 +20,7 @@ synaptic-events = { version = "0.4", path = "../synaptic-events", optional = tru
 tracing = { version = "0.1", optional = true }
 
 [features]
-condenser = []  # no extra deps needed, just uses core types
+condenser = ["dep:tracing"]
 plugin = ["dep:synaptic-events", "dep:tracing"]
 
 [dev-dependencies]
