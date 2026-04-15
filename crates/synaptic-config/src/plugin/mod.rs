@@ -2,12 +2,14 @@
 //!
 //! Requires the `plugin` feature flag.
 
+mod diagnostics;
 mod manifest;
 mod plugin_api;
 mod plugin_trait;
 mod registry;
 mod service;
 
+pub use diagnostics::*;
 pub use manifest::*;
 pub use plugin_api::*;
 pub use plugin_trait::*;
@@ -17,6 +19,7 @@ pub use service::*;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
     use std::sync::Arc;
     use synaptic_events::EventBus;
 
@@ -33,6 +36,10 @@ mod tests {
                 license: None,
                 capabilities: vec![PluginCapability::Tools],
                 slot: None,
+                runtime: PluginRuntimeKind::Builtin,
+                trust_tier: PluginTrustTier::CoreBuiltin,
+                permissions: Vec::new(),
+                declared_capabilities: Vec::new(),
             }
         }
         async fn register(
@@ -66,6 +73,10 @@ mod tests {
             license: None,
             capabilities: vec![PluginCapability::Memory],
             slot: Some(PluginSlot::Memory),
+            runtime: PluginRuntimeKind::Builtin,
+            trust_tier: PluginTrustTier::CoreBuiltin,
+            permissions: Vec::new(),
+            declared_capabilities: Vec::new(),
         };
         let json = serde_json::to_string(&manifest).unwrap();
         assert!(json.contains("\"slot\":\"memory\""));
@@ -178,6 +189,27 @@ mod tests {
 
         async fn stop(&self) {}
     }
+
+    struct EchoGatewayMethod;
+
+    #[async_trait::async_trait]
+    impl PluginGatewayMethodHandler for EchoGatewayMethod {
+        async fn invoke(
+            &self,
+            method: &str,
+            params: serde_json::Value,
+        ) -> Result<serde_json::Value, synaptic_core::SynapticError> {
+            Ok(json!({
+                "method": method,
+                "params": params,
+            }))
+        }
+    }
+
+    struct NullProviderFactory;
+
+    #[async_trait::async_trait]
+    impl PluginProviderFactory for NullProviderFactory {}
 
     #[tokio::test]
     async fn registry_memory_slot_exclusive() {
@@ -295,5 +327,117 @@ mod tests {
         let taken = registry.take_services();
         assert_eq!(taken.len(), 2);
         assert_eq!(registry.services().len(), 0);
+    }
+
+    #[test]
+    fn manifest_runtime_permissions_and_declared_capabilities_roundtrip() {
+        let manifest = PluginManifest {
+            name: "activity-inspector".into(),
+            version: "0.1.0".into(),
+            description: "test".into(),
+            author: None,
+            license: None,
+            capabilities: vec![PluginCapability::Tools, PluginCapability::Hooks],
+            slot: None,
+            runtime: PluginRuntimeKind::Builtin,
+            trust_tier: PluginTrustTier::OfficialPlugin,
+            permissions: vec![PluginPermission::GatewayMethod],
+            declared_capabilities: vec![DeclaredCapability {
+                kind: DeclaredCapabilityKind::GatewayMethod,
+                name: "activity.recent".into(),
+                scopes: vec!["operator.read".into()],
+                experimental: false,
+            }],
+        };
+
+        let json = serde_json::to_string(&manifest).unwrap();
+        let parsed: PluginManifest = serde_json::from_str(&json).unwrap();
+
+        assert!(matches!(parsed.runtime, PluginRuntimeKind::Builtin));
+        assert!(matches!(parsed.trust_tier, PluginTrustTier::OfficialPlugin));
+        assert_eq!(parsed.permissions, vec![PluginPermission::GatewayMethod]);
+        assert_eq!(parsed.declared_capabilities.len(), 1);
+        assert_eq!(parsed.declared_capabilities[0].name, "activity.recent");
+    }
+
+    #[test]
+    fn registry_tracks_plugin_diagnostics() {
+        let bus = Arc::new(EventBus::new());
+        let mut registry = PluginRegistry::new(bus);
+
+        registry.record_diagnostic(
+            "activity-inspector",
+            PluginDiagnostic {
+                level: PluginDiagnosticLevel::Warn,
+                code: "missing-scope".into(),
+                message: "scope missing".into(),
+                subject: Some("activity.recent".into()),
+            },
+        );
+
+        let diagnostics = registry
+            .plugin_diagnostics("activity-inspector")
+            .expect("diagnostics should exist");
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].code, "missing-scope");
+    }
+
+    #[tokio::test]
+    async fn plugin_api_records_gateway_and_provider_capabilities() {
+        let bus = Arc::new(EventBus::new());
+        let mut registry = PluginRegistry::new(bus);
+        {
+            let mut api = PluginApi::new(&mut registry, "activity-inspector");
+            api.register_gateway_method("activity.recent", vec!["operator.read".into()]);
+            api.register_provider("activity-model");
+        }
+
+        let registrations = registry
+            .plugin_registrations("activity-inspector")
+            .expect("registrations should exist");
+        assert_eq!(registrations.gateway_methods, vec!["activity.recent"]);
+        assert_eq!(registrations.providers, vec!["activity-model"]);
+
+        let declared = registry
+            .declared_capabilities("activity-inspector")
+            .expect("declared capabilities should exist");
+        assert_eq!(declared.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn plugin_api_registers_gateway_handlers_and_provider_factories() {
+        let bus = Arc::new(EventBus::new());
+        let mut registry = PluginRegistry::new(bus);
+        {
+            let mut api = PluginApi::new(&mut registry, "activity-inspector");
+            api.register_gateway_method_handler(
+                "activity.recent",
+                vec!["operator.read".into()],
+                Arc::new(EchoGatewayMethod),
+            );
+            api.register_provider_factory("activity-model", Arc::new(NullProviderFactory));
+        }
+
+        let gateway_methods = registry.plugin_gateway_methods("activity-inspector");
+        assert_eq!(gateway_methods.len(), 1);
+        assert_eq!(gateway_methods[0].name, "activity.recent");
+        assert_eq!(gateway_methods[0].scopes, vec!["operator.read".to_string()]);
+        let gateway_output = gateway_methods[0]
+            .handler
+            .invoke("activity.recent", json!({ "limit": 3 }))
+            .await
+            .unwrap();
+        assert_eq!(gateway_output["method"], "activity.recent");
+        assert_eq!(gateway_output["params"]["limit"], 3);
+
+        let providers = registry.plugin_providers("activity-inspector");
+        assert_eq!(providers.len(), 1);
+        assert_eq!(providers[0].name, "activity-model");
+        assert!(providers[0]
+            .factory
+            .create_chat_model()
+            .await
+            .unwrap()
+            .is_none());
     }
 }

@@ -6,7 +6,10 @@ use synaptic_events::EventSubscriber;
 use synaptic_memory::MemoryProvider;
 use synaptic_middleware::Interceptor;
 
-use super::{PluginRegistry, Service};
+use super::{
+    DeclaredCapability, DeclaredCapabilityKind, PluginGatewayMethodHandler, PluginProviderFactory,
+    PluginRegistry, RegisteredGatewayMethod, RegisteredProvider, Service,
+};
 
 /// Scoped registration API handed to each plugin during `register()`.
 /// All registrations are automatically tagged with the `plugin_id`.
@@ -24,8 +27,18 @@ impl<'a> PluginApi<'a> {
     }
 
     pub fn register_tool(&mut self, tool: Arc<dyn Tool>) {
+        let tool_name = tool.name().to_string();
+        self.registry.record_declared_capability(
+            &self.plugin_id,
+            DeclaredCapability {
+                kind: DeclaredCapabilityKind::Tool,
+                name: tool_name.clone(),
+                scopes: Vec::new(),
+                experimental: false,
+            },
+        );
         self.registry
-            .record_registration(&self.plugin_id, "tool", tool.name());
+            .record_registration(&self.plugin_id, "tool", &tool_name);
         self.registry.register_tool(tool);
     }
 
@@ -40,6 +53,15 @@ impl<'a> PluginApi<'a> {
             subscriber,
             priority,
             format!("plugin:{}", self.plugin_id),
+        );
+        self.registry.record_declared_capability(
+            &self.plugin_id,
+            DeclaredCapability {
+                kind: DeclaredCapabilityKind::Hook,
+                name: name.clone(),
+                scopes: Vec::new(),
+                experimental: false,
+            },
         );
         self.registry
             .record_registration(&self.plugin_id, "subscriber", &name);
@@ -67,6 +89,67 @@ impl<'a> PluginApi<'a> {
         self.registry.register_interceptor(interceptor);
         self.registry
             .record_registration(&self.plugin_id, "interceptor", &short_name);
+    }
+
+    pub fn register_gateway_method(&mut self, name: impl Into<String>, scopes: Vec<String>) {
+        let name = name.into();
+        self.registry.record_declared_capability(
+            &self.plugin_id,
+            DeclaredCapability {
+                kind: DeclaredCapabilityKind::GatewayMethod,
+                name: name.clone(),
+                scopes,
+                experimental: false,
+            },
+        );
+        self.registry
+            .record_registration(&self.plugin_id, "gateway_method", &name);
+    }
+
+    pub fn register_gateway_method_handler(
+        &mut self,
+        name: impl Into<String>,
+        scopes: Vec<String>,
+        handler: Arc<dyn PluginGatewayMethodHandler>,
+    ) {
+        let name = name.into();
+        self.register_gateway_method(name.clone(), scopes.clone());
+        self.registry
+            .register_gateway_method_handler(RegisteredGatewayMethod {
+                plugin_id: self.plugin_id.clone(),
+                name,
+                scopes,
+                handler,
+            });
+    }
+
+    pub fn register_provider(&mut self, name: impl Into<String>) {
+        let name = name.into();
+        self.registry.record_declared_capability(
+            &self.plugin_id,
+            DeclaredCapability {
+                kind: DeclaredCapabilityKind::Provider,
+                name: name.clone(),
+                scopes: Vec::new(),
+                experimental: false,
+            },
+        );
+        self.registry
+            .record_registration(&self.plugin_id, "provider", &name);
+    }
+
+    pub fn register_provider_factory(
+        &mut self,
+        name: impl Into<String>,
+        factory: Arc<dyn PluginProviderFactory>,
+    ) {
+        let name = name.into();
+        self.register_provider(name.clone());
+        self.registry.register_provider_factory(RegisteredProvider {
+            plugin_id: self.plugin_id.clone(),
+            name,
+            factory,
+        });
     }
 
     pub fn plugin_id(&self) -> &str {

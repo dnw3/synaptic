@@ -1,8 +1,10 @@
-use super::{PluginManifest, Service};
+use super::{DeclaredCapability, PluginDiagnostic, PluginManifest, Service};
+use async_trait::async_trait;
 use serde::Serialize;
+use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
-use synaptic_core::Tool;
+use synaptic_core::{ChatModel, Embeddings, SynapticError, Tool};
 use synaptic_events::{EventBus, EventSubscriber};
 use synaptic_memory::MemoryProvider;
 use synaptic_middleware::Interceptor;
@@ -14,11 +16,44 @@ pub struct PluginRegistrations {
     pub interceptors: Vec<String>,
     pub subscribers: Vec<String>,
     pub services: Vec<String>,
+    pub gateway_methods: Vec<String>,
+    pub providers: Vec<String>,
 }
 
 struct MemorySlotEntry {
     plugin_id: String,
     provider: Arc<dyn MemoryProvider>,
+}
+
+#[async_trait]
+pub trait PluginGatewayMethodHandler: Send + Sync {
+    async fn invoke(&self, method: &str, params: Value) -> Result<Value, SynapticError>;
+}
+
+#[async_trait]
+pub trait PluginProviderFactory: Send + Sync {
+    async fn create_chat_model(&self) -> Result<Option<Arc<dyn ChatModel>>, SynapticError> {
+        Ok(None)
+    }
+
+    async fn create_embeddings(&self) -> Result<Option<Arc<dyn Embeddings>>, SynapticError> {
+        Ok(None)
+    }
+}
+
+#[derive(Clone)]
+pub struct RegisteredGatewayMethod {
+    pub plugin_id: String,
+    pub name: String,
+    pub scopes: Vec<String>,
+    pub handler: Arc<dyn PluginGatewayMethodHandler>,
+}
+
+#[derive(Clone)]
+pub struct RegisteredProvider {
+    pub plugin_id: String,
+    pub name: String,
+    pub factory: Arc<dyn PluginProviderFactory>,
 }
 
 pub struct PluginRegistry {
@@ -29,6 +64,10 @@ pub struct PluginRegistry {
     services: Vec<Box<dyn Service>>,
     interceptors: Vec<Arc<dyn Interceptor>>,
     registrations: HashMap<String, PluginRegistrations>,
+    declared_capabilities: HashMap<String, Vec<DeclaredCapability>>,
+    diagnostics: HashMap<String, Vec<PluginDiagnostic>>,
+    gateway_methods: HashMap<String, RegisteredGatewayMethod>,
+    providers: HashMap<String, RegisteredProvider>,
 }
 
 impl PluginRegistry {
@@ -41,6 +80,10 @@ impl PluginRegistry {
             services: Vec::new(),
             interceptors: Vec::new(),
             registrations: HashMap::new(),
+            declared_capabilities: HashMap::new(),
+            diagnostics: HashMap::new(),
+            gateway_methods: HashMap::new(),
+            providers: HashMap::new(),
         }
     }
 
@@ -69,6 +112,7 @@ impl PluginRegistry {
     }
 
     pub fn record_plugin(&mut self, manifest: PluginManifest) {
+        self.record_declared_capabilities(&manifest.name, manifest.declared_capabilities.clone());
         self.plugins.push(manifest);
     }
 
@@ -120,6 +164,46 @@ impl PluginRegistry {
 
     pub fn interceptors(&self) -> &[Arc<dyn Interceptor>] {
         &self.interceptors
+    }
+
+    pub fn register_gateway_method_handler(
+        &mut self,
+        registration: RegisteredGatewayMethod,
+    ) -> Option<RegisteredGatewayMethod> {
+        self.gateway_methods
+            .insert(registration.name.clone(), registration)
+    }
+
+    pub fn plugin_gateway_methods(&self, plugin_id: &str) -> Vec<RegisteredGatewayMethod> {
+        self.gateway_methods
+            .values()
+            .filter(|registration| registration.plugin_id == plugin_id)
+            .cloned()
+            .collect()
+    }
+
+    pub fn gateway_method(&self, name: &str) -> Option<&RegisteredGatewayMethod> {
+        self.gateway_methods.get(name)
+    }
+
+    pub fn register_provider_factory(
+        &mut self,
+        registration: RegisteredProvider,
+    ) -> Option<RegisteredProvider> {
+        self.providers
+            .insert(registration.name.clone(), registration)
+    }
+
+    pub fn plugin_providers(&self, plugin_id: &str) -> Vec<RegisteredProvider> {
+        self.providers
+            .values()
+            .filter(|registration| registration.plugin_id == plugin_id)
+            .cloned()
+            .collect()
+    }
+
+    pub fn provider(&self, name: &str) -> Option<&RegisteredProvider> {
+        self.providers.get(name)
     }
 
     /// Take all registered interceptors out of the registry, leaving it empty.
@@ -178,6 +262,12 @@ impl PluginRegistry {
 
         // Remove manifest
         self.plugins.retain(|m| m.name != plugin_id);
+        self.declared_capabilities.remove(plugin_id);
+        self.diagnostics.remove(plugin_id);
+        self.gateway_methods
+            .retain(|_, registration| registration.plugin_id != plugin_id);
+        self.providers
+            .retain(|_, registration| registration.plugin_id != plugin_id);
 
         tracing::info!(
             plugin = plugin_id,
@@ -208,11 +298,16 @@ impl PluginRegistry {
     /// Record a registration entry for a plugin (tool, interceptor, subscriber, or service).
     pub fn record_registration(&mut self, plugin_id: &str, kind: &str, name: &str) {
         let entry = self.registrations.entry(plugin_id.to_string()).or_default();
+        let name = name.to_string();
         match kind {
-            "tool" => entry.tools.push(name.to_string()),
-            "interceptor" => entry.interceptors.push(name.to_string()),
-            "subscriber" => entry.subscribers.push(name.to_string()),
-            "service" => entry.services.push(name.to_string()),
+            "tool" if !entry.tools.contains(&name) => entry.tools.push(name),
+            "interceptor" if !entry.interceptors.contains(&name) => entry.interceptors.push(name),
+            "subscriber" if !entry.subscribers.contains(&name) => entry.subscribers.push(name),
+            "service" if !entry.services.contains(&name) => entry.services.push(name),
+            "gateway_method" if !entry.gateway_methods.contains(&name) => {
+                entry.gateway_methods.push(name)
+            }
+            "provider" if !entry.providers.contains(&name) => entry.providers.push(name),
             _ => {}
         }
     }
@@ -225,5 +320,47 @@ impl PluginRegistry {
     /// Get all plugin registrations.
     pub fn all_registrations(&self) -> &HashMap<String, PluginRegistrations> {
         &self.registrations
+    }
+
+    pub fn record_declared_capability(&mut self, plugin_id: &str, capability: DeclaredCapability) {
+        let entry = self
+            .declared_capabilities
+            .entry(plugin_id.to_string())
+            .or_default();
+        if !entry.iter().any(|existing| existing == &capability) {
+            entry.push(capability);
+        }
+    }
+
+    pub fn record_declared_capabilities<I>(&mut self, plugin_id: &str, capabilities: I)
+    where
+        I: IntoIterator<Item = DeclaredCapability>,
+    {
+        for capability in capabilities {
+            self.record_declared_capability(plugin_id, capability);
+        }
+    }
+
+    pub fn declared_capabilities(&self, plugin_id: &str) -> Option<&Vec<DeclaredCapability>> {
+        self.declared_capabilities.get(plugin_id)
+    }
+
+    pub fn all_declared_capabilities(&self) -> &HashMap<String, Vec<DeclaredCapability>> {
+        &self.declared_capabilities
+    }
+
+    pub fn record_diagnostic(&mut self, plugin_id: &str, diagnostic: PluginDiagnostic) {
+        self.diagnostics
+            .entry(plugin_id.to_string())
+            .or_default()
+            .push(diagnostic);
+    }
+
+    pub fn plugin_diagnostics(&self, plugin_id: &str) -> Option<&Vec<PluginDiagnostic>> {
+        self.diagnostics.get(plugin_id)
+    }
+
+    pub fn all_diagnostics(&self) -> &HashMap<String, Vec<PluginDiagnostic>> {
+        &self.diagnostics
     }
 }
