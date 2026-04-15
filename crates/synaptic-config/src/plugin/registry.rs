@@ -18,6 +18,7 @@ pub struct PluginRegistrations {
     pub services: Vec<String>,
     pub gateway_methods: Vec<String>,
     pub providers: Vec<String>,
+    pub node_host_commands: Vec<String>,
 }
 
 struct MemorySlotEntry {
@@ -308,6 +309,9 @@ impl PluginRegistry {
                 entry.gateway_methods.push(name)
             }
             "provider" if !entry.providers.contains(&name) => entry.providers.push(name),
+            "node_host_command" if !entry.node_host_commands.contains(&name) => {
+                entry.node_host_commands.push(name)
+            }
             _ => {}
         }
     }

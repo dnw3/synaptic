@@ -152,6 +152,21 @@ impl<'a> PluginApi<'a> {
         });
     }
 
+    pub fn register_node_host_command(&mut self, name: impl Into<String>) {
+        let name = name.into();
+        self.registry.record_declared_capability(
+            &self.plugin_id,
+            DeclaredCapability {
+                kind: DeclaredCapabilityKind::NodeHostCommand,
+                name: name.clone(),
+                scopes: Vec::new(),
+                experimental: false,
+            },
+        );
+        self.registry
+            .record_registration(&self.plugin_id, "node_host_command", &name);
+    }
+
     pub fn plugin_id(&self) -> &str {
         &self.plugin_id
     }

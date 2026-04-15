@@ -341,13 +341,21 @@ mod tests {
             slot: None,
             runtime: PluginRuntimeKind::Builtin,
             trust_tier: PluginTrustTier::OfficialPlugin,
-            permissions: vec![PluginPermission::GatewayMethod],
-            declared_capabilities: vec![DeclaredCapability {
-                kind: DeclaredCapabilityKind::GatewayMethod,
-                name: "activity.recent".into(),
-                scopes: vec!["operator.read".into()],
-                experimental: false,
-            }],
+            permissions: vec![PluginPermission::GatewayMethod, PluginPermission::LocalExec],
+            declared_capabilities: vec![
+                DeclaredCapability {
+                    kind: DeclaredCapabilityKind::GatewayMethod,
+                    name: "activity.recent".into(),
+                    scopes: vec!["operator.read".into()],
+                    experimental: false,
+                },
+                DeclaredCapability {
+                    kind: DeclaredCapabilityKind::NodeHostCommand,
+                    name: "system.which".into(),
+                    scopes: Vec::new(),
+                    experimental: false,
+                },
+            ],
         };
 
         let json = serde_json::to_string(&manifest).unwrap();
@@ -355,9 +363,17 @@ mod tests {
 
         assert!(matches!(parsed.runtime, PluginRuntimeKind::Builtin));
         assert!(matches!(parsed.trust_tier, PluginTrustTier::OfficialPlugin));
-        assert_eq!(parsed.permissions, vec![PluginPermission::GatewayMethod]);
-        assert_eq!(parsed.declared_capabilities.len(), 1);
+        assert_eq!(
+            parsed.permissions,
+            vec![PluginPermission::GatewayMethod, PluginPermission::LocalExec]
+        );
+        assert_eq!(parsed.declared_capabilities.len(), 2);
         assert_eq!(parsed.declared_capabilities[0].name, "activity.recent");
+        assert!(matches!(
+            parsed.declared_capabilities[1].kind,
+            DeclaredCapabilityKind::NodeHostCommand
+        ));
+        assert_eq!(parsed.declared_capabilities[1].name, "system.which");
     }
 
     #[test]
@@ -402,6 +418,31 @@ mod tests {
             .declared_capabilities("activity-inspector")
             .expect("declared capabilities should exist");
         assert_eq!(declared.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn plugin_api_records_node_host_command_capabilities() {
+        let bus = Arc::new(EventBus::new());
+        let mut registry = PluginRegistry::new(bus);
+        {
+            let mut api = PluginApi::new(&mut registry, "system-which");
+            api.register_node_host_command("system.which");
+        }
+
+        let registrations = registry
+            .plugin_registrations("system-which")
+            .expect("registrations should exist");
+        assert_eq!(registrations.node_host_commands, vec!["system.which"]);
+
+        let declared = registry
+            .declared_capabilities("system-which")
+            .expect("declared capabilities should exist");
+        assert_eq!(declared.len(), 1);
+        assert!(matches!(
+            declared[0].kind,
+            DeclaredCapabilityKind::NodeHostCommand
+        ));
+        assert_eq!(declared[0].name, "system.which");
     }
 
     #[tokio::test]

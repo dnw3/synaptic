@@ -36,6 +36,7 @@ pub enum DeclaredCapabilityKind {
     Hook,
     GatewayMethod,
     Provider,
+    NodeHostCommand,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
