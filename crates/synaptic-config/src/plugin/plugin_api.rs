@@ -78,6 +78,36 @@ impl<'a> PluginApi<'a> {
             .record_registration(&self.plugin_id, "service", &id);
     }
 
+    pub fn register_declared_service(&mut self, name: impl Into<String>) {
+        let name = name.into();
+        self.registry.record_declared_capability(
+            &self.plugin_id,
+            DeclaredCapability {
+                kind: DeclaredCapabilityKind::Service,
+                name: name.clone(),
+                scopes: Vec::new(),
+                experimental: false,
+            },
+        );
+        self.registry
+            .record_registration(&self.plugin_id, "service", &name);
+    }
+
+    pub fn register_declared_http_route(&mut self, name: impl Into<String>) {
+        let name = name.into();
+        self.registry.record_declared_capability(
+            &self.plugin_id,
+            DeclaredCapability {
+                kind: DeclaredCapabilityKind::HttpRoute,
+                name: name.clone(),
+                scopes: Vec::new(),
+                experimental: false,
+            },
+        );
+        self.registry
+            .record_registration(&self.plugin_id, "http_route", &name);
+    }
+
     pub fn register_interceptor(&mut self, interceptor: Arc<dyn Interceptor>) {
         // Extract short name: "synapse::plugins::memory_recall::MemoryRecallInterceptor" → "MemoryRecallInterceptor"
         let short_name = interceptor
