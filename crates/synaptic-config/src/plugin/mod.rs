@@ -498,6 +498,9 @@ mod tests {
             capability.kind == DeclaredCapabilityKind::Service && capability.name == "echo-service"
         }));
         assert!(declared.iter().any(|capability| {
+            capability.kind == DeclaredCapabilityKind::Service && capability.name == "noop"
+        }));
+        assert!(declared.iter().any(|capability| {
             capability.kind == DeclaredCapabilityKind::HttpRoute && capability.name == "echo-route"
         }));
 
