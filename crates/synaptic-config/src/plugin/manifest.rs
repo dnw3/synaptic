@@ -34,6 +34,8 @@ pub enum PluginPermission {
 pub enum DeclaredCapabilityKind {
     Tool,
     Hook,
+    Service,
+    HttpRoute,
     GatewayMethod,
     Provider,
     NodeHostCommand,

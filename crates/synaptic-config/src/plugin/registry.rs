@@ -16,6 +16,7 @@ pub struct PluginRegistrations {
     pub interceptors: Vec<String>,
     pub subscribers: Vec<String>,
     pub services: Vec<String>,
+    pub http_routes: Vec<String>,
     pub gateway_methods: Vec<String>,
     pub providers: Vec<String>,
     pub node_host_commands: Vec<String>,
@@ -305,6 +306,7 @@ impl PluginRegistry {
             "interceptor" if !entry.interceptors.contains(&name) => entry.interceptors.push(name),
             "subscriber" if !entry.subscribers.contains(&name) => entry.subscribers.push(name),
             "service" if !entry.services.contains(&name) => entry.services.push(name),
+            "http_route" if !entry.http_routes.contains(&name) => entry.http_routes.push(name),
             "gateway_method" if !entry.gateway_methods.contains(&name) => {
                 entry.gateway_methods.push(name)
             }

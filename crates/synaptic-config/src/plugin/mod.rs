@@ -445,6 +445,72 @@ mod tests {
         assert_eq!(declared[0].name, "system.which");
     }
 
+    #[test]
+    fn manifest_service_and_http_route_declared_capabilities_roundtrip() {
+        let manifest = PluginManifest {
+            name: "echo-service".into(),
+            version: "0.1.0".into(),
+            description: "test plugin".into(),
+            author: None,
+            license: None,
+            capabilities: vec![PluginCapability::Services, PluginCapability::HttpRoutes],
+            slot: None,
+            runtime: PluginRuntimeKind::Builtin,
+            trust_tier: PluginTrustTier::OfficialPlugin,
+            permissions: vec![PluginPermission::LocalExec],
+            declared_capabilities: vec![
+                DeclaredCapability {
+                    kind: DeclaredCapabilityKind::Service,
+                    name: "echo-service".into(),
+                    scopes: Vec::new(),
+                    experimental: false,
+                },
+                DeclaredCapability {
+                    kind: DeclaredCapabilityKind::HttpRoute,
+                    name: "echo-route".into(),
+                    scopes: Vec::new(),
+                    experimental: false,
+                },
+            ],
+        };
+
+        let json = serde_json::to_string(&manifest).unwrap();
+        let parsed: PluginManifest = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(parsed.declared_capabilities, manifest.declared_capabilities);
+    }
+
+    #[tokio::test]
+    async fn plugin_api_can_record_declared_services_and_routes() {
+        let bus = Arc::new(EventBus::new());
+        let mut registry = PluginRegistry::new(bus);
+        {
+            let mut api = PluginApi::new(&mut registry, "echo-service");
+            api.register_declared_service("echo-service");
+            api.register_declared_http_route("echo-route");
+            api.register_service(Box::new(NoopService));
+        }
+
+        let declared = registry
+            .declared_capabilities("echo-service")
+            .expect("declared capabilities should exist");
+        assert!(declared.iter().any(|capability| {
+            capability.kind == DeclaredCapabilityKind::Service && capability.name == "echo-service"
+        }));
+        assert!(declared.iter().any(|capability| {
+            capability.kind == DeclaredCapabilityKind::Service && capability.name == "noop"
+        }));
+        assert!(declared.iter().any(|capability| {
+            capability.kind == DeclaredCapabilityKind::HttpRoute && capability.name == "echo-route"
+        }));
+
+        let registrations = registry
+            .plugin_registrations("echo-service")
+            .expect("registrations should exist");
+        assert_eq!(registrations.services, vec!["echo-service", "noop"]);
+        assert_eq!(registrations.http_routes, vec!["echo-route"]);
+    }
+
     #[tokio::test]
     async fn plugin_api_registers_gateway_handlers_and_provider_factories() {
         let bus = Arc::new(EventBus::new());

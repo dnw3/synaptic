@@ -73,9 +73,48 @@ impl<'a> PluginApi<'a> {
 
     pub fn register_service(&mut self, service: Box<dyn Service>) {
         let id = service.id().to_string();
+        self.registry.record_declared_capability(
+            &self.plugin_id,
+            DeclaredCapability {
+                kind: DeclaredCapabilityKind::Service,
+                name: id.clone(),
+                scopes: Vec::new(),
+                experimental: false,
+            },
+        );
         self.registry.register_service(service);
         self.registry
             .record_registration(&self.plugin_id, "service", &id);
+    }
+
+    pub fn register_declared_service(&mut self, name: impl Into<String>) {
+        let name = name.into();
+        self.registry.record_declared_capability(
+            &self.plugin_id,
+            DeclaredCapability {
+                kind: DeclaredCapabilityKind::Service,
+                name: name.clone(),
+                scopes: Vec::new(),
+                experimental: false,
+            },
+        );
+        self.registry
+            .record_registration(&self.plugin_id, "service", &name);
+    }
+
+    pub fn register_declared_http_route(&mut self, name: impl Into<String>) {
+        let name = name.into();
+        self.registry.record_declared_capability(
+            &self.plugin_id,
+            DeclaredCapability {
+                kind: DeclaredCapabilityKind::HttpRoute,
+                name: name.clone(),
+                scopes: Vec::new(),
+                experimental: false,
+            },
+        );
+        self.registry
+            .record_registration(&self.plugin_id, "http_route", &name);
     }
 
     pub fn register_interceptor(&mut self, interceptor: Arc<dyn Interceptor>) {
